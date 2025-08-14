@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script src="https://apis.google.com/js/api.js"></script>
-<script src="https://accounts.google.com/gsi/client"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Order Generation System | Truly Personalized</title>
@@ -366,28 +364,6 @@
             .order-list-container { padding: 18px 8px; }
             table { font-size: 12px;}
         }
-        /* Add to your existing CSS */
-.auth-button {
-  background-color: #4285F4;
-  color: white;
-  border: none;
-  padding: 10px 15px;
-  border-radius: 60px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-left: 10px;
-}
-
-.auth-button:hover {
-  background-color: #3367D6;
-}
-
-.auth-button i {
-  font-size: 1rem;
-}
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
@@ -400,9 +376,6 @@
         <button id="showFormBtn" class="add-order-btn">
             <i class="fas fa-plus"></i> Create Order
         </button>
-        <button id="authorize_button" class="auth-button" style="display:none;">
-  <i class="fas fa-sign-in-alt"></i> Sign in with Google
-</button>
     </header>
     <div class="main-container">
         <div id="orderFormContainer" class="form-container">
@@ -945,7 +918,8 @@
                 }
                 let couponUsed = false;
                 if (currentCustomer) {
-                    const orders = JSON.parse(localStorage.getItem('orders')) || [];
+                    await loadData();
+const orders = appData.orders || [];
                     const used = orders.some(o => o.customer.mobile === currentCustomer.mobile && o.coupons && o.coupons.some(c => c.id === code));
                     couponUsed = used;
                 }
@@ -1266,7 +1240,8 @@
                 } else {
                     orders.push(order);
                 }
-                localStorage.setItem('orders', JSON.stringify(orders));
+                appData.orders = orders;
+await saveData();
                 updateCustomerData(order);
                 rebuildProductCodes();
                 showNotification(editingOrderId ? 'Order updated successfully!' : 'Order created successfully!');
@@ -1277,7 +1252,8 @@
 
             // Update customer data
             function updateCustomerData(order) {
-                const customers = JSON.parse(localStorage.getItem('customers')) || [];
+                await loadData();
+const customers = appData.customers || [];
                 const mobile = order.customer.mobile;
                 const insta = order.customer.insta;
                 let customerIndex = customers.findIndex(c =>
@@ -1474,52 +1450,233 @@
             updateOrderSummary();
             rebuildProductCodes();
         });
-
-// Order-specific functions
-async function loadOrders() {
-  const sheetData = await getSheetData('Orders', 'A2:L');
-  const orders = sheetData.map(row => ({
-    id: row[0],
-    date: row[1],
-    customer: {
-      mobile: row[2],
-      name: row[3],
-      address: row[4]
-    },
-    products: JSON.parse(row[5]),
-    subtotal: parseFloat(row[6]),
-    delivery: parseFloat(row[7]),
-    discount: parseFloat(row[8]),
-    couponName: row[9],
-    walletUsed: parseFloat(row[10]),
-    total: parseFloat(row[11])
-  }));
-  
-  renderOrders(orders);
-}
-
-async function saveOrder(order) {
-  const values = [
-    [
-      order.id,
-      new Date().toISOString(),
-      order.customer.mobile,
-      order.customer.name,
-      order.customer.address,
-      JSON.stringify(order.products),
-      order.subtotal,
-      order.delivery,
-      order.discount,
-      order.couponName,
-      order.walletUsed,
-      order.total
-    ]
-  ];
-  
-  await updateSheetData('Orders', `A${(await getSheetData('Orders', 'A2:A')).length + 2}:L`, values);
-  showNotification('Order saved successfully!');
-  loadOrders();
-}
     </script>
+    <script>
+// GitHub API Configuration
+const GITHUB_CLIENT_ID = 'Ov23liY1IeBA190abpYU';
+const GITHUB_CLIENT_SECRET = 'd0f95b587cc5b947b823cb0784fc02c733961f38'; // Only needed for server-side (not used here)
+const REPO_OWNER = 'trulypersonalized';
+const REPO_NAME = 'tprkspgksaus';
+const DATA_FILE_PATH = 'data.json';
+const AUTH_KEY = 'github-auth';
+
+// Global data store
+let appData = {
+  products: [],
+  orders: [],
+  customers: [],
+  pcodes: {}
+};
+
+// Initialize the app
+document.addEventListener('DOMContentLoaded', async function() {
+  // Check for GitHub auth code in URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const code = urlParams.get('code');
+  
+  if (code) {
+    // We just came back from GitHub auth
+    await exchangeCodeForToken(code);
+    // Remove code from URL
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
+  
+  // Load data
+  await loadData();
+  
+  // Your existing initialization code here...
+});
+
+// ======================
+// GitHub Authentication
+// ======================
+
+function authenticateWithGitHub() {
+  const redirectUri = encodeURIComponent(window.location.href.split('?')[0]);
+  const scope = encodeURIComponent('repo');
+  const authUrl = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&redirect_uri=${redirectUri}&scope=${scope}`;
+  window.location.href = authUrl;
+}
+
+async function exchangeCodeForToken(code) {
+  try {
+    // In a real app, this should be done server-side
+    // For demo purposes, we'll use a proxy service or do it client-side with limited permissions
+    const response = await fetch(`https://git-auth-proxy.herokuapp.com/authenticate/${code}`);
+    const data = await response.json();
+    
+    if (data.token) {
+      localStorage.setItem(AUTH_KEY, data.token);
+      showNotification('Successfully authenticated with GitHub!');
+    }
+  } catch (error) {
+    console.error('Auth error:', error);
+    showNotification('Authentication failed. Please try again.', false);
+  }
+}
+
+function isAuthenticated() {
+  return !!localStorage.getItem(AUTH_KEY);
+}
+
+function logout() {
+  localStorage.removeItem(AUTH_KEY);
+  showNotification('Logged out from GitHub');
+}
+
+// ======================
+// Data Synchronization
+// ======================
+
+async function loadData() {
+  try {
+    // Try to get from GitHub first
+    if (isAuthenticated()) {
+      const data = await fetchFromGitHub();
+      if (data) {
+        appData = data;
+        showNotification('Data loaded from GitHub');
+        return;
+      }
+    }
+    
+    // Fall back to local storage
+    const localData = localStorage.getItem('localData');
+    if (localData) {
+      appData = JSON.parse(localData);
+      showNotification('Data loaded from local storage');
+    }
+  } catch (error) {
+    console.error('Load error:', error);
+    showNotification('Error loading data', false);
+  }
+}
+
+async function saveData() {
+  try {
+    // Always save to local storage
+    localStorage.setItem('localData', JSON.stringify(appData));
+    
+    // Save to GitHub if authenticated
+    if (isAuthenticated()) {
+      await saveToGitHub();
+      showNotification('Data saved to GitHub and locally');
+    } else {
+      showNotification('Data saved locally (login to sync with GitHub)');
+    }
+  } catch (error) {
+    console.error('Save error:', error);
+    showNotification('Error saving data', false);
+  }
+}
+
+async function fetchFromGitHub() {
+  const token = localStorage.getItem(AUTH_KEY);
+  if (!token) return null;
+  
+  const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${DATA_FILE_PATH}`;
+  const response = await fetch(url, {
+    headers: {
+      'Authorization': `token ${token}`,
+      'Accept': 'application/vnd.github.v3+json'
+    }
+  });
+  
+  if (!response.ok) throw new Error('GitHub fetch failed');
+  
+  const result = await response.json();
+  const content = atob(result.content.replace(/\s/g, ''));
+  return JSON.parse(content);
+}
+
+async function saveToGitHub() {
+  const token = localStorage.getItem(AUTH_KEY);
+  if (!token) throw new Error('Not authenticated');
+  
+  // First get the current SHA (needed for updates)
+  let sha = null;
+  try {
+    const getUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${DATA_FILE_PATH}`;
+    const getResponse = await fetch(getUrl, {
+      headers: {
+        'Authorization': `token ${token}`,
+        'Accept': 'application/vnd.github.v3+json'
+      }
+    });
+    
+    if (getResponse.ok) {
+      const result = await getResponse.json();
+      sha = result.sha;
+    }
+  } catch (error) {
+    console.log('File may not exist yet');
+  }
+  
+  // Prepare the update
+  const content = btoa(JSON.stringify(appData, null, 2));
+  const message = `Update data from ${new Date().toISOString()}`;
+  
+  const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${DATA_FILE_PATH}`;
+  const response = await fetch(url, {
+    method: 'PUT',
+    headers: {
+      'Authorization': `token ${token}`,
+      'Accept': 'application/vnd.github.v3+json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      message: message,
+      content: content,
+      sha: sha || undefined
+    })
+  });
+  
+  if (!response.ok) throw new Error('GitHub save failed');
+  return await response.json();
+}
+
+// ======================
+// UI Elements
+// ======================
+
+function addSyncUI() {
+  const syncDiv = document.createElement('div');
+  syncDiv.style.position = 'fixed';
+  syncDiv.style.bottom = '20px';
+  syncDiv.style.right = '20px';
+  syncDiv.style.zIndex = '1000';
+  
+  syncDiv.innerHTML = `
+    <div style="display:flex;gap:10px;">
+      <button id="syncButton" style="padding:10px;background:#2ea44f;color:white;border:none;border-radius:5px;">
+        <i class="fas fa-sync-alt"></i> Sync
+      </button>
+      <button id="authButton" style="padding:10px;background:#24292e;color:white;border:none;border-radius:5px;">
+        ${isAuthenticated() ? '<i class="fas fa-check"></i> GitHub' : '<i class="fab fa-github"></i> Login'}
+      </button>
+    </div>
+  `;
+  
+  document.body.appendChild(syncDiv);
+  
+  document.getElementById('syncButton').addEventListener('click', async () => {
+    await loadData();
+    // Refresh your UI here based on the loaded data
+    showNotification('Data synchronized');
+  });
+  
+  document.getElementById('authButton').addEventListener('click', () => {
+    if (isAuthenticated()) {
+      logout();
+      this.innerHTML = '<i class="fab fa-github"></i> Login';
+    } else {
+      authenticateWithGitHub();
+    }
+  });
+}
+
+// Call this at the end of your initialization
+addSyncUI();
+</script>
 </body>
 </html>

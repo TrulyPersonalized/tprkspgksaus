@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script src="https://apis.google.com/js/api.js"></script>
-    <script src="https://accounts.google.com/gsi/client"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Product Management System | Truly Personalized</title>
@@ -555,60 +553,6 @@
             td:nth-child(13) { width: 150px; }
             td:nth-child(14) { width: 80px; }
         }
-        /* Add to your existing CSS */
-.auth-button {
-  background-color: #4285F4;
-  color: white;
-  border: none;
-  padding: 10px 15px;
-  border-radius: 60px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-left: 10px;
-}
-
-.auth-button:hover {
-  background-color: #3367D6;
-}
-
-.auth-button i {
-  font-size: 1rem;
-}
-
-.notification {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  padding: 15px 25px;
-  background-color: var(--primary);
-  color: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  z-index: 1000;
-  transition: all 0.3s ease;
-  max-width: 300px;
-}
-
-.notification.success {
-  background-color: var(--primary);
-}
-
-.notification.error {
-  background-color: var(--debit);
-}
-
-.notification-content {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.notification-content i {
-  font-size: 1.2rem;
-}
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
@@ -620,9 +564,6 @@
         </div>
         <button id="showFormBtn" class="add-product-btn">
             <i class="fas fa-plus"></i> Add Product
-        </button>
-        <button id="authorize_button" class="auth-button" style="display:none;">
-            <i class="fas fa-sign-in-alt"></i> Sign in with Google
         </button>
     </header>
     <div class="main-container">
@@ -792,185 +733,8 @@
     <div id="notification" class="notification-hidden">
         <div class="notification-content"></div>
     </div>
-
     <script>
-        // Google Sheets API configuration
-        const SPREADSHEET_ID = 'YOUR_SPREADSHEET_ID';
-        const CLIENT_ID = 'YOUR_CLIENT_ID.apps.googleusercontent.com';
-        const API_KEY = 'YOUR_API_KEY';
-        const SCOPES = 'https://www.googleapis.com/auth/spreadsheets';
-
-        let tokenClient;
-        let gapiInited = false;
-        let gisInited = false;
-
-        // Initialize gapi client
-        function gapiLoaded() {
-            gapi.load('client', initializeGapiClient);
-        }
-
-        async function initializeGapiClient() {
-            await gapi.client.init({
-                apiKey: API_KEY,
-                discoveryDocs: ['https://sheets.googleapis.com/$discovery/rest?version=v4'],
-            });
-            gapiInited = true;
-            maybeEnableButtons();
-        }
-
-        // Initialize token client
-        function gisLoaded() {
-            tokenClient = google.accounts.oauth2.initTokenClient({
-                client_id: CLIENT_ID,
-                scope: SCOPES,
-                callback: '', // Defined later
-            });
-            gisInited = true;
-            maybeEnableButtons();
-        }
-
-        function maybeEnableButtons() {
-            if (gapiInited && gisInited) {
-                document.getElementById('authorize_button').style.display = 'block';
-            }
-        }
-
-        // Handle authentication
-        function handleAuthClick() {
-            tokenClient.callback = async (resp) => {
-                if (resp.error !== undefined) {
-                    throw resp;
-                }
-                document.getElementById('authorize_button').innerHTML = '<i class="fas fa-sync-alt"></i> Refresh';
-                await loadInitialData();
-            };
-
-            if (gapi.client.getToken() === null) {
-                tokenClient.requestAccessToken({prompt: 'consent'});
-            } else {
-                tokenClient.requestAccessToken({prompt: ''});
-            }
-        }
-
-        // Get data from sheet
-        async function getSheetData(sheetName, range) {
-            try {
-                const response = await gapi.client.sheets.spreadsheets.values.get({
-                    spreadsheetId: SPREADSHEET_ID,
-                    range: `${sheetName}!${range}`,
-                });
-                return response.result.values || [];
-            } catch (error) {
-                console.error('Error getting sheet data:', error);
-                showNotification(`Failed to load ${sheetName} data`, false);
-                return [];
-            }
-        }
-
-        // Update sheet data
-        async function updateSheetData(sheetName, range, values) {
-            try {
-                await gapi.client.sheets.spreadsheets.values.update({
-                    spreadsheetId: SPREADSHEET_ID,
-                    range: `${sheetName}!${range}`,
-                    valueInputOption: 'USER_ENTERED',
-                    resource: { values },
-                });
-                return true;
-            } catch (error) {
-                console.error('Error updating sheet:', error);
-                showNotification(`Failed to update ${sheetName}`, false);
-                return false;
-            }
-        }
-
-        // Append new row
-        async function appendSheetData(sheetName, range, values) {
-            try {
-                await gapi.client.sheets.spreadsheets.values.append({
-                    spreadsheetId: SPREADSHEET_ID,
-                    range: `${sheetName}!${range}`,
-                    valueInputOption: 'USER_ENTERED',
-                    resource: { values },
-                });
-                return true;
-            } catch (error) {
-                console.error('Error appending to sheet:', error);
-                showNotification(`Failed to add to ${sheetName}`, false);
-                return false;
-            }
-        }
-
-        // Delete row by index
-        async function deleteSheetRow(sheetName, rowIndex) {
-            try {
-                await gapi.client.sheets.spreadsheets.batchUpdate({
-                    spreadsheetId: SPREADSHEET_ID,
-                    resource: {
-                        requests: [{
-                            deleteDimension: {
-                                range: {
-                                    sheetId: await getSheetId(sheetName),
-                                    dimension: 'ROWS',
-                                    startIndex: rowIndex - 1,
-                                    endIndex: rowIndex
-                                }
-                            }
-                        }]
-                    }
-                });
-                return true;
-            } catch (error) {
-                console.error('Error deleting row:', error);
-                showNotification('Failed to delete row', false);
-                return false;
-            }
-        }
-
-        // Helper to get sheet ID
-        async function getSheetId(sheetName) {
-            const response = await gapi.client.sheets.spreadsheets.get({
-                spreadsheetId: SPREADSHEET_ID
-            });
-            const sheet = response.result.sheets.find(s => s.properties.title === sheetName);
-            return sheet.properties.sheetId;
-        }
-
-        // Initialize the API
-        function initGoogleSheets() {
-            gapiLoaded();
-            gisLoaded();
-            document.getElementById('authorize_button').onclick = handleAuthClick;
-        }
-
-        // Load initial data after authentication
-        async function loadInitialData() {
-            await loadProducts();
-        }
-
-        // Notification system
-        function showNotification(message, isSuccess = true) {
-            const notification = document.getElementById('notification');
-            const content = notification.querySelector('.notification-content');
-            
-            content.innerHTML = `
-                <i class="fas ${isSuccess ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
-                <span>${message}</span>
-            `;
-            
-            notification.classList.remove('notification-hidden');
-            notification.classList.add('notification-visible');
-            
-            setTimeout(() => {
-                notification.classList.remove('notification-visible');
-                notification.classList.add('notification-hidden');
-            }, 3000);
-        }
-
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize Google Sheets
-            initGoogleSheets();
-            
             // DOM Elements
             const showFormBtn = document.getElementById('showFormBtn');
             const formCloseBtn = document.getElementById('formCloseBtn');
@@ -1010,14 +774,187 @@
             let calculationTimeout;
             let extraAmounts = [];
 
-            // Load products from Google Sheets
-            async function loadProducts() {
-                const products = await getSheetData('Products', 'A2:M');
-                renderProducts(products);
+            // Initialize pcodes if not exists
+            if (!localStorage.getItem('pcodes')) {
+                localStorage.setItem('pcodes', JSON.stringify({}));
             }
-            
-            // Render products table
-            function renderProducts(products) {
+
+            // Fixed rebuildProductCodes function
+            function rebuildProductCodes() {
+                const orders = JSON.parse(localStorage.getItem('orders')) || [];
+                const allProducts = JSON.parse(localStorage.getItem('products')) || [];
+                await loadData();
+const pcodes = appData.pcodes || {};
+
+                // Reset all order-related data before recalculating
+                Object.keys(pcodes).forEach(code => {
+                    if (pcodes[code]) {
+                        pcodes[code].orderSales = 0;
+                        pcodes[code].totalRevenue = 0;
+                        pcodes[code].totalLoss = 0;
+                        pcodes[code].orders = [];
+                        pcodes[code].coupons = [];
+                        pcodes[code].extraAmounts = [];
+                    }
+                });
+
+                // First pass: calculate order-based quantities
+                orders.forEach(order => {
+                    order.products.forEach(product => {
+                        if (!pcodes[product.id]) {
+                            pcodes[product.id] = {
+                                name: product.name,
+                                orderSales: 0,
+                                manualSales: 0,
+                                totalRevenue: 0,
+                                totalLoss: 0,
+                                orders: [],
+                                coupons: [],
+                                extraAmounts: []
+                            };
+                        }
+
+                        // Track order-based sales (only add once)
+                        pcodes[product.id].orderSales += product.qty;
+                        
+                        // Calculate loss if needed
+                        const originalProduct = allProducts.find(p => p.code === product.id);
+                        let loss = 0;
+                        if (originalProduct) {
+                            const sellingPrice = parseFloat(originalProduct.sellingPrice) || 0;
+                            const actualPrice = parseFloat(product.price) || 0;
+                            if (actualPrice < sellingPrice) {
+                                loss = (sellingPrice - actualPrice) * product.qty;
+                            }
+                        }
+
+                        // Update other order data
+                        pcodes[product.id].totalRevenue += product.total;
+                        pcodes[product.id].totalLoss += loss;
+
+                        // Add order details
+                        pcodes[product.id].orders.push({
+                            orderId: order.id,
+                            date: order.date,
+                            qty: product.qty,
+                            price: product.price,
+                            total: product.total,
+                            extra: product.extra || 0,
+                            extraReason: product.extraReason || '',
+                            loss: loss,
+                            customer: order.customer.name,
+                            mobile: order.customer.mobile
+                        });
+
+                        // Add order-based extra amount if present
+                        if (product.extra && product.extra !== 0) {
+                            pcodes[product.id].extraAmounts.push({
+                                type: 'order',
+                                orderId: order.id,
+                                date: order.date,
+                                amount: product.extra,
+                                reason: product.extraReason || 'Order extra',
+                                customer: order.customer.name,
+                                mobile: order.customer.mobile
+                            });
+                        }
+                    });
+
+                    // Handle coupons
+                    if (order.coupons) {
+                        order.coupons.forEach(coupon => {
+                            if (coupon.productId && pcodes[coupon.productId]) {
+                                pcodes[coupon.productId].coupons.push({
+                                    orderId: order.id,
+                                    date: order.date,
+                                    couponName: coupon.name,
+                                    couponValue: coupon.value,
+                                    couponType: coupon.type,
+                                    customer: order.customer.name,
+                                    mobile: order.customer.mobile
+                                });
+                            }
+                        });
+                    }
+                });
+
+                // Second pass: update products with combined totals
+                const updatedProducts = allProducts.map(product => {
+                    const pcodeData = pcodes[product.code] || {};
+                    
+                    // Get manual sales from product data (preserve existing value)
+                    const manualSales = product._manualSales || 0;
+                    // Get order sales from pcodes (recalculated above)
+                    const orderSales = pcodeData.orderSales || 0;
+                    
+                    // Calculate total sales
+                    const totalSales = manualSales + orderSales;
+                    
+                    // Calculate profits
+                    const totalProfits = (product.marginAmount * totalSales) + 
+                                       (product.extraAmounts ? product.extraAmounts.reduce((total, item) => {
+                                           return item.type === 'credit' ? total + item.amount : total - item.amount;
+                                       }, 0) : 0);
+
+                    return {
+                        ...product,
+                        totalSales: totalSales,
+                        totalProfits: totalProfits,
+                        // Preserve manual sales value for editing
+                        _manualSales: manualSales,
+                        _orderSales: orderSales
+                    };
+                });
+
+                localStorage.setItem('products', JSON.stringify(updatedProducts));
+                lappData.pcodes = pcodes;
+await saveData();
+                return pcodes;
+            }
+
+            // Modified editTotalSales function
+            window.editTotalSales = function(index) {
+                const products = JSON.parse(localStorage.getItem('products')) || [];
+                const product = products[index];
+                if (product) {
+                    // Show current manual sales value (excluding order-based sales)
+                    const currentManual = product._manualSales || 0;
+                    const newManualSales = prompt('Edit manual sales quantity (orders will add to this):', currentManual);
+                    
+                    if (newManualSales !== null && !isNaN(newManualSales) && newManualSales >= 0) {
+                        // Update only the manual portion
+                        product._manualSales = parseFloat(newManualSales);
+                        
+                        // Recalculate total sales (manual + orders)
+                        const orderSales = product._orderSales || 0;
+                        product.totalSales = parseFloat(newManualSales) + orderSales;
+                        
+                        // Recalculate profits
+                        const totalExtraAmount = product.extraAmounts ? 
+                            product.extraAmounts.reduce((total, item) => {
+                                return item.type === 'credit' ? total + item.amount : total - item.amount;
+                            }, 0) : 0;
+                        
+                        product.totalProfits = (product.marginAmount * product.totalSales) + totalExtraAmount;
+                        
+                        localStorage.setItem('products', JSON.stringify(products));
+                        loadProducts();
+                    } else if (newManualSales !== null) {
+                        alert('Please enter a valid number greater than or equal to 0.');
+                    }
+                }
+            };
+
+            // Function to update from oh.html changes
+            window.updateProductSalesFromOrders = function() {
+                rebuildProductCodes();
+                loadProducts();
+            };
+
+            // Load products with proper sales counts
+            function loadProducts() {
+                const pcodes = rebuildProductCodes();
+                const products = JSON.parse(localStorage.getItem('products')) || [];
                 productTableBody.innerHTML = '';
                 
                 if (products.length === 0) {
@@ -1033,55 +970,54 @@
                 products.forEach((product, index) => {
                     const row = document.createElement('tr');
                     let deliveryColor = '';
-                    if (product[11] === 'RK') deliveryColor = 'color: var(--primary);';
-                    if (product[11] === 'SP') deliveryColor = 'color: var(--accent);';
-                    if (product[11] === 'GK') deliveryColor = 'color: var(--secondary);';
+                    if (product.prefix === 'RK') deliveryColor = 'color: var(--primary);';
+                    if (product.prefix === 'SP') deliveryColor = 'color: var(--accent);';
+                    if (product.prefix === 'GK') deliveryColor = 'color: var(--secondary);';
                     
-                    // Parse extra amounts if they exist
+                    // Get the pcode data for this product
+                    const pcodeData = pcodes[product.code] || {};
+                    
+                    // Format extra amounts display
                     let extraAmountsDisplay = '-';
-                    try {
-                        const extraAmounts = product[12] ? JSON.parse(product[12]) : [];
-                        if (extraAmounts.length > 0) {
-                            extraAmountsDisplay = extraAmounts.map(item => {
-                                const sign = item.type === 'credit' ? '+' : '-';
-                                return `${sign}₹${Math.abs(item.amount).toFixed(2)} - ${item.description}`;
-                            }).join('<br>');
-                        }
-                    } catch (e) {
-                        console.error('Error parsing extra amounts:', e);
+                    if (pcodeData.extraAmounts && pcodeData.extraAmounts.length > 0) {
+                        extraAmountsDisplay = pcodeData.extraAmounts.map(item => {
+                            const sign = item.type === 'credit' ? '+' : '-';
+                            const source = item.orderId ? `(Order: ${item.orderId})` : '(Manual)';
+                            return `${sign}₹${Math.abs(item.amount).toFixed(2)} - ${item.reason} ${source}`;
+                        }).join('<br>');
                     }
                     
                     row.innerHTML = `
                         <td>
                             <input type="checkbox" class="select-checkbox" data-index="${index}">
                         </td>
-                        <td style="${deliveryColor} font-weight: bold;">${product[0]}</td>
-                        <td>${product[1]}</td>
-                        <td>${product[2] || '-'}</td>
+                        <td style="${deliveryColor} font-weight: bold;">${product.code}</td>
+                        <td>${product.name}</td>
+                        <td>${product.manufacturer || '-'}</td>
                         <td>
-                            ${product[10] ? `<img src="${product[10]}" class="product-image" onclick="showImageModal('${product[10].replace(/'/g, "\\'")}')">` : 'No Image'}
+                            ${product.photo ? `<img src="${product.photo}" class="product-image" onclick="showImageModal('${product.photo.replace(/'/g, "\\'")}')">` : 'No Image'}
                         </td>
-                        <td>₹${parseFloat(product[3]).toFixed(2)}</td>
-                        <td>₹${parseFloat(product[4]).toFixed(2)}${product[11] === 'GK' ? '<br><small>(incl. ₹60 delivery)</small>' : ''}</td>
-                        <td>${parseFloat(product[5]).toFixed(2)}%</td>
-                        <td>₹${parseFloat(product[6]).toFixed(2)}</td>
-                        <td>${product[7]} 
+                        <td>₹${product.unitPrice.toFixed(2)}</td>
+                        <td>₹${product.sellingPrice.toFixed(2)}${product.prefix === 'GK' ? '<br><small>(incl. ₹60 delivery)</small>' : ''}</td>
+                        <td>${product.margin.toFixed(2)}%</td>
+                        <td>₹${product.marginAmount.toFixed(2)}</td>
+                        <td>${product.totalSales} 
                             <i class="fas fa-edit edit-icon action-icon" 
                                onclick="editTotalSales(${index})" 
                                style="margin-left: 5px; font-size: 12px;" 
-                               title="Edit Sales">
+                               title="Edit Manual Sales (Orders: ${product._orderSales || 0})">
                             </i>
                         </td>
-                        <td class="calculated-value">₹${parseFloat(product[8]).toFixed(2)}</td>
+                        <td class="calculated-value">₹${product.totalProfits.toFixed(2)}</td>
                         <td>${extraAmountsDisplay}</td>
-                        <td class="description-cell">${product[9] || '-'}</td>
+                        <td class="description-cell">${product.description || '-'}</td>
                         <td>
                             <div class="actions-icons-flex">
                                 <button class="insta-btn-action" onclick="showInstaModal(${index})" title="Copy for Instagram">
                                     <i class="fab fa-instagram"></i>
                                 </button>
-                                <i class="fas fa-edit edit-icon action-icon" onclick="editProduct('${product[0]}')"></i>
-                                <i class="fas fa-trash delete-icon action-icon" onclick="deleteProduct('${product[0]}')"></i>
+                                <i class="fas fa-edit edit-icon action-icon" onclick="editProduct(${index})"></i>
+                                <i class="fas fa-trash delete-icon action-icon" onclick="deleteProduct(${index})"></i>
                             </div>
                         </td>
                     `;
@@ -1110,6 +1046,9 @@
                     selectAllCheckbox.checked = selectedCount === checkboxes.length && checkboxes.length > 0;
                 }
             }
+
+            // Initialize
+            loadProducts();
 
             // Price Calculation Functions
             function calculatePrices() {
@@ -1264,14 +1203,18 @@
                 return productCode;
             }
 
-            async function checkForDuplicateProduct(name) {
-                const products = await getSheetData('Products', 'A2:B');
-                const exists = products.some(product => product[1].toLowerCase() === name.toLowerCase());
+            function checkForDuplicateProduct(name) {
+                const products = JSON.parse(localStorage.getItem('products')) || [];
+                const editIndex = productForm.dataset.editIndex;
+                const exists = products.some((product, index) => {
+                    if (editIndex !== undefined && index == editIndex) return false;
+                    return product.name.toLowerCase() === name.toLowerCase();
+                });
                 sameProductWarning.style.display = exists ? 'block' : 'none';
                 return exists;
             }
 
-            async function saveProduct() {
+            function saveProduct() {
                 let prefix = document.querySelector('input[name="deliveryType"]:checked').value;
                 let productCode = document.getElementById('productCodeDisplay').textContent;
                 let itemName = itemNameInput.value;
@@ -1283,9 +1226,13 @@
                 let totalSales = parseFloat(totalSalesInput.value) || 0;
                 let totalProfits = parseFloat(totalProfitsInput.value) || 0;
                 let description = document.getElementById('description').value;
+                const editIndex = productForm.dataset.editIndex;
                 
-                if (await checkForDuplicateProduct(itemName)) {
+                if (editIndex === undefined && checkForDuplicateProduct(itemName)) {
                     if (!confirm('A product with this name already exists. Are you sure you want to continue?')) return;
+                }
+                if (editIndex !== undefined && editProductCode.value) {
+                    productCode = editProductCode.value;
                 }
                 
                 let photoBase64 = '';
@@ -1294,51 +1241,63 @@
                     const reader = new FileReader();
                     reader.onload = function(event) {
                         photoBase64 = event.target.result;
-                        saveToGoogleSheets(productCode, itemName, manufacturerName, unitPrice, sellingPrice, margin, marginAmount, totalSales, totalProfits, description, photoBase64, prefix);
+                        saveToLocalStorage(productCode, itemName, manufacturerName, unitPrice, sellingPrice, margin, marginAmount, totalSales, totalProfits, description, photoBase64, prefix);
                     };
                     reader.readAsDataURL(file);
                 } else {
-                    if (photoPreview.src && photoPreview.src !== '') {
-                        photoBase64 = photoPreview.src;
+                    if (editIndex !== undefined) {
+                        const products = JSON.parse(localStorage.getItem('products')) || [];
+                        photoBase64 = products[editIndex].photo || '';
                     }
-                    saveToGoogleSheets(productCode, itemName, manufacturerName, unitPrice, sellingPrice, margin, marginAmount, totalSales, totalProfits, description, photoBase64, prefix);
+                    saveToLocalStorage(productCode, itemName, manufacturerName, unitPrice, sellingPrice, margin, marginAmount, totalSales, totalProfits, description, photoBase64, prefix);
                 }
             }
 
-            async function saveToGoogleSheets(code, name, manufacturer, unitPrice, sellingPrice, margin, marginAmount, totalSales, totalProfits, description, photo, prefix) {
-                const values = [
-                    code,
-                    name,
-                    manufacturer,
-                    unitPrice,
-                    sellingPrice,
-                    margin,
-                    marginAmount,
-                    totalSales,
-                    totalProfits,
-                    description,
-                    photo,
-                    prefix,
-                    JSON.stringify(extraAmounts)
-                ];
+            function saveToLocalStorage(code, name, manufacturer, unitPrice, sellingPrice, margin, marginAmount, totalSales, totalProfits, description, photo, prefix) {
+                const products = JSON.parse(localStorage.getItem('products')) || [];
+                const editIndex = productForm.dataset.editIndex;
                 
-                // Check if we're editing an existing product
-                const products = await getSheetData('Products', 'A2:A');
-                const existingIndex = products.findIndex(p => p[0] === code);
-                
-                if (existingIndex >= 0) {
-                    // Update existing product
-                    await updateSheetData('Products', `A${existingIndex + 2}:M${existingIndex + 2}`, [values]);
-                    showNotification('Product updated successfully!');
-                } else {
-                    // Add new product
-                    await appendSheetData('Products', 'A2:M', [values]);
-                    showNotification('Product added successfully!');
+                // For GK type, adjust margin amount by subtracting 60
+                let finalMarginAmount = sellingPrice - unitPrice;
+                if (prefix === 'GK') {
+                    finalMarginAmount -= 60;
                 }
                 
-                await loadProducts();
+                const product = { 
+                    code, 
+                    name, 
+                    manufacturer, 
+                    unitPrice, 
+                    sellingPrice, 
+                    margin, 
+                    marginAmount: finalMarginAmount, 
+                    totalSales, 
+                    totalProfits,
+                    extraAmounts: [...extraAmounts], // Save all extra amounts
+                    description, 
+                    photo, 
+                    prefix,
+                    // Store manual sales separately
+                    _manualSales: totalSales,
+                    _orderSales: 0
+                };
+                
+                if (editIndex !== undefined) {
+                    // Preserve the existing order sales if editing
+                    const existingProduct = products[editIndex];
+                    product._orderSales = existingProduct._orderSales || 0;
+                    products[editIndex] = product;
+                    delete productForm.dataset.editIndex;
+                    showNotification('Product updated successfully!');
+                } else {
+                    products.push(product);
+                    showNotification('Product saved successfully!');
+                }
+                
+                localStorage.setItem('products', JSON.stringify(products));
                 resetForm();
                 productFormContainer.classList.remove('show');
+                loadProducts();
             }
 
             function resetForm() {
@@ -1353,59 +1312,51 @@
                 editProductCode.value = '';
                 extraAmounts = [];
                 extraAmountsList.innerHTML = '';
+                delete productForm.dataset.editIndex;
             }
 
             // Global Functions
-            window.editProduct = async function(productCode) {
-                const products = await getSheetData('Products', 'A2:M');
-                const product = products.find(p => p[0] === productCode);
-                
+            window.editProduct = function(index) {
+                await loadData(); // Loads data into appData
+const products = appData.products || [];
+                const product = products[index];
                 if (product) {
-                    document.querySelector(`input[value="${product[11]}"]`).checked = true;
-                    document.getElementById('productCodeDisplay').textContent = product[0];
-                    itemNameInput.value = product[1];
-                    document.getElementById('manufacturerName').value = product[2] || '';
-                    unitPriceInput.value = product[3];
-                    sellingPriceInput.value = product[4];
-                    marginInput.value = product[5];
-                    marginAmountInput.value = product[6];
-                    totalSalesInput.value = product[7];
-                    totalProfitsInput.value = product[8];
-                    document.getElementById('description').value = product[9] || '';
+                    document.querySelector(`input[value="${product.prefix}"]`).checked = true;
+                    document.getElementById('productCodeDisplay').textContent = product.code;
+                    itemNameInput.value = product.name;
+                    document.getElementById('manufacturerName').value = product.manufacturer || '';
+                    unitPriceInput.value = product.unitPrice;
+                    sellingPriceInput.value = product.sellingPrice;
+                    marginInput.value = product.margin;
+                    marginAmountInput.value = product.marginAmount;
+                    totalSalesInput.value = product._manualSales || 0;
+                    totalProfitsInput.value = product.totalProfits;
+                    document.getElementById('description').value = product.description || '';
                     editCodeGroup.style.display = 'block';
-                    editProductCode.value = product[0];
+                    editProductCode.value = product.code;
                     
                     // Load extra amounts
-                    try {
-                        extraAmounts = product[12] ? JSON.parse(product[12]) : [];
-                        renderExtraAmounts();
-                    } catch (e) {
-                        console.error('Error parsing extra amounts:', e);
-                        extraAmounts = [];
-                    }
+                    extraAmounts = product.extraAmounts ? [...product.extraAmounts] : [];
+                    renderExtraAmounts();
                     
-                    if (product[10]) {
-                        photoPreview.src = product[10];
+                    if (product.photo) {
+                        photoPreview.src = product.photo;
                         photoPreview.classList.remove('hidden');
                     } else {
                         photoPreview.classList.add('hidden');
                     }
-                    
                     productFormContainer.classList.add('show');
-                    calculatePrices();
+                    productForm.dataset.editIndex = index;
                 }
             };
 
-            window.deleteProduct = async function(productCode) {
+            window.deleteProduct = function(index) {
                 if (confirm('Are you sure you want to delete this product?')) {
-                    const products = await getSheetData('Products', 'A2:A');
-                    const index = products.findIndex(p => p[0] === productCode);
-                    
-                    if (index >= 0) {
-                        await deleteSheetRow('Products', index + 2);
-                        showNotification('Product deleted successfully!');
-                        await loadProducts();
-                    }
+                    const products = JSON.parse(localStorage.getItem('products')) || [];
+                    products.splice(index, 1);
+                    appData.products = products;
+await saveData();
+                    loadProducts();
                 }
             };
 
@@ -1420,38 +1371,15 @@
                 imageModal.style.display = 'block';
             };
 
-            window.showInstaModal = async function() {
-                const products = await getSheetData('Products', 'A2:M');
-                const product = products[0]; // This needs to be adjusted based on your actual index
-                let desc = product[9] || "";
-                desc = desc.replace(/SAUSc/gi, product[0]);
-                const instaText = `${product[1]}\n${desc}`;
+            window.showInstaModal = function(index) {
+                const products = JSON.parse(localStorage.getItem('products')) || [];
+                const product = products[index];
+                let desc = product.description || "";
+                desc = desc.replace(/SAUSc/gi, product.code);
+                const instaText = `${product.name}\n${desc}`;
                 instaTextarea.value = instaText;
                 instaSuccess.style.display = 'none';
                 instaModal.style.display = 'block';
-            };
-
-            window.editTotalSales = async function(index) {
-                const products = await getSheetData('Products', 'A2:M');
-                const product = products[index];
-                if (product) {
-                    const newSales = prompt('Edit sales quantity:', product[7]);
-                    if (newSales !== null && !isNaN(newSales) && newSales >= 0) {
-                        const updatedValues = [...product];
-                        updatedValues[7] = newSales;
-                        // Recalculate profits
-                        updatedValues[8] = (parseFloat(updatedValues[6]) * parseFloat(newSales)) + 
-                                         (updatedValues[12] ? JSON.parse(updatedValues[12]).reduce((total, item) => {
-                                             return item.type === 'credit' ? total + item.amount : total - item.amount;
-                                         }, 0) : 0);
-                        
-                        await updateSheetData('Products', `A${index + 2}:M${index + 2}`, [updatedValues]);
-                        showNotification('Sales quantity updated!');
-                        await loadProducts();
-                    } else if (newSales !== null) {
-                        alert('Please enter a valid number greater than or equal to 0.');
-                    }
-                }
             };
 
             // Event Listeners
@@ -1525,26 +1453,21 @@
                 searchInput.focus();
             });
 
-            multiDeleteBtn.addEventListener('click', async function() {
+            multiDeleteBtn.addEventListener('click', function() {
+                const products = JSON.parse(localStorage.getItem('products')) || [];
                 const checkboxes = productTableBody.querySelectorAll('.select-checkbox');
                 const toDelete = [];
                 
                 checkboxes.forEach(cb => {
-                    if (cb.checked) toDelete.push(cb.dataset.index);
+                    if (cb.checked) toDelete.push(parseInt(cb.dataset.index));
                 });
                 
                 if (toDelete.length === 0) return;
                 if (!confirm(`Delete ${toDelete.length} selected product(s)?`)) return;
                 
-                // Need to delete from last to first to maintain correct indices
-                const sortedIndices = toDelete.map(Number).sort((a,b) => b-a);
-                
-                for (const index of sortedIndices) {
-                    await deleteSheetRow('Products', parseInt(index) + 2);
-                }
-                
-                showNotification(`${toDelete.length} product(s) deleted`);
-                await loadProducts();
+                toDelete.sort((a,b) => b-a).forEach(idx => products.splice(idx, 1));
+                localStorage.setItem('products', JSON.stringify(products));
+                loadProducts();
             });
 
             closeModal.addEventListener('click', () => { imageModal.style.display = 'none'; });
@@ -1563,6 +1486,252 @@
                 }, 1200);
             });
         });
+        function showNotification(message, isSuccess = true) {
+            const notification = document.getElementById('notification');
+            const content = notification.querySelector('.notification-content');
+            
+            // Set icon and message
+            content.innerHTML = `
+                <i class="fas ${isSuccess ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+                <span>${message}</span>
+            `;
+            // Show notification
+            notification.classList.remove('notification-hidden');
+            notification.classList.add('notification-visible');
+            
+            // Auto-hide after 3 seconds
+            setTimeout(() => {
+                notification.classList.remove('notification-visible');
+                notification.classList.add('notification-hidden');
+            }, 3000);
+        }
     </script>
+    <script>
+// GitHub API Configuration
+const GITHUB_CLIENT_ID = 'Ov23liY1IeBA190abpYU';
+const GITHUB_CLIENT_SECRET = 'd0f95b587cc5b947b823cb0784fc02c733961f38'; // Only needed for server-side (not used here)
+const REPO_OWNER = 'trulypersonalized';
+const REPO_NAME = 'tprkspgksaus';
+const DATA_FILE_PATH = 'data.json';
+const AUTH_KEY = 'github-auth';
+
+// Global data store
+let appData = {
+  products: [],
+  orders: [],
+  customers: [],
+  pcodes: {}
+};
+
+// Initialize the app
+document.addEventListener('DOMContentLoaded', async function() {
+  // Check for GitHub auth code in URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const code = urlParams.get('code');
+  
+  if (code) {
+    // We just came back from GitHub auth
+    await exchangeCodeForToken(code);
+    // Remove code from URL
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
+  
+  // Load data
+  await loadData();
+  
+  // Your existing initialization code here...
+});
+
+// ======================
+// GitHub Authentication
+// ======================
+
+function authenticateWithGitHub() {
+  const redirectUri = encodeURIComponent(window.location.href.split('?')[0]);
+  const scope = encodeURIComponent('repo');
+  const authUrl = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&redirect_uri=${redirectUri}&scope=${scope}`;
+  window.location.href = authUrl;
+}
+
+async function exchangeCodeForToken(code) {
+  try {
+    // In a real app, this should be done server-side
+    // For demo purposes, we'll use a proxy service or do it client-side with limited permissions
+    const response = await fetch(`https://git-auth-proxy.herokuapp.com/authenticate/${code}`);
+    const data = await response.json();
+    
+    if (data.token) {
+      localStorage.setItem(AUTH_KEY, data.token);
+      showNotification('Successfully authenticated with GitHub!');
+    }
+  } catch (error) {
+    console.error('Auth error:', error);
+    showNotification('Authentication failed. Please try again.', false);
+  }
+}
+
+function isAuthenticated() {
+  return !!localStorage.getItem(AUTH_KEY);
+}
+
+function logout() {
+  localStorage.removeItem(AUTH_KEY);
+  showNotification('Logged out from GitHub');
+}
+
+// ======================
+// Data Synchronization
+// ======================
+
+async function loadData() {
+  try {
+    // Try to get from GitHub first
+    if (isAuthenticated()) {
+      const data = await fetchFromGitHub();
+      if (data) {
+        appData = data;
+        showNotification('Data loaded from GitHub');
+        return;
+      }
+    }
+    
+    // Fall back to local storage
+    const localData = localStorage.getItem('localData');
+    if (localData) {
+      appData = JSON.parse(localData);
+      showNotification('Data loaded from local storage');
+    }
+  } catch (error) {
+    console.error('Load error:', error);
+    showNotification('Error loading data', false);
+  }
+}
+
+async function saveData() {
+  try {
+    // Always save to local storage
+    localStorage.setItem('localData', JSON.stringify(appData));
+    
+    // Save to GitHub if authenticated
+    if (isAuthenticated()) {
+      await saveToGitHub();
+      showNotification('Data saved to GitHub and locally');
+    } else {
+      showNotification('Data saved locally (login to sync with GitHub)');
+    }
+  } catch (error) {
+    console.error('Save error:', error);
+    showNotification('Error saving data', false);
+  }
+}
+
+async function fetchFromGitHub() {
+  const token = localStorage.getItem(AUTH_KEY);
+  if (!token) return null;
+  
+  const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${DATA_FILE_PATH}`;
+  const response = await fetch(url, {
+    headers: {
+      'Authorization': `token ${token}`,
+      'Accept': 'application/vnd.github.v3+json'
+    }
+  });
+  
+  if (!response.ok) throw new Error('GitHub fetch failed');
+  
+  const result = await response.json();
+  const content = atob(result.content.replace(/\s/g, ''));
+  return JSON.parse(content);
+}
+
+async function saveToGitHub() {
+  const token = localStorage.getItem(AUTH_KEY);
+  if (!token) throw new Error('Not authenticated');
+  
+  // First get the current SHA (needed for updates)
+  let sha = null;
+  try {
+    const getUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${DATA_FILE_PATH}`;
+    const getResponse = await fetch(getUrl, {
+      headers: {
+        'Authorization': `token ${token}`,
+        'Accept': 'application/vnd.github.v3+json'
+      }
+    });
+    
+    if (getResponse.ok) {
+      const result = await getResponse.json();
+      sha = result.sha;
+    }
+  } catch (error) {
+    console.log('File may not exist yet');
+  }
+  
+  // Prepare the update
+  const content = btoa(JSON.stringify(appData, null, 2));
+  const message = `Update data from ${new Date().toISOString()}`;
+  
+  const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${DATA_FILE_PATH}`;
+  const response = await fetch(url, {
+    method: 'PUT',
+    headers: {
+      'Authorization': `token ${token}`,
+      'Accept': 'application/vnd.github.v3+json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      message: message,
+      content: content,
+      sha: sha || undefined
+    })
+  });
+  
+  if (!response.ok) throw new Error('GitHub save failed');
+  return await response.json();
+}
+
+// ======================
+// UI Elements
+// ======================
+
+function addSyncUI() {
+  const syncDiv = document.createElement('div');
+  syncDiv.style.position = 'fixed';
+  syncDiv.style.bottom = '20px';
+  syncDiv.style.right = '20px';
+  syncDiv.style.zIndex = '1000';
+  
+  syncDiv.innerHTML = `
+    <div style="display:flex;gap:10px;">
+      <button id="syncButton" style="padding:10px;background:#2ea44f;color:white;border:none;border-radius:5px;">
+        <i class="fas fa-sync-alt"></i> Sync
+      </button>
+      <button id="authButton" style="padding:10px;background:#24292e;color:white;border:none;border-radius:5px;">
+        ${isAuthenticated() ? '<i class="fas fa-check"></i> GitHub' : '<i class="fab fa-github"></i> Login'}
+      </button>
+    </div>
+  `;
+  
+  document.body.appendChild(syncDiv);
+  
+  document.getElementById('syncButton').addEventListener('click', async () => {
+    await loadData();
+    // Refresh your UI here based on the loaded data
+    showNotification('Data synchronized');
+  });
+  
+  document.getElementById('authButton').addEventListener('click', () => {
+    if (isAuthenticated()) {
+      logout();
+      this.innerHTML = '<i class="fab fa-github"></i> Login';
+    } else {
+      authenticateWithGitHub();
+    }
+  });
+}
+
+// Call this at the end of your initialization
+addSyncUI();
+</script>
 </body>
 </html>
