@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script src="https://apis.google.com/js/api.js"></script>
+<script src="https://accounts.google.com/gsi/client"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Order Generation System | Truly Personalized</title>
@@ -196,6 +198,28 @@
         .product-line .short-input {
             flex: 0.5;
         }
+        .delivery-type {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .delivery-type label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            white-space: nowrap;
+            color: var(--text);
+        }
+        .delivery-type input[type="radio"] { margin: 0; width: auto; }
+        
+        /* Add this new style for delivery reason */
+        .delivery-reason {
+            width: 100%;
+            margin-top: 10px;
+        }
+        
         .remove-product-btn {
             background: var(--primary);
             color: white;
@@ -342,6 +366,28 @@
             .order-list-container { padding: 18px 8px; }
             table { font-size: 12px;}
         }
+        /* Add to your existing CSS */
+.auth-button {
+  background-color: #4285F4;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 60px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 10px;
+}
+
+.auth-button:hover {
+  background-color: #3367D6;
+}
+
+.auth-button i {
+  font-size: 1rem;
+}
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
@@ -354,6 +400,9 @@
         <button id="showFormBtn" class="add-order-btn">
             <i class="fas fa-plus"></i> Create Order
         </button>
+        <button id="authorize_button" class="auth-button" style="display:none;">
+  <i class="fas fa-sign-in-alt"></i> Sign in with Google
+</button>
     </header>
     <div class="main-container">
         <div id="orderFormContainer" class="form-container">
@@ -543,870 +592,933 @@
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-    // DOM Elements
-    const showFormBtn = document.getElementById('showFormBtn');
-    const formCloseBtn = document.getElementById('formCloseBtn');
-    const orderFormContainer = document.getElementById('orderFormContainer');
-    const orderForm = document.getElementById('orderForm');
-    const orderTableBody = document.getElementById('orderTableBody');
-    const noOrdersMessage = document.getElementById('noOrdersMessage');
-    const orderIdDisplay = document.getElementById('orderIdDisplay');
-    const customerMobile = document.getElementById('customerMobile');
-    const customerInsta = document.getElementById('customerInsta');
-    const customerMobiles = document.getElementById('customerMobiles');
-    const customerInstas = document.getElementById('customerInstas');
-    const customerDetails = document.getElementById('customerDetails');
-    const customerName = document.getElementById('customerName');
-    const customerEmail = document.getElementById('customerEmail');
-    const customerAddress = document.getElementById('customerAddress');
-    const customerAddressDropdown = document.getElementById('customerAddressDropdown');
-    const customerWallet = document.getElementById('customerWallet');
-    const walletApplySection = document.getElementById('walletApplySection');
-    const applyWallet = document.getElementById('applyWallet');
-    const productsContainer = document.getElementById('productsContainer');
-    const addProductBtn = document.getElementById('addProductBtn');
-    const availableCoupons = document.getElementById('availableCoupons');
-    const couponDropdown = document.getElementById('couponDropdown');
-    const couponCode = document.getElementById('couponCode');
-    const couponName = document.getElementById('couponName');
-    const couponValue = document.getElementById('couponValue');
-    const couponType = document.getElementById('couponType');
-    const couponProductId = document.getElementById('couponProductId');
-    const addCouponBtn = document.getElementById('addCouponBtn');
-    const appliedCoupons = document.getElementById('appliedCoupons');
-    const subtotalAmount = document.getElementById('subtotalAmount');
-    const deliveryAmount = document.getElementById('deliveryAmount');
-    const deliveryAmountInput = document.getElementById('deliveryAmountInput');
-    const discountRow = document.getElementById('discountRow');
-    const discountAmount = document.getElementById('discountAmount');
-    const couponNameRow = document.getElementById('couponNameRow');
-    const couponNameDisplay = document.getElementById('couponNameDisplay');
-    const walletRow = document.getElementById('walletRow');
-    const walletAmount = document.getElementById('walletAmount');
-    const totalAmount = document.getElementById('totalAmount');
-    const searchInput = document.getElementById('searchInput');
-    const searchXBtn = document.getElementById('searchXBtn');
-    const notification = document.getElementById('notification');
-    const orderExtraType = document.getElementById('orderExtraType');
-    const orderExtraAmount = document.getElementById('orderExtraAmount');
-    const couponUsedNotice = document.getElementById('couponUsedNotice');
+            // DOM Elements
+            const showFormBtn = document.getElementById('showFormBtn');
+            const formCloseBtn = document.getElementById('formCloseBtn');
+            const orderFormContainer = document.getElementById('orderFormContainer');
+            const orderForm = document.getElementById('orderForm');
+            const orderTableBody = document.getElementById('orderTableBody');
+            const noOrdersMessage = document.getElementById('noOrdersMessage');
+            const orderIdDisplay = document.getElementById('orderIdDisplay');
+            const customerMobile = document.getElementById('customerMobile');
+            const customerInsta = document.getElementById('customerInsta');
+            const customerMobiles = document.getElementById('customerMobiles');
+            const customerInstas = document.getElementById('customerInstas');
+            const customerDetails = document.getElementById('customerDetails');
+            const customerName = document.getElementById('customerName');
+            const customerEmail = document.getElementById('customerEmail');
+            const customerAddress = document.getElementById('customerAddress');
+            const customerAddressDropdown = document.getElementById('customerAddressDropdown');
+            const customerWallet = document.getElementById('customerWallet');
+            const walletApplySection = document.getElementById('walletApplySection');
+            const applyWallet = document.getElementById('applyWallet');
+            const productsContainer = document.getElementById('productsContainer');
+            const addProductBtn = document.getElementById('addProductBtn');
+            const availableCoupons = document.getElementById('availableCoupons');
+            const couponDropdown = document.getElementById('couponDropdown');
+            const couponCode = document.getElementById('couponCode');
+            const couponName = document.getElementById('couponName');
+            const couponValue = document.getElementById('couponValue');
+            const couponType = document.getElementById('couponType');
+            const couponProductId = document.getElementById('couponProductId');
+            const addCouponBtn = document.getElementById('addCouponBtn');
+            const appliedCoupons = document.getElementById('appliedCoupons');
+            const subtotalAmount = document.getElementById('subtotalAmount');
+            const deliveryAmount = document.getElementById('deliveryAmount');
+            const deliveryAmountInput = document.getElementById('deliveryAmountInput');
+            const discountRow = document.getElementById('discountRow');
+            const discountAmount = document.getElementById('discountAmount');
+            const couponNameRow = document.getElementById('couponNameRow');
+            const couponNameDisplay = document.getElementById('couponNameDisplay');
+            const walletRow = document.getElementById('walletRow');
+            const walletAmount = document.getElementById('walletAmount');
+            const totalAmount = document.getElementById('totalAmount');
+            const searchInput = document.getElementById('searchInput');
+            const searchXBtn = document.getElementById('searchXBtn');
+            const notification = document.getElementById('notification');
+            const orderExtraType = document.getElementById('orderExtraType');
+            const orderExtraAmount = document.getElementById('orderExtraAmount');
+            const couponUsedNotice = document.getElementById('couponUsedNotice');
 
-    // State
-    let currentOrderId = '';
-    let currentCustomer = null;
-    let appliedCouponsList = [];
-    let editingOrderId = null;
+            // State
+            let currentOrderId = '';
+            let currentCustomer = null;
+            let appliedCouponsList = [];
+            let editingOrderId = null;
 
-    // Helper: Generate Order ID
-    function generateOrderId() {
-        const now = new Date();
-        const day = String(now.getDate()).padStart(2, '0');
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const year = String(now.getFullYear()).slice(-2);
-        const randomNum = Math.floor(1000 + Math.random() * 9000);
-        currentOrderId = `US${day}${month}${year}${randomNum}`;
-        orderIdDisplay.textContent = currentOrderId;
-    }
-
-    // Helper: Show Notification
-    function showNotification(message, isSuccess = true) {
-        const content = notification.querySelector('.notification-content');
-        content.innerHTML = `
-            <i class="fas ${isSuccess ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
-            <span>${message}</span>
-        `;
-        notification.classList.remove('notification-hidden');
-        notification.classList.add('notification-visible');
-        setTimeout(() => {
-            notification.classList.remove('notification-visible');
-            notification.classList.add('notification-hidden');
-        }, 3000);
-    }
-
-    // Helper: Update Customer Datalists
-    function updateCustomerDatalists() {
-        const customers = JSON.parse(localStorage.getItem('customers')) || [];
-        customerMobiles.innerHTML = '';
-        customerInstas.innerHTML = '';
-        customers.forEach(c => {
-            if (c.mobile) {
-                const opt = document.createElement('option');
-                opt.value = c.mobile;
-                customerMobiles.appendChild(opt);
+            // Helper: Generate Order ID
+            function generateOrderId() {
+                const now = new Date();
+                const day = String(now.getDate()).padStart(2, '0');
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const year = String(now.getFullYear()).slice(-2);
+                const randomNum = Math.floor(1000 + Math.random() * 9000);
+                currentOrderId = `US${day}${month}${year}${randomNum}`;
+                orderIdDisplay.textContent = currentOrderId;
             }
-            if (c.insta) {
-                const opt = document.createElement('option');
-                opt.value = c.insta;
-                customerInstas.appendChild(opt);
-            }
-        });
-    }
 
-    // Helper: Auto-fill customer info
-    function autoFillCustomer() {
-        const mobile = customerMobile.value.trim();
-        const insta = customerInsta.value.trim();
-        const customers = JSON.parse(localStorage.getItem('customers')) || [];
-        let foundCustomer = null;
-        if (mobile) {
-            foundCustomer = customers.find(c => c.mobile === mobile);
-        } else if (insta) {
-            foundCustomer = customers.find(c => c.insta && c.insta.toLowerCase() === insta.toLowerCase());
-        }
-        if (foundCustomer) {
-            currentCustomer = foundCustomer;
-            customerName.value = foundCustomer.name || '';
-            customerEmail.value = foundCustomer.email || '';
-            customerAddressDropdown.innerHTML = '<option value="">Select saved address</option>';
-            if (foundCustomer.addresses && foundCustomer.addresses.length > 0) {
-                foundCustomer.addresses.forEach((addr, index) => {
-                    const option = document.createElement('option');
-                    option.value = index;
-                    option.textContent = addr;
-                    customerAddressDropdown.appendChild(option);
-                });
-                customerAddressDropdown.classList.remove('hidden');
-            } else {
-                customerAddressDropdown.classList.add('hidden');
+            // Helper: Show Notification
+            function showNotification(message, isSuccess = true) {
+                const content = notification.querySelector('.notification-content');
+                content.innerHTML = `
+                    <i class="fas ${isSuccess ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+                    <span>${message}</span>
+                `;
+                notification.classList.remove('notification-hidden');
+                notification.classList.add('notification-visible');
+                setTimeout(() => {
+                    notification.classList.remove('notification-visible');
+                    notification.classList.add('notification-hidden');
+                }, 3000);
             }
-            customerWallet.value = foundCustomer.walletBalance || 0;
-            if (foundCustomer.walletBalance > 0) {
-                walletApplySection.classList.remove('hidden');
-            } else {
-                walletApplySection.classList.add('hidden');
-            }
-            availableCoupons.classList.remove('hidden');
-            couponDropdown.innerHTML = '<option value="">Select a coupon</option>';
-            if (foundCustomer.coupons && foundCustomer.coupons.length > 0) {
-                foundCustomer.coupons.forEach(coupon => {
-                    const option = document.createElement('option');
-                    option.value = coupon.id;
-                    option.textContent = `${coupon.name || 'Coupon'} (${coupon.value}${coupon.type === 'percent' ? '%' : '₹'})`;
-                    couponDropdown.appendChild(option);
+
+            // Helper: Update Customer Datalists
+            function updateCustomerDatalists() {
+                const customers = JSON.parse(localStorage.getItem('customers')) || [];
+                customerMobiles.innerHTML = '';
+                customerInstas.innerHTML = '';
+                customers.forEach(c => {
+                    if (c.mobile) {
+                        const opt = document.createElement('option');
+                        opt.value = c.mobile;
+                        customerMobiles.appendChild(opt);
+                    }
+                    if (c.insta) {
+                        const opt = document.createElement('option');
+                        opt.value = c.insta;
+                        customerInstas.appendChild(opt);
+                    }
                 });
             }
-            customerDetails.classList.remove('hidden');
-        } else {
-            currentCustomer = null;
-            customerName.value = '';
-            customerEmail.value = '';
-            customerAddress.value = '';
-            customerWallet.value = '0';
-            walletApplySection.classList.add('hidden');
-            availableCoupons.classList.add('hidden');
-            customerAddressDropdown.classList.add('hidden');
-            customerDetails.classList.remove('hidden');
-        }
-    }
 
-    customerMobile.addEventListener('input', autoFillCustomer);
-    customerInsta.addEventListener('input', autoFillCustomer);
-
-    customerAddressDropdown.addEventListener('change', function() {
-        if (this.value && currentCustomer && currentCustomer.addresses) {
-            customerAddress.value = currentCustomer.addresses[this.value];
-        }
-    });
-
-    // Add Product Row
-    addProductBtn.addEventListener('click', function() {
-        addProductRow();
-    });
-
-    function addProductRow(productData = {}) {
-        const row = document.createElement('div');
-        row.className = 'product-row';
-        row.innerHTML = `
-            <div class="product-line">
-                <input type="text" class="product-id-input" value="${productData.id || ''}" placeholder="Product ID" list="productIds">
-                <input type="number" class="product-price" min="0" step="0.01" value="${productData.price || ''}" placeholder="Price">
-            </div>
-            <div class="product-line">
-                <input type="text" class="product-name" value="${productData.name || ''}" placeholder="Product Name">
-                <input type="number" class="product-qty short-input" min="1" value="${productData.qty || 1}" placeholder="Qty">
-            </div>
-            <div class="product-line">
-                <select class="product-extra-type short-input">
-                    <option value="+">+</option>
-                    <option value="-">-</option>
-                </select>
-                <input type="number" class="product-extra" min="0" step="0.01" value="${productData.extra ? Math.abs(productData.extra) : 0}" placeholder="Extra Amount">
-            </div>
-            <div class="product-line">
-                <input type="text" class="extra-reason" value="${productData.extraReason || ''}" placeholder="Extra amount reason (optional)">
-                <div class="product-total" style="font-weight: bold; padding: 8px;">₹0.00</div>
-                <button type="button" class="remove-product-btn">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="loss-indicator" style="display: none;"></div>
-        `;
-        productsContainer.appendChild(row);
-
-        // Datalist for Product IDs
-        updateProductIdsDatalist();
-
-        // Listeners
-        const productIdInput = row.querySelector('.product-id-input');
-        const productNameInput = row.querySelector('.product-name');
-        const productPriceInput = row.querySelector('.product-price');
-        const productQtyInput = row.querySelector('.product-qty');
-        const productExtraInput = row.querySelector('.product-extra');
-        const productExtraType = row.querySelector('.product-extra-type');
-        const extraReasonInput = row.querySelector('.extra-reason');
-        const removeBtn = row.querySelector('.remove-product-btn');
-        const lossIndicator = row.querySelector('.loss-indicator');
-
-        // Set extra type if provided
-        if (productData.extra !== undefined) {
-            productExtraType.value = productData.extra >= 0 ? '+' : '-';
-        }
-
-        productIdInput.addEventListener('change', function() {
-            const product = getProductById(this.value);
-            if (product) {
-                productNameInput.value = product.name;
-                productPriceInput.value = product.sellingPrice;
-                calculateRowTotal(row);
-                updateOrderSummary();
-            } else {
-                productNameInput.value = '';
-                productPriceInput.value = '';
-            }
-        });
-
-        // Check for loss when price changes
-        productPriceInput.addEventListener('input', function() {
-            const product = getProductById(productIdInput.value);
-            if (product) {
-                const currentPrice = parseFloat(this.value) || 0;
-                const sellingPrice = parseFloat(product.sellingPrice) || 0;
-                if (currentPrice < sellingPrice) {
-                    const loss = (sellingPrice - currentPrice) * (parseInt(productQtyInput.value) || 1);
-                    lossIndicator.textContent = `Loss: ₹${loss.toFixed(2)}`;
-                    lossIndicator.style.display = 'block';
+            // Helper: Auto-fill customer info
+            function autoFillCustomer() {
+                const mobile = customerMobile.value.trim();
+                const insta = customerInsta.value.trim();
+                const customers = JSON.parse(localStorage.getItem('customers')) || [];
+                let foundCustomer = null;
+                if (mobile) {
+                    foundCustomer = customers.find(c => c.mobile === mobile);
+                } else if (insta) {
+                    foundCustomer = customers.find(c => c.insta && c.insta.toLowerCase() === insta.toLowerCase());
+                }
+                if (foundCustomer) {
+                    currentCustomer = foundCustomer;
+                    customerName.value = foundCustomer.name || '';
+                    customerEmail.value = foundCustomer.email || '';
+                    customerAddressDropdown.innerHTML = '<option value="">Select saved address</option>';
+                    if (foundCustomer.addresses && foundCustomer.addresses.length > 0) {
+                        foundCustomer.addresses.forEach((addr, index) => {
+                            const option = document.createElement('option');
+                            option.value = index;
+                            option.textContent = addr;
+                            customerAddressDropdown.appendChild(option);
+                        });
+                        customerAddressDropdown.classList.remove('hidden');
+                    } else {
+                        customerAddressDropdown.classList.add('hidden');
+                    }
+                    customerWallet.value = foundCustomer.walletBalance || 0;
+                    if (foundCustomer.walletBalance > 0) {
+                        walletApplySection.classList.remove('hidden');
+                    } else {
+                        walletApplySection.classList.add('hidden');
+                    }
+                    availableCoupons.classList.remove('hidden');
+                    couponDropdown.innerHTML = '<option value="">Select a coupon</option>';
+                    if (foundCustomer.coupons && foundCustomer.coupons.length > 0) {
+                        foundCustomer.coupons.forEach(coupon => {
+                            const option = document.createElement('option');
+                            option.value = coupon.id;
+                            option.textContent = `${coupon.name || 'Coupon'} (${coupon.value}${coupon.type === 'percent' ? '%' : '₹'})`;
+                            couponDropdown.appendChild(option);
+                        });
+                    }
+                    customerDetails.classList.remove('hidden');
                 } else {
-                    lossIndicator.style.display = 'none';
+                    currentCustomer = null;
+                    customerName.value = '';
+                    customerEmail.value = '';
+                    customerAddress.value = '';
+                    customerWallet.value = '0';
+                    walletApplySection.classList.add('hidden');
+                    availableCoupons.classList.add('hidden');
+                    customerAddressDropdown.classList.add('hidden');
+                    customerDetails.classList.remove('hidden');
                 }
             }
-            calculateRowTotal(row);
-            updateOrderSummary();
-        });
 
-        [productQtyInput, productExtraInput, productExtraType, extraReasonInput].forEach(input => {
-            input.addEventListener('input', function() {
-                if (input === productQtyInput && productPriceInput.value) {
-                    productPriceInput.dispatchEvent(new Event('input'));
-                } else {
+            customerMobile.addEventListener('input', autoFillCustomer);
+            customerInsta.addEventListener('input', autoFillCustomer);
+
+            customerAddressDropdown.addEventListener('change', function() {
+                if (this.value && currentCustomer && currentCustomer.addresses) {
+                    customerAddress.value = currentCustomer.addresses[this.value];
+                }
+            });
+
+            // Add Product Row
+            addProductBtn.addEventListener('click', function() {
+                addProductRow();
+            });
+
+            function addProductRow(productData = {}) {
+                const row = document.createElement('div');
+                row.className = 'product-row';
+                row.innerHTML = `
+                    <div class="product-line">
+                        <input type="text" class="product-id-input" value="${productData.id || ''}" placeholder="Product ID" list="productIds">
+                        <input type="number" class="product-price" min="0" step="0.01" value="${productData.price || ''}" placeholder="Price">
+                    </div>
+                    <div class="product-line">
+                        <input type="text" class="product-name" value="${productData.name || ''}" placeholder="Product Name">
+                        <input type="number" class="product-qty short-input" min="1" value="${productData.qty || 1}" placeholder="Qty">
+                    </div>
+                    <div class="product-line">
+                        <select class="delivery-type-select short-input">
+                            <option value="RK" ${productData.deliveryType === 'RK' ? 'selected' : ''}>RK</option>
+                            <option value="SP" ${productData.deliveryType === 'SP' ? 'selected' : ''}>SP</option>
+                            <option value="GK" ${productData.deliveryType === 'GK' ? 'selected' : ''}>GK</option>
+                        </select>
+                        <input type="number" class="delivery-price" min="0" step="0.01" value="${productData.deliveryPrice || 0}" placeholder="Delivery Price">
+                    </div>
+                    <div class="product-line">
+                        <input type="text" class="delivery-reason" value="${productData.deliveryReason || ''}" placeholder="Delivery price reason (optional)">
+                        <select class="product-extra-type short-input">
+                            <option value="+" ${productData.extra >= 0 ? 'selected' : ''}>+</option>
+                            <option value="-" ${productData.extra < 0 ? 'selected' : ''}>-</option>
+                        </select>
+                        <input type="number" class="product-extra" min="0" step="0.01" value="${productData.extra ? Math.abs(productData.extra) : 0}" placeholder="Extra Amount">
+                    </div>
+                    <div class="product-line">
+                        <input type="text" class="extra-reason" value="${productData.extraReason || ''}" placeholder="Extra amount reason (optional)">
+                        <div class="product-total" style="font-weight: bold; padding: 8px;">₹0.00</div>
+                        <button type="button" class="remove-product-btn">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="loss-indicator" style="display: none;"></div>
+                `;
+                productsContainer.appendChild(row);
+
+                // Datalist for Product IDs
+                updateProductIdsDatalist();
+
+                // Listeners
+                const productIdInput = row.querySelector('.product-id-input');
+                const productNameInput = row.querySelector('.product-name');
+                const productPriceInput = row.querySelector('.product-price');
+                const productQtyInput = row.querySelector('.product-qty');
+                const deliveryTypeSelect = row.querySelector('.delivery-type-select');
+                const deliveryPriceInput = row.querySelector('.delivery-price');
+                const deliveryReasonInput = row.querySelector('.delivery-reason');
+                const productExtraInput = row.querySelector('.product-extra');
+                const productExtraType = row.querySelector('.product-extra-type');
+                const extraReasonInput = row.querySelector('.extra-reason');
+                const removeBtn = row.querySelector('.remove-product-btn');
+                const lossIndicator = row.querySelector('.loss-indicator');
+
+                // Set initial delivery price based on type
+                function updateDeliveryPrice() {
+                    const type = deliveryTypeSelect.value;
+                    if (type === 'SP' || type === 'GK') {
+                        deliveryPriceInput.value = 0;
+                        deliveryPriceInput.readOnly = true;
+                    } else {
+                        deliveryPriceInput.readOnly = false;
+                        if (!productData.deliveryPrice) {
+                            deliveryPriceInput.value = 60; // Default RK delivery price
+                        }
+                    }
+                }
+
+                deliveryTypeSelect.addEventListener('change', function() {
+                    updateDeliveryPrice();
                     calculateRowTotal(row);
                     updateOrderSummary();
-                }
-            });
-        });
+                });
 
-        removeBtn.addEventListener('click', function() {
-            row.remove();
-            updateOrderSummary();
-        });
+                // Initialize delivery price
+                updateDeliveryPrice();
 
-        if (productData.id) productIdInput.dispatchEvent(new Event('change'));
-        if (productData.extraReason) extraReasonInput.value = productData.extraReason;
-        
-        calculateRowTotal(row);
-        return row;
-    }
+                productIdInput.addEventListener('change', function() {
+                    const product = getProductById(this.value);
+                    if (product) {
+                        productNameInput.value = product.name;
+                        productPriceInput.value = product.sellingPrice;
+                        calculateRowTotal(row);
+                        updateOrderSummary();
+                    } else {
+                        productNameInput.value = '';
+                        productPriceInput.value = '';
+                    }
+                });
 
-    // Product Datalist
-    function updateProductIdsDatalist() {
-        const allProducts = JSON.parse(localStorage.getItem('products')) || [];
-        let datalist = document.getElementById('productIds');
-        if (!datalist) {
-            datalist = document.createElement('datalist');
-            datalist.id = 'productIds';
-            document.body.appendChild(datalist);
-        }
-        datalist.innerHTML = '';
-        allProducts.forEach(product => {
-            const option = document.createElement('option');
-            option.value = product.code;
-            option.textContent = `${product.name} (${product.code})`;
-            datalist.appendChild(option);
-        });
-    }
+                // Check for loss when price changes
+                productPriceInput.addEventListener('input', function() {
+                    const product = getProductById(productIdInput.value);
+                    if (product) {
+                        const currentPrice = parseFloat(this.value) || 0;
+                        const sellingPrice = parseFloat(product.sellingPrice) || 0;
+                        if (currentPrice < sellingPrice) {
+                            const loss = (sellingPrice - currentPrice) * (parseInt(productQtyInput.value) || 1);
+                            lossIndicator.textContent = `Loss: ₹${loss.toFixed(2)}`;
+                            lossIndicator.style.display = 'block';
+                        } else {
+                            lossIndicator.style.display = 'none';
+                        }
+                    }
+                    calculateRowTotal(row);
+                    updateOrderSummary();
+                });
 
-    // Product Lookup
-    function getProductById(id) {
-        const allProducts = JSON.parse(localStorage.getItem('products')) || [];
-        return allProducts.find(p => p.code === id);
-    }
+                [productQtyInput, deliveryPriceInput, productExtraInput, productExtraType, extraReasonInput, deliveryReasonInput].forEach(input => {
+                    input.addEventListener('input', function() {
+                        if (input === productQtyInput && productPriceInput.value) {
+                            productPriceInput.dispatchEvent(new Event('input'));
+                        } else {
+                            calculateRowTotal(row);
+                            updateOrderSummary();
+                        }
+                    });
+                });
 
-    // Calculate Product Row Total
-    function calculateRowTotal(row) {
-        const price = parseFloat(row.querySelector('.product-price').value) || 0;
-        const qty = parseInt(row.querySelector('.product-qty').value) || 0;
-        const extra = parseFloat(row.querySelector('.product-extra').value) || 0;
-        const extraType = row.querySelector('.product-extra-type').value;
-        const extraApplied = extraType === '+' ? extra : -extra;
-        const total = (price * qty) + extraApplied;
-        row.querySelector('.product-total').textContent = `₹${total.toFixed(2)}`;
-        return total;
-    }
+                removeBtn.addEventListener('click', function() {
+                    row.remove();
+                    updateOrderSummary();
+                });
 
-    // Add Coupon
-    addCouponBtn.addEventListener('click', function() {
-        const code = couponCode.value.trim();
-        const value = parseFloat(couponValue.value) || 0;
-        const type = couponType.value;
-        const productId = couponProductId.value.trim();
-        const nameVal = couponName.value.trim();
-        if (value <= 0) {
-            showNotification('Please enter a valid coupon value', false);
-            return;
-        }
-        let couponUsed = false;
-        if (currentCustomer) {
-            const orders = JSON.parse(localStorage.getItem('orders')) || [];
-            const used = orders.some(o => o.customer.mobile === currentCustomer.mobile && o.coupons && o.coupons.some(c => c.id === code));
-            couponUsed = used;
-        }
-        couponUsedNotice.style.display = couponUsed ? "block" : "none";
-        couponUsedNotice.textContent = couponUsed ? "This coupon has already been used by this customer!" : "";
-        const coupon = {
-            id: code || `CPN-${Math.random().toString(36).substr(2, 8)}`,
-            name: nameVal || code || 'Manual Discount',
-            value: value,
-            type: type,
-            productId: productId
-        };
-        appliedCouponsList.push(coupon);
-        renderAppliedCoupons();
-        updateOrderSummary();
-        couponCode.value = '';
-        couponValue.value = '';
-        couponProductId.value = '';
-        couponName.value = '';
-        showNotification('Coupon added successfully!');
-    });
-
-    // Coupon dropdown change
-    couponDropdown.addEventListener('change', function() {
-        if (this.value && currentCustomer) {
-            const coupon = currentCustomer.coupons.find(c => c.id === this.value);
-            if (coupon) {
-                couponCode.value = coupon.id;
-                couponValue.value = coupon.value;
-                couponType.value = coupon.type;
-                couponProductId.value = '';
-                couponName.value = coupon.name || coupon.id;
+                if (productData.id) productIdInput.dispatchEvent(new Event('change'));
+                if (productData.extraReason) extraReasonInput.value = productData.extraReason;
+                
+                calculateRowTotal(row);
+                return row;
             }
-        }
-    });
 
-    // Applied coupons
-    function renderAppliedCoupons() {
-        appliedCoupons.innerHTML = '';
-        if (appliedCouponsList.length === 0) return;
-        appliedCouponsList.forEach((coupon, index) => {
-            const item = document.createElement('div');
-            item.className = 'coupon-item';
-            item.innerHTML = `
-                <div class="coupon-header">
-                    <span class="coupon-name">${coupon.name}</span>
-                    <span class="coupon-value">${coupon.value}${coupon.type === 'percent' ? '%' : '₹'}</span>
-                </div>
-                ${coupon.productId ? `<div>Applied to: ${coupon.productId}</div>` : ''}
-                <button class="remove-coupon" data-index="${index}">
-                    <i class="fas fa-times"></i> Remove
-                </button>
-            `;
-            appliedCoupons.appendChild(item);
-        });
-        document.querySelectorAll('.remove-coupon').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const idx = parseInt(this.dataset.index);
-                appliedCouponsList.splice(idx, 1);
+            // Product Datalist
+            function updateProductIdsDatalist() {
+                const allProducts = JSON.parse(localStorage.getItem('products')) || [];
+                let datalist = document.getElementById('productIds');
+                if (!datalist) {
+                    datalist = document.createElement('datalist');
+                    datalist.id = 'productIds';
+                    document.body.appendChild(datalist);
+                }
+                datalist.innerHTML = '';
+                allProducts.forEach(product => {
+                    const option = document.createElement('option');
+                    option.value = product.code;
+                    option.textContent = `${product.name} (${product.code})`;
+                    datalist.appendChild(option);
+                });
+            }
+
+            // Product Lookup
+            function getProductById(id) {
+                const allProducts = JSON.parse(localStorage.getItem('products')) || [];
+                return allProducts.find(p => p.code === id);
+            }
+
+            // Calculate Product Row Total
+            function calculateRowTotal(row) {
+                const price = parseFloat(row.querySelector('.product-price').value) || 0;
+                const qty = parseInt(row.querySelector('.product-qty').value) || 0;
+                const deliveryPrice = parseFloat(row.querySelector('.delivery-price').value) || 0;
+                const extra = parseFloat(row.querySelector('.product-extra').value) || 0;
+                const extraType = row.querySelector('.product-extra-type').value;
+                const extraApplied = extraType === '+' ? extra : -extra;
+                const total = (price * qty) + (deliveryPrice * qty) + extraApplied;
+                row.querySelector('.product-total').textContent = `₹${total.toFixed(2)}`;
+                return total;
+            }
+
+            // Add Coupon
+            addCouponBtn.addEventListener('click', function() {
+                const code = couponCode.value.trim();
+                const value = parseFloat(couponValue.value) || 0;
+                const type = couponType.value;
+                const productId = couponProductId.value.trim();
+                const nameVal = couponName.value.trim();
+                if (value <= 0) {
+                    showNotification('Please enter a valid coupon value', false);
+                    return;
+                }
+                let couponUsed = false;
+                if (currentCustomer) {
+                    const orders = JSON.parse(localStorage.getItem('orders')) || [];
+                    const used = orders.some(o => o.customer.mobile === currentCustomer.mobile && o.coupons && o.coupons.some(c => c.id === code));
+                    couponUsed = used;
+                }
+                couponUsedNotice.style.display = couponUsed ? "block" : "none";
+                couponUsedNotice.textContent = couponUsed ? "This coupon has already been used by this customer!" : "";
+                const coupon = {
+                    id: code || `CPN-${Math.random().toString(36).substr(2, 8)}`,
+                    name: nameVal || code || 'Manual Discount',
+                    value: value,
+                    type: type,
+                    productId: productId
+                };
+                appliedCouponsList.push(coupon);
                 renderAppliedCoupons();
                 updateOrderSummary();
+                couponCode.value = '';
+                couponValue.value = '';
+                couponProductId.value = '';
+                couponName.value = '';
+                showNotification('Coupon added successfully!');
             });
-        });
-    }
 
-    // Order Summary
-    function updateOrderSummary() {
-        let subtotal = 0;
-        const rows = productsContainer.querySelectorAll('.product-row');
-        rows.forEach(row => {
-            subtotal += calculateRowTotal(row);
-        });
-
-        let discount = 0;
-        let couponNameUsed = '';
-        appliedCouponsList.forEach(coupon => {
-            if (coupon.productId) {
-                const row = Array.from(rows).find(r => {
-                    const productId = r.querySelector('.product-id-input').value;
-                    return productId === coupon.productId;
-                });
-                if (row) {
-                    const price = parseFloat(row.querySelector('.product-price').value) || 0;
-                    const qty = parseInt(row.querySelector('.product-qty').value) || 0;
-                    let discountAmount = 0;
-                    if (coupon.type === 'percent') {
-                        discountAmount = (price * qty) * (coupon.value / 100);
-                    } else {
-                        discountAmount = coupon.value;
+            // Coupon dropdown change
+            couponDropdown.addEventListener('change', function() {
+                if (this.value && currentCustomer) {
+                    const coupon = currentCustomer.coupons.find(c => c.id === this.value);
+                    if (coupon) {
+                        couponCode.value = coupon.id;
+                        couponValue.value = coupon.value;
+                        couponType.value = coupon.type;
+                        couponProductId.value = '';
+                        couponName.value = coupon.name || coupon.id;
                     }
-                    discount += discountAmount;
                 }
-            } else {
-                if (coupon.type === 'percent') {
-                    discount += subtotal * (coupon.value / 100);
-                } else {
-                    discount += coupon.value;
-                }
+            });
+
+            // Applied coupons
+            function renderAppliedCoupons() {
+                appliedCoupons.innerHTML = '';
+                if (appliedCouponsList.length === 0) return;
+                appliedCouponsList.forEach((coupon, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'coupon-item';
+                    item.innerHTML = `
+                        <div class="coupon-header">
+                            <span class="coupon-name">${coupon.name}</span>
+                            <span class="coupon-value">${coupon.value}${coupon.type === 'percent' ? '%' : '₹'}</span>
+                        </div>
+                        ${coupon.productId ? `<div>Applied to: ${coupon.productId}</div>` : ''}
+                        <button class="remove-coupon" data-index="${index}">
+                            <i class="fas fa-times"></i> Remove
+                        </button>
+                    `;
+                    appliedCoupons.appendChild(item);
+                });
+                document.querySelectorAll('.remove-coupon').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const idx = parseInt(this.dataset.index);
+                        appliedCouponsList.splice(idx, 1);
+                        renderAppliedCoupons();
+                        updateOrderSummary();
+                    });
+                });
             }
-            couponNameUsed = coupon.name || coupon.id;
-        });
 
-        let walletUsed = 0;
-        if (applyWallet.checked) {
-            walletUsed = subtotal * 0.1;
-            const walletBalance = parseFloat(customerWallet.value) || 0;
-            if (walletUsed > walletBalance) walletUsed = walletBalance;
-        }
-
-        let orderExtra = parseFloat(orderExtraAmount.value) || 0;
-        let orderExtraApplied = orderExtraType.value === '+' ? orderExtra : -orderExtra;
-
-        let deliveryCharge = parseFloat(deliveryAmountInput.value) || 0;
-
-        subtotalAmount.textContent = `₹${subtotal.toFixed(2)}`;
-        deliveryAmount.textContent = `₹${deliveryCharge.toFixed(2)}`;
-
-        if (discount > 0) {
-            discountRow.style.display = 'flex';
-            discountAmount.textContent = `-₹${discount.toFixed(2)}`;
-        } else {
-            discountRow.style.display = 'none';
-        }
-        if (appliedCouponsList.length > 0 && couponNameUsed) {
-            couponNameRow.style.display = 'flex';
-            couponNameDisplay.textContent = couponNameUsed;
-        } else {
-            couponNameRow.style.display = 'none';
-        }
-        if (walletUsed > 0) {
-            walletRow.style.display = 'flex';
-            walletAmount.textContent = `-₹${walletUsed.toFixed(2)}`;
-        } else {
-            walletRow.style.display = 'none';
-        }
-        const total = subtotal + deliveryCharge + orderExtraApplied - discount - walletUsed;
-        totalAmount.textContent = `₹${total.toFixed(2)}`;
-    }
-
-    applyWallet.addEventListener('change', updateOrderSummary);
-    deliveryAmountInput.addEventListener('input', updateOrderSummary);
-    orderExtraAmount.addEventListener('input', updateOrderSummary);
-    orderExtraType.addEventListener('change', updateOrderSummary);
-
-    // Rebuild Product Codes from all orders
-    function rebuildProductCodes() {
-        const orders = JSON.parse(localStorage.getItem('orders')) || [];
-        const allProducts = JSON.parse(localStorage.getItem('products')) || [];
-        const pcodes = {};
-        orders.forEach(order => {
-            order.products.forEach(product => {
-                if (!pcodes[product.id]) {
-                    pcodes[product.id] = {
-                        name: product.name,
-                        totalSales: 0,
-                        totalRevenue: 0,
-                        totalLoss: 0,
-                        orders: [],
-                        coupons: []
-                    };
-                }
-                const originalProduct = allProducts.find(p => p.code === product.id);
-                let loss = 0;
-                if (originalProduct) {
-                    const sellingPrice = parseFloat(originalProduct.sellingPrice) || 0;
-                    const actualPrice = parseFloat(product.price) || 0;
-                    if (actualPrice < sellingPrice) {
-                        loss = (sellingPrice - actualPrice) * product.qty;
-                    }
-                }
-                pcodes[product.id].totalSales += product.qty;
-                pcodes[product.id].totalRevenue += product.total;
-                pcodes[product.id].totalLoss += loss;
-                pcodes[product.id].orders.push({
-                    orderId: order.id,
-                    date: order.date,
-                    qty: product.qty,
-                    price: product.price,
-                    total: product.total,
-                    extra: product.extra || 0,
-                    extraReason: product.extraReason || '',
-                    loss: loss,
-                    customer: order.customer.name,
-                    mobile: order.customer.mobile
+            // Order Summary
+            function updateOrderSummary() {
+                let subtotal = 0;
+                const rows = productsContainer.querySelectorAll('.product-row');
+                rows.forEach(row => {
+                    subtotal += calculateRowTotal(row);
                 });
-            });
-            if (order.coupons) {
-                order.coupons.forEach(coupon => {
-                    if (coupon.productId && pcodes[coupon.productId]) {
-                        pcodes[coupon.productId].coupons.push({
+
+                let discount = 0;
+                let couponNameUsed = '';
+                appliedCouponsList.forEach(coupon => {
+                    if (coupon.productId) {
+                        const row = Array.from(rows).find(r => {
+                            const productId = r.querySelector('.product-id-input').value;
+                            return productId === coupon.productId;
+                        });
+                        if (row) {
+                            const price = parseFloat(row.querySelector('.product-price').value) || 0;
+                            const qty = parseInt(row.querySelector('.product-qty').value) || 0;
+                            let discountAmount = 0;
+                            if (coupon.type === 'percent') {
+                                discountAmount = (price * qty) * (coupon.value / 100);
+                            } else {
+                                discountAmount = coupon.value;
+                            }
+                            discount += discountAmount;
+                        }
+                    } else {
+                        if (coupon.type === 'percent') {
+                            discount += subtotal * (coupon.value / 100);
+                        } else {
+                            discount += coupon.value;
+                        }
+                    }
+                    couponNameUsed = coupon.name || coupon.id;
+                });
+
+                let walletUsed = 0;
+                if (applyWallet.checked) {
+                    walletUsed = subtotal * 0.1;
+                    const walletBalance = parseFloat(customerWallet.value) || 0;
+                    if (walletUsed > walletBalance) walletUsed = walletBalance;
+                }
+
+                let orderExtra = parseFloat(orderExtraAmount.value) || 0;
+                let orderExtraApplied = orderExtraType.value === '+' ? orderExtra : -orderExtra;
+
+                let deliveryCharge = parseFloat(deliveryAmountInput.value) || 0;
+
+                subtotalAmount.textContent = `₹${subtotal.toFixed(2)}`;
+                deliveryAmount.textContent = `₹${deliveryCharge.toFixed(2)}`;
+
+                if (discount > 0) {
+                    discountRow.style.display = 'flex';
+                    discountAmount.textContent = `-₹${discount.toFixed(2)}`;
+                } else {
+                    discountRow.style.display = 'none';
+                }
+                if (appliedCouponsList.length > 0 && couponNameUsed) {
+                    couponNameRow.style.display = 'flex';
+                    couponNameDisplay.textContent = couponNameUsed;
+                } else {
+                    couponNameRow.style.display = 'none';
+                }
+                if (walletUsed > 0) {
+                    walletRow.style.display = 'flex';
+                    walletAmount.textContent = `-₹${walletUsed.toFixed(2)}`;
+                } else {
+                    walletRow.style.display = 'none';
+                }
+                const total = subtotal + deliveryCharge + orderExtraApplied - discount - walletUsed;
+                totalAmount.textContent = `₹${total.toFixed(2)}`;
+            }
+
+            applyWallet.addEventListener('change', updateOrderSummary);
+            deliveryAmountInput.addEventListener('input', updateOrderSummary);
+            orderExtraAmount.addEventListener('input', updateOrderSummary);
+            orderExtraType.addEventListener('change', updateOrderSummary);
+
+            // Rebuild Product Codes from all orders and update products
+            function rebuildProductCodes() {
+                const orders = JSON.parse(localStorage.getItem('orders')) || [];
+                const allProducts = JSON.parse(localStorage.getItem('products')) || [];
+                const pcodes = JSON.parse(localStorage.getItem('pcodes')) || {};
+
+                // First, update product sales and extra amounts from orders
+                orders.forEach(order => {
+                    order.products.forEach(product => {
+                        if (!pcodes[product.id]) {
+                            pcodes[product.id] = {
+                                name: product.name,
+                                totalSales: 0,
+                                totalRevenue: 0,
+                                totalLoss: 0,
+                                orders: [],
+                                coupons: [],
+                                extraAmounts: []
+                            };
+                        }
+
+                        // Calculate loss if needed
+                        const originalProduct = allProducts.find(p => p.code === product.id);
+                        let loss = 0;
+                        if (originalProduct) {
+                            const sellingPrice = parseFloat(originalProduct.sellingPrice) || 0;
+                            const actualPrice = parseFloat(product.price) || 0;
+                            if (actualPrice < sellingPrice) {
+                                loss = (sellingPrice - actualPrice) * product.qty;
+                            }
+                        }
+
+                        // Update sales data
+                        pcodes[product.id].totalSales += product.qty;
+                        pcodes[product.id].totalRevenue += product.total;
+                        pcodes[product.id].totalLoss += loss;
+
+                        // Add order details
+                        pcodes[product.id].orders.push({
                             orderId: order.id,
                             date: order.date,
-                            couponName: coupon.name,
-                            couponValue: coupon.value,
-                            couponType: coupon.type,
+                            qty: product.qty,
+                            price: product.price,
+                            total: product.total,
+                            extra: product.extra || 0,
+                            extraReason: product.extraReason || '',
+                            loss: loss,
                             customer: order.customer.name,
-                            mobile: order.customer.mobile
+                            mobile: order.customer.mobile,
+                            deliveryType: product.deliveryType || 'RK',
+                            deliveryPrice: product.deliveryPrice || 0,
+                            deliveryReason: product.deliveryReason || ''
+                        });
+
+                        // Add order-based extra amount if present
+                        if (product.extra && product.extra !== 0) {
+                            pcodes[product.id].extraAmounts.push({
+                                type: 'order',
+                                orderId: order.id,
+                                date: order.date,
+                                amount: product.extra,
+                                reason: product.extraReason || 'Order extra',
+                                customer: order.customer.name,
+                                mobile: order.customer.mobile
+                            });
+                        }
+                    });
+
+                    // Handle coupons
+                    if (order.coupons) {
+                        order.coupons.forEach(coupon => {
+                            if (coupon.productId && pcodes[coupon.productId]) {
+                                pcodes[coupon.productId].coupons.push({
+                                    orderId: order.id,
+                                    date: order.date,
+                                    couponName: coupon.name,
+                                    couponValue: coupon.value,
+                                    couponType: coupon.type,
+                                    customer: order.customer.name,
+                                    mobile: order.customer.mobile
+                                });
+                            }
                         });
                     }
                 });
-            }
-        });
-        localStorage.setItem('pcodes', JSON.stringify(pcodes));
-    }
 
-    // Save Order
-    orderForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        if (!customerName.value.trim()) {
-            showNotification('Please enter customer name', false);
-            return;
-        }
-        if (!customerAddress.value.trim()) {
-            showNotification('Please enter customer address', false);
-            return;
-        }
-        const productRows = productsContainer.querySelectorAll('.product-row');
-        if (productRows.length === 0) {
-            showNotification('Please add at least one product', false);
-            return;
-        }
-        const order = {
-            id: editingOrderId || currentOrderId,
-            date: new Date().toISOString(),
-            customer: {
-                mobile: customerMobile.value.trim(),
-                insta: customerInsta.value.trim(),
-                name: customerName.value.trim(),
-                email: customerEmail.value.trim(),
-                address: customerAddress.value.trim()
-            },
-            products: [],
-            subtotal: parseFloat(subtotalAmount.textContent.replace('₹', '')),
-            delivery: parseFloat(deliveryAmount.textContent.replace('₹', '')),
-            discount: discountRow.style.display === 'none' ? 0 : parseFloat(discountAmount.textContent.replace('-₹', '')),
-            couponName: couponNameDisplay.textContent,
-            walletUsed: walletRow.style.display === 'none' ? 0 : parseFloat(walletAmount.textContent.replace('-₹', '')),
-            orderExtra: parseFloat(orderExtraAmount.value) || 0,
-            orderExtraType: orderExtraType.value,
-            total: parseFloat(totalAmount.textContent.replace('₹', '')),
-            status: 'Making',
-            coupons: [...appliedCouponsList]
-        };
-        productRows.forEach(row => {
-            const productId = row.querySelector('.product-id-input').value;
-            const productName = row.querySelector('.product-name').value;
-            const productPrice = parseFloat(row.querySelector('.product-price').value) || 0;
-            const qty = parseInt(row.querySelector('.product-qty').value) || 0;
-            const extra = parseFloat(row.querySelector('.product-extra').value) || 0;
-            const extraType = row.querySelector('.product-extra-type').value;
-            const extraReason = row.querySelector('.extra-reason').value.trim();
-            const extraApplied = extraType === '+' ? extra : -extra;
-            if (productId && qty > 0) {
-                order.products.push({
-                    id: productId,
-                    name: productName,
-                    price: productPrice,
-                    qty: qty,
-                    extra: extraApplied,
-                    extraReason: extraReason,
-                    total: (productPrice * qty) + extraApplied
+                // Second, update the main products data with the aggregated sales
+                const updatedProducts = allProducts.map(product => {
+                    if (pcodes[product.code]) {
+                        return {
+                            ...product,
+                            totalSales: pcodes[product.code].totalSales,
+                            totalProfits: (product.marginAmount * pcodes[product.code].totalSales) + 
+                                          (product.extraAmounts ? product.extraAmounts.reduce((total, item) => {
+                                              return item.type === 'credit' ? total + item.amount : total - item.amount;
+                                          }, 0) : 0)
+                        };
+                    }
+                    return product;
+                });
+
+                localStorage.setItem('products', JSON.stringify(updatedProducts));
+                localStorage.setItem('pcodes', JSON.stringify(pcodes));
+            }
+
+            // Save Order
+            orderForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                if (!customerName.value.trim()) {
+                    showNotification('Please enter customer name', false);
+                    return;
+                }
+                if (!customerAddress.value.trim()) {
+                    showNotification('Please enter customer address', false);
+                    return;
+                }
+                const productRows = productsContainer.querySelectorAll('.product-row');
+                if (productRows.length === 0) {
+                    showNotification('Please add at least one product', false);
+                    return;
+                }
+                const order = {
+                    id: editingOrderId || currentOrderId,
+                    date: new Date().toISOString(),
+                    customer: {
+                        mobile: customerMobile.value.trim(),
+                        insta: customerInsta.value.trim(),
+                        name: customerName.value.trim(),
+                        email: customerEmail.value.trim(),
+                        address: customerAddress.value.trim()
+                    },
+                    products: [],
+                    subtotal: parseFloat(subtotalAmount.textContent.replace('₹', '')),
+                    delivery: parseFloat(deliveryAmount.textContent.replace('₹', '')),
+                    discount: discountRow.style.display === 'none' ? 0 : parseFloat(discountAmount.textContent.replace('-₹', '')),
+                    couponName: couponNameDisplay.textContent,
+                    walletUsed: walletRow.style.display === 'none' ? 0 : parseFloat(walletAmount.textContent.replace('-₹', '')),
+                    orderExtra: parseFloat(orderExtraAmount.value) || 0,
+                    orderExtraType: orderExtraType.value,
+                    total: parseFloat(totalAmount.textContent.replace('₹', '')),
+                    status: 'Making',
+                    coupons: [...appliedCouponsList]
+                };
+                productRows.forEach(row => {
+                    const productId = row.querySelector('.product-id-input').value;
+                    const productName = row.querySelector('.product-name').value;
+                    const productPrice = parseFloat(row.querySelector('.product-price').value) || 0;
+                    const qty = parseInt(row.querySelector('.product-qty').value) || 0;
+                    const deliveryType = row.querySelector('.delivery-type-select').value;
+                    const deliveryPrice = parseFloat(row.querySelector('.delivery-price').value) || 0;
+                    const deliveryReason = row.querySelector('.delivery-reason').value.trim();
+                    const extra = parseFloat(row.querySelector('.product-extra').value) || 0;
+                    const extraType = row.querySelector('.product-extra-type').value;
+                    const extraReason = row.querySelector('.extra-reason').value.trim();
+                    const extraApplied = extraType === '+' ? extra : -extra;
+                    if (productId && qty > 0) {
+                        order.products.push({
+                            id: productId,
+                            name: productName,
+                            price: productPrice,
+                            qty: qty,
+                            deliveryType: deliveryType,
+                            deliveryPrice: deliveryPrice,
+                            deliveryReason: deliveryReason,
+                            extra: extraApplied,
+                            extraReason: extraReason,
+                            total: (productPrice * qty) + (deliveryPrice * qty) + extraApplied
+                        });
+                    }
+                });
+                let orders = JSON.parse(localStorage.getItem('orders')) || [];
+                if (editingOrderId) {
+                    orders = orders.map(o => (o.id === editingOrderId ? order : o));
+                } else {
+                    orders.push(order);
+                }
+                localStorage.setItem('orders', JSON.stringify(orders));
+                updateCustomerData(order);
+                rebuildProductCodes();
+                showNotification(editingOrderId ? 'Order updated successfully!' : 'Order created successfully!');
+                resetForm();
+                orderFormContainer.classList.remove('show');
+                loadOrders();
+            });
+
+            // Update customer data
+            function updateCustomerData(order) {
+                const customers = JSON.parse(localStorage.getItem('customers')) || [];
+                const mobile = order.customer.mobile;
+                const insta = order.customer.insta;
+                let customerIndex = customers.findIndex(c =>
+                    (mobile && c.mobile === mobile) ||
+                    (insta && c.insta && c.insta.toLowerCase() === insta.toLowerCase())
+                );
+                if (customerIndex === -1) {
+                    customers.push({
+                        mobile: mobile,
+                        insta: insta,
+                        name: order.customer.name,
+                        email: order.customer.email,
+                        addresses: [order.customer.address],
+                        walletBalance: 0,
+                        orders: [order.id]
+                    });
+                } else {
+                    if (!customers[customerIndex].orders) {
+                        customers[customerIndex].orders = [];
+                    }
+                    if (!customers[customerIndex].orders.includes(order.id)) {
+                        customers[customerIndex].orders.push(order.id);
+                    }
+                    if (!customers[customerIndex].addresses.includes(order.customer.address)) {
+                        customers[customerIndex].addresses.push(order.customer.address);
+                    }
+                    if (order.walletUsed > 0) {
+                        customers[customerIndex].walletBalance =
+                            (customers[customerIndex].walletBalance || 0) - order.walletUsed;
+                    }
+                }
+                localStorage.setItem('customers', JSON.stringify(customers));
+            }
+
+            // Reset Form
+            function resetForm() {
+                orderForm.reset();
+                customerDetails.classList.add('hidden');
+                productsContainer.innerHTML = '';
+                appliedCoupons.innerHTML = '';
+                appliedCouponsList = [];
+                editingOrderId = null;
+                generateOrderId();
+                updateOrderSummary();
+                couponUsedNotice.style.display = "none";
+                updateCustomerDatalists();
+            }
+
+            // Load Orders
+            function loadOrders() {
+                const orders = JSON.parse(localStorage.getItem('orders')) || [];
+                orderTableBody.innerHTML = '';
+                if (orders.length === 0) {
+                    noOrdersMessage.style.display = 'block';
+                    return;
+                }
+                noOrdersMessage.style.display = 'none';
+                orders.sort((a, b) => new Date(b.date) - new Date(a.date));
+                orders.forEach(order => {
+                    const row = document.createElement('tr');
+                    const date = new Date(order.date);
+                    const formattedDate = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+                    let productsDisplay = '';
+                    order.products.forEach(p => {
+                        productsDisplay += `<div>${p.name} (${p.qty} x ₹${p.price.toFixed(2)}`;
+                        if (p.deliveryType) productsDisplay += `, ${p.deliveryType}`;
+                        if (p.extra) productsDisplay += `, Extra: ${p.extra >= 0 ? '+' : ''}${p.extra}`;
+                        if (p.extraReason) productsDisplay += ` - ${p.extraReason}`;
+                        productsDisplay += `)</div>`;
+                    });
+                    row.innerHTML = `
+                        <td>${order.id}</td>
+                        <td>${formattedDate}</td>
+                        <td>${order.customer.name}</td>
+                        <td>${order.customer.mobile || ''}</td>
+                        <td>${productsDisplay}</td>
+                        <td>₹${order.subtotal.toFixed(2)}</td>
+                        <td>₹${order.delivery.toFixed(2)}</td>
+                        <td>₹${order.discount.toFixed(2)}</td>
+                        <td>${order.couponName || '-'}</td>
+                        <td>₹${order.walletUsed.toFixed(2)}</td>
+                        <td>₹${order.total.toFixed(2)}</td>
+                        <td>
+                            <select onchange="updateOrderStatus('${order.id}', this.value)">
+                                <option value="Making" ${order.status === 'Making' ? 'selected' : ''}>Making</option>
+                                <option value="Dispatched" ${order.status === 'Dispatched' ? 'selected' : ''}>Dispatched</option>
+                                <option value="Delivered" ${order.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
+                            </select>
+                        </td>
+                        <td>
+                            <i class="fas fa-edit edit-icon action-icon" title="Edit Order" onclick="editOrder('${order.id}')"></i>
+                            <i class="fas fa-trash delete-icon action-icon" title="Delete Order" onclick="deleteOrder('${order.id}')"></i>
+                        </td>
+                    `;
+                    orderTableBody.appendChild(row);
                 });
             }
-        });
-        let orders = JSON.parse(localStorage.getItem('orders')) || [];
-        if (editingOrderId) {
-            orders = orders.map(o => (o.id === editingOrderId ? order : o));
-        } else {
-            orders.push(order);
-        }
-        localStorage.setItem('orders', JSON.stringify(orders));
-        updateCustomerData(order);
-        rebuildProductCodes();
-        showNotification(editingOrderId ? 'Order updated successfully!' : 'Order created successfully!');
-        resetForm();
-        orderFormContainer.classList.remove('show');
-        loadOrders();
-    });
 
-    // Update customer data
-    function updateCustomerData(order) {
-        const customers = JSON.parse(localStorage.getItem('customers')) || [];
-        const mobile = order.customer.mobile;
-        const insta = order.customer.insta;
-        let customerIndex = customers.findIndex(c =>
-            (mobile && c.mobile === mobile) ||
-            (insta && c.insta && c.insta.toLowerCase() === insta.toLowerCase())
-        );
-        if (customerIndex === -1) {
-            customers.push({
-                mobile: mobile,
-                insta: insta,
-                name: order.customer.name,
-                email: order.customer.email,
-                addresses: [order.customer.address],
-                walletBalance: 0,
-                orders: [order.id]
+            // Global functions
+            window.editOrder = function(orderId) {
+                const orders = JSON.parse(localStorage.getItem('orders')) || [];
+                const order = orders.find(o => o.id === orderId);
+                if (!order) return;
+                editingOrderId = orderId;
+                orderFormContainer.classList.add('show');
+                orderIdDisplay.textContent = order.id;
+                customerMobile.value = order.customer.mobile || '';
+                customerInsta.value = order.customer.insta || '';
+                autoFillCustomer();
+                customerName.value = order.customer.name;
+                customerEmail.value = order.customer.email;
+                customerAddress.value = order.customer.address;
+                customerWallet.value = (currentCustomer && currentCustomer.walletBalance) || 0;
+                productsContainer.innerHTML = '';
+                order.products.forEach(p => addProductRow({
+                    id: p.id,
+                    name: p.name,
+                    price: p.price,
+                    qty: p.qty,
+                    deliveryType: p.deliveryType,
+                    deliveryPrice: p.deliveryPrice,
+                    deliveryReason: p.deliveryReason,
+                    extra: p.extra,
+                    extraReason: p.extraReason
+                }));
+                appliedCouponsList = order.coupons || [];
+                renderAppliedCoupons();
+                couponNameDisplay.textContent = order.couponName || '';
+                orderExtraAmount.value = order.orderExtra || 0;
+                orderExtraType.value = order.orderExtraType || '+';
+                deliveryAmountInput.value = order.delivery || 0;
+                updateOrderSummary();
+            };
+
+            window.deleteOrder = function(orderId) {
+                if (confirm('Are you sure you want to delete this order?')) {
+                    let orders = JSON.parse(localStorage.getItem('orders')) || [];
+                    orders = orders.filter(o => o.id !== orderId);
+                    localStorage.setItem('orders', JSON.stringify(orders));
+                    rebuildProductCodes();
+                    loadOrders();
+                    showNotification('Order deleted successfully!');
+                }
+            };
+
+            window.updateOrderStatus = function(orderId, status) {
+                let orders = JSON.parse(localStorage.getItem('orders')) || [];
+                orders = orders.map(o => o.id === orderId ? { ...o, status } : o);
+                localStorage.setItem('orders', JSON.stringify(orders));
+                rebuildProductCodes();
+                loadOrders();
+                showNotification('Order status updated!');
+            };
+
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const rows = orderTableBody.querySelectorAll('tr');
+                let hasResults = false;
+                rows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    if (text.includes(searchTerm)) {
+                        row.style.display = '';
+                        hasResults = true;
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+                searchXBtn.style.display = searchTerm.length ? 'block' : 'none';
+                noOrdersMessage.style.display = hasResults || searchTerm === '' ? 'none' : 'block';
+                noOrdersMessage.textContent = 'No orders found matching your search.';
             });
-        } else {
-            if (!customers[customerIndex].orders) {
-                customers[customerIndex].orders = [];
-            }
-            if (!customers[customerIndex].orders.includes(order.id)) {
-                customers[customerIndex].orders.push(order.id);
-            }
-            if (!customers[customerIndex].addresses.includes(order.customer.address)) {
-                customers[customerIndex].addresses.push(order.customer.address);
-            }
-            if (order.walletUsed > 0) {
-                customers[customerIndex].walletBalance =
-                    (customers[customerIndex].walletBalance || 0) - order.walletUsed;
-            }
-        }
-        localStorage.setItem('customers', JSON.stringify(customers));
-    }
 
-    // Reset Form
-    function resetForm() {
-        orderForm.reset();
-        customerDetails.classList.add('hidden');
-        productsContainer.innerHTML = '';
-        appliedCoupons.innerHTML = '';
-        appliedCouponsList = [];
-        editingOrderId = null;
-        generateOrderId();
-        updateOrderSummary();
-        couponUsedNotice.style.display = "none";
-        updateCustomerDatalists();
-    }
-
-    // Load Orders
-    function loadOrders() {
-        const orders = JSON.parse(localStorage.getItem('orders')) || [];
-        orderTableBody.innerHTML = '';
-        if (orders.length === 0) {
-            noOrdersMessage.style.display = 'block';
-            return;
-        }
-        noOrdersMessage.style.display = 'none';
-        orders.sort((a, b) => new Date(b.date) - new Date(a.date));
-        orders.forEach(order => {
-            const row = document.createElement('tr');
-            const date = new Date(order.date);
-            const formattedDate = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
-            let productsDisplay = '';
-            order.products.forEach(p => {
-                productsDisplay += `<div>${p.name} (${p.qty} x ₹${p.price.toFixed(2)}`;
-                if (p.extra) productsDisplay += `, Extra: ${p.extra >= 0 ? '+' : ''}${p.extra}`;
-                if (p.extraReason) productsDisplay += ` - ${p.extraReason}`;
-                productsDisplay += `)</div>`;
+            searchXBtn.addEventListener('click', function() {
+                searchInput.value = '';
+                searchInput.dispatchEvent(new Event('input'));
+                searchInput.focus();
             });
-            row.innerHTML = `
-                <td>${order.id}</td>
-                <td>${formattedDate}</td>
-                <td>${order.customer.name}</td>
-                <td>${order.customer.mobile || ''}</td>
-                <td>${productsDisplay}</td>
-                <td>₹${order.subtotal.toFixed(2)}</td>
-                <td>₹${order.delivery.toFixed(2)}</td>
-                <td>₹${order.discount.toFixed(2)}</td>
-                <td>${order.couponName || '-'}</td>
-                <td>₹${order.walletUsed.toFixed(2)}</td>
-                <td>₹${order.total.toFixed(2)}</td>
-                <td>
-                    <select onchange="window.updateOrderStatus('${order.id}', this.value)">
-                        <option value="Making" ${order.status === 'Making' ? 'selected' : ''}>Making</option>
-                        <option value="Dispatched" ${order.status === 'Dispatched' ? 'selected' : ''}>Dispatched</option>
-                        <option value="Delivered" ${order.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
-                    </select>
-                </td>
-                <td>
-                    <i class="fas fa-edit edit-icon action-icon" title="Edit Order" onclick="window.editOrder('${order.id}')"></i>
-                    <i class="fas fa-trash delete-icon action-icon" title="Delete Order" onclick="window.deleteOrder('${order.id}')"></i>
-                </td>
-            `;
-            orderTableBody.appendChild(row);
-        });
-    }
 
-    window.editOrder = function(orderId) {
-        const orders = JSON.parse(localStorage.getItem('orders')) || [];
-        const order = orders.find(o => o.id === orderId);
-        if (!order) return;
-        editingOrderId = orderId;
-        orderFormContainer.classList.add('show');
-        orderIdDisplay.textContent = order.id;
-        customerMobile.value = order.customer.mobile || '';
-        customerInsta.value = order.customer.insta || '';
-        autoFillCustomer();
-        customerName.value = order.customer.name;
-        customerEmail.value = order.customer.email;
-        customerAddress.value = order.customer.address;
-        customerWallet.value = (currentCustomer && currentCustomer.walletBalance) || 0;
-        productsContainer.innerHTML = '';
-        order.products.forEach(p => addProductRow({
-            id: p.id,
-            name: p.name,
-            price: p.price,
-            qty: p.qty,
-            extra: p.extra,
-            extraReason: p.extraReason
-        }));
-        appliedCouponsList = order.coupons || [];
-        renderAppliedCoupons();
-        couponNameDisplay.textContent = order.couponName || '';
-        orderExtraAmount.value = order.orderExtra || 0;
-        orderExtraType.value = order.orderExtraType || '+';
-        deliveryAmountInput.value = order.delivery || 0;
-        updateOrderSummary();
-    };
+            showFormBtn.addEventListener('click', function() {
+                orderFormContainer.classList.add('show');
+                generateOrderId();
+                resetForm();
+            });
 
-    window.deleteOrder = function(orderId) {
-        if (confirm('Are you sure you want to delete this order?')) {
-            let orders = JSON.parse(localStorage.getItem('orders')) || [];
-            orders = orders.filter(o => o.id !== orderId);
-            localStorage.setItem('orders', JSON.stringify(orders));
-            rebuildProductCodes();
+            formCloseBtn.addEventListener('click', function() {
+                orderFormContainer.classList.remove('show');
+                resetForm();
+            });
+            // Initial Load
+            generateOrderId();
             loadOrders();
-            showNotification('Order deleted successfully!');
-        }
-    };
-
-    window.updateOrderStatus = function(orderId, status) {
-        let orders = JSON.parse(localStorage.getItem('orders')) || [];
-        orders = orders.map(o => o.id === orderId ? { ...o, status } : o);
-        localStorage.setItem('orders', JSON.stringify(orders));
-        rebuildProductCodes();
-        loadOrders();
-        showNotification('Order status updated!');
-    };
-
-    searchInput.addEventListener('input', function() {
-        const searchTerm = this.value.toLowerCase();
-        const rows = orderTableBody.querySelectorAll('tr');
-        let hasResults = false;
-        rows.forEach(row => {
-            const text = row.textContent.toLowerCase();
-            if (text.includes(searchTerm)) {
-                row.style.display = '';
-                hasResults = true;
-            } else {
-                row.style.display = 'none';
-            }
-        });
-        searchXBtn.style.display = searchTerm.length ? 'block' : 'none';
-        noOrdersMessage.style.display = hasResults || searchTerm === '' ? 'none' : 'block';
-        noOrdersMessage.textContent = 'No orders found matching your search.';
-    });
-
-    searchXBtn.addEventListener('click', function() {
-        searchInput.value = '';
-        searchInput.dispatchEvent(new Event('input'));
-        searchInput.focus();
-    });
-
-    showFormBtn.addEventListener('click', function() {
-        orderFormContainer.classList.add('show');
-        generateOrderId();
-        resetForm();
-    });
-
-    formCloseBtn.addEventListener('click', function() {
-        orderFormContainer.classList.remove('show');
-        resetForm();
-    });
-
-    // Initial Load
-    generateOrderId();
-    loadOrders();
-    updateCustomerDatalists();
-    updateProductIdsDatalist();
-    updateOrderSummary();
-    rebuildProductCodes();
-});
-function rebuildProductCodes() {
-    const orders = JSON.parse(localStorage.getItem('orders')) || [];
-    const allProducts = JSON.parse(localStorage.getItem('products')) || [];
-    const pcodes = {};
-
-    orders.forEach(order => {
-        order.products.forEach(product => {
-            // Find product info for loss calculation (optional)
-            const originalProduct = allProducts.find(p => p.code === product.id);
-            let loss = 0;
-            if (originalProduct) {
-                const sellingPrice = parseFloat(originalProduct.sellingPrice) || 0;
-                const actualPrice = parseFloat(product.price) || 0;
-                if (actualPrice < sellingPrice) {
-                    loss = (sellingPrice - actualPrice) * product.qty;
-                }
-            }
-
-            // Create pcode if not there
-            if (!pcodes[product.id]) {
-                pcodes[product.id] = {
-                    name: product.name,
-                    totalSales: 0,
-                    totalRevenue: 0,
-                    totalLoss: 0,
-                    orders: [],
-                    coupons: [],
-                };
-            }
-
-            // Always update totalSales by qty (not by number of orders)
-            pcodes[product.id].totalSales += product.qty;
-            pcodes[product.id].totalRevenue += product.total;
-            pcodes[product.id].totalLoss += loss;
-            pcodes[product.id].orders.push({
-                orderId: order.id,
-                date: order.date,
-                qty: product.qty,
-                price: product.price,
-                total: product.total,
-                extra: product.extra || 0,
-                extraReason: product.extraReason || '',
-                loss: loss,
-                customer: order.customer.name,
-                mobile: order.customer.mobile
-            });
+            updateCustomerDatalists();
+            updateProductIdsDatalist();
+            updateOrderSummary();
+            rebuildProductCodes();
         });
 
-        // Handle coupons
-        if (order.coupons) {
-            order.coupons.forEach(coupon => {
-                if (coupon.productId && pcodes[coupon.productId]) {
-                    pcodes[coupon.productId].coupons.push({
-                        orderId: order.id,
-                        date: order.date,
-                        couponName: coupon.name,
-                        couponValue: coupon.value,
-                        couponType: coupon.type,
-                        customer: order.customer.name,
-                        mobile: order.customer.mobile
-                    });
-                }
-            });
-        }
-    });
+// Order-specific functions
+async function loadOrders() {
+  const sheetData = await getSheetData('Orders', 'A2:L');
+  const orders = sheetData.map(row => ({
+    id: row[0],
+    date: row[1],
+    customer: {
+      mobile: row[2],
+      name: row[3],
+      address: row[4]
+    },
+    products: JSON.parse(row[5]),
+    subtotal: parseFloat(row[6]),
+    delivery: parseFloat(row[7]),
+    discount: parseFloat(row[8]),
+    couponName: row[9],
+    walletUsed: parseFloat(row[10]),
+    total: parseFloat(row[11])
+  }));
+  
+  renderOrders(orders);
+}
 
-    localStorage.setItem('pcodes', JSON.stringify(pcodes));
+async function saveOrder(order) {
+  const values = [
+    [
+      order.id,
+      new Date().toISOString(),
+      order.customer.mobile,
+      order.customer.name,
+      order.customer.address,
+      JSON.stringify(order.products),
+      order.subtotal,
+      order.delivery,
+      order.discount,
+      order.couponName,
+      order.walletUsed,
+      order.total
+    ]
+  ];
+  
+  await updateSheetData('Orders', `A${(await getSheetData('Orders', 'A2:A')).length + 2}:L`, values);
+  showNotification('Order saved successfully!');
+  loadOrders();
 }
     </script>
 </body>

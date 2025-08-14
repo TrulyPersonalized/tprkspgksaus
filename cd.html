@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script src="https://apis.google.com/js/api.js"></script>
+<script src="https://accounts.google.com/gsi/client"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Customer Details System | Truly Personalized</title>
@@ -396,12 +398,38 @@
             z-index: 2;
             display: none;
         }
+        .order-id-cell {
+            max-width: 150px;
+            word-break: break-all;
+        }
         @media (max-width: 900px) {
             .main-container { flex-direction: column; }
             .form-container { width: 100vw; position: fixed; left: 0; top: 0; height: 100vh; z-index: 20;}
             .customer-list-container { padding: 18px 8px; }
             table { font-size: 12px;}
         }
+        /* Add to your existing CSS */
+.auth-button {
+  background-color: #4285F4;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 60px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 10px;
+}
+
+.auth-button:hover {
+  background-color: #3367D6;
+}
+
+.auth-button i {
+  font-size: 1rem;
+}
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
@@ -414,6 +442,9 @@
         <button id="showFormBtn" class="add-customer-btn">
             <i class="fas fa-plus"></i> Add Customer
         </button>
+        <button id="authorize_button" class="auth-button" style="display:none;">
+  <i class="fas fa-sign-in-alt"></i> Sign in with Google
+</button>
     </header>
     <div class="main-container">
         <div id="customerFormContainer" class="form-container">
@@ -474,16 +505,16 @@
                         <!-- Transactions will be added here -->
                     </div>
                     <div class="wallet-action" style="display: flex; flex-direction: column; gap: 8px; margin-top: 12px;">
-    <input type="number" id="walletAmount" placeholder="Amount" step="0.01" style="width:100%;">
-    <select id="walletAction" style="width:100%;">
-        <option value="credit">Add</option>
-        <option value="debit">Deduct</option>
-    </select>
-    <input type="text" id="walletReason" placeholder="Reason" style="width:100%;">
-    <button type="button" id="applyWalletAction" style="width:100%;">
-        <i class="fas fa-check"></i>
-    </button>
-</div>
+                        <input type="number" id="walletAmount" placeholder="Amount" step="0.01" style="width:100%;">
+                        <select id="walletAction" style="width:100%;">
+                            <option value="credit">Add</option>
+                            <option value="debit">Deduct</option>
+                        </select>
+                        <input type="text" id="walletReason" placeholder="Reason" style="width:100%;">
+                        <button type="button" id="applyWalletAction" style="width:100%;">
+                            <i class="fas fa-check"></i>
+                        </button>
+                    </div>
                 </div>
                 
                 <div class="coupon-section">
@@ -544,7 +575,7 @@
                 <table>
                     <thead>
                         <tr>
-                           <th>Name</th>
+                            <th>Name</th>
                             <th>Mobile</th>
                             <th>Instagram</th>
                             <th>Addresses</th>
@@ -570,514 +601,630 @@
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-    // DOM Elements
-    const showFormBtn = document.getElementById('showFormBtn');
-    const formCloseBtn = document.getElementById('formCloseBtn');
-    const customerFormContainer = document.getElementById('customerFormContainer');
-    const customerForm = document.getElementById('customerForm');
-    const customerTableBody = document.getElementById('customerTableBody');
-    const noCustomersMessage = document.getElementById('noCustomersMessage');
-    const searchInput = document.getElementById('searchInput');
-    const searchXBtn = document.getElementById('searchXBtn');
-    const notification = document.getElementById('notification');
+            // DOM Elements
+            const showFormBtn = document.getElementById('showFormBtn');
+            const formCloseBtn = document.getElementById('formCloseBtn');
+            const customerFormContainer = document.getElementById('customerFormContainer');
+            const customerForm = document.getElementById('customerForm');
+            const customerTableBody = document.getElementById('customerTableBody');
+            const noCustomersMessage = document.getElementById('noCustomersMessage');
+            const searchInput = document.getElementById('searchInput');
+            const searchXBtn = document.getElementById('searchXBtn');
+            const notification = document.getElementById('notification');
 
-    // Form fields (if present)
-    const customerMobile = document.getElementById('customerMobile');
-    const customerInsta = document.getElementById('customerInsta');
-    const customerName = document.getElementById('customerName');
-    const customerEmail = document.getElementById('customerEmail');
-    const newAddress = document.getElementById('newAddress');
-    const addAddressBtn = document.getElementById('addAddressBtn');
-    const addressesList = document.getElementById('addressesList');
-    const referralCodeDisplay = document.getElementById('referralCodeDisplay');
-    const referredBy = document.getElementById('referredBy');
-    const walletBalance = document.getElementById('walletBalance');
-    const walletAmount = document.getElementById('walletAmount');
-    const walletAction = document.getElementById('walletAction');
-    const walletReason = document.getElementById('walletReason');
-    const applyWalletAction = document.getElementById('applyWalletAction');
-    const walletTransactions = document.getElementById('walletTransactions');
-    const manualCouponIdCheckbox = document.getElementById('manualCouponId');
-    const couponIdInput = document.getElementById('couponId');
-    const couponName = document.getElementById('couponName');
-    const couponValue = document.getElementById('couponValue');
-    const couponType = document.getElementById('couponType');
-    const addCouponBtn = document.getElementById('addCouponBtn');
-    const couponsList = document.getElementById('couponsList');
-    const orderId = document.getElementById('orderId');
-    const addOrderBtn = document.getElementById('addOrderBtn');
-    const ordersList = document.getElementById('ordersList');
+            // Form fields (if present)
+            const customerMobile = document.getElementById('customerMobile');
+            const customerInsta = document.getElementById('customerInsta');
+            const customerName = document.getElementById('customerName');
+            const customerEmail = document.getElementById('customerEmail');
+            const newAddress = document.getElementById('newAddress');
+            const addAddressBtn = document.getElementById('addAddressBtn');
+            const addressesList = document.getElementById('addressesList');
+            const referralCodeDisplay = document.getElementById('referralCodeDisplay');
+            const referredBy = document.getElementById('referredBy');
+            const walletBalance = document.getElementById('walletBalance');
+            const walletAmount = document.getElementById('walletAmount');
+            const walletAction = document.getElementById('walletAction');
+            const walletReason = document.getElementById('walletReason');
+            const applyWalletAction = document.getElementById('applyWalletAction');
+            const walletTransactions = document.getElementById('walletTransactions');
+            const manualCouponIdCheckbox = document.getElementById('manualCouponId');
+            const couponIdInput = document.getElementById('couponId');
+            const couponName = document.getElementById('couponName');
+            const couponValue = document.getElementById('couponValue');
+            const couponType = document.getElementById('couponType');
+            const addCouponBtn = document.getElementById('addCouponBtn');
+            const couponsList = document.getElementById('couponsList');
+            const orderId = document.getElementById('orderId');
+            const addOrderBtn = document.getElementById('addOrderBtn');
+            const ordersList = document.getElementById('ordersList');
 
-    // State
-    let currentCustomer = null;
-    let addresses = [];
-    let walletTransactionsData = [];
-    let coupons = [];
-    let orders = [];
+            // State
+            let currentCustomer = null;
+            let addresses = [];
+            let walletTransactionsData = [];
+            let coupons = [];
+            let orders = [];
 
-    // --------- Customer List Rendering with Wallet & Coupons Columns ---------
-    function loadCustomers() {
-        const customers = JSON.parse(localStorage.getItem('customers')) || [];
-        customerTableBody.innerHTML = '';
-        if (customers.length === 0) {
-            noCustomersMessage.style.display = 'block';
-            return;
-        }
-        noCustomersMessage.style.display = 'none';
-        customers.forEach(customer => {
-            const row = document.createElement('tr');
-            // Addresses
-            let addressesDisplay = customer.addresses ? customer.addresses.join(', ') : '';
-            if (addressesDisplay.length > 50) {
-                addressesDisplay = addressesDisplay.substring(0, 47) + '...';
-            }
-            // Wallet: balance, then up to 2 transactions (amount and reason per line)
-            let walletAmountReason = '';
-            if (customer.walletTransactions && customer.walletTransactions.length > 0) {
-                walletAmountReason = customer.walletTransactions.slice(0, 2).map(txn => {
-                    return `<div>
-                        <span>${txn.type === 'credit' ? '+' : '-'}₹${txn.amount.toFixed(2)}</span>
-                        <br><span style="color:var(--muted);font-size:0.95em">${txn.description}</span>
-                    </div>`;
-                }).join('');
-                if (customer.walletTransactions.length > 2) {
-                    walletAmountReason += `<div style="color:var(--muted);font-size:0.9em;">...${customer.walletTransactions.length-2} more</div>`;
-                }
-            } else {
-                walletAmountReason = '<span style="color:var(--muted);">No transactions</span>';
-            }
-            // Orders
-            let ordersDisplay = customer.orders ? customer.orders.join(', ') : '';
-            if (ordersDisplay.length > 30) {
-                ordersDisplay = ordersDisplay.substring(0, 27) + '...';
-            }
-            // Coupons: each on a new line
-            let couponsDisplay = '';
-            if (customer.coupons && customer.coupons.length > 0) {
-                couponsDisplay = customer.coupons.map(c => 
-                    `<div>${c.name || 'Coupon'} (${c.value}${c.type === 'percent' ? '%' : '₹'})<br><span style='font-size:0.9em;color:var(--muted)'>ID:${c.id}</span></div>`
-                ).join('');
-            } else {
-                couponsDisplay = '<span style="color:var(--muted);">None</span>';
-            }
-            row.innerHTML = `
-                <td>${customer.name}</td>
-                <td>${customer.mobile || '-'}</td>
-                <td>${customer.insta || '-'}</td>
-                <td>${addressesDisplay || '-'}</td>
-                <td>
-                    <div style="font-weight:bold;">₹${(customer.walletBalance || 0).toFixed(2)}</div>
-                    ${walletAmountReason}
-                </td>
-                <td>${ordersDisplay || '-'}</td>
-                <td>${customer.referralCode || '-'}</td>
-                <td>${couponsDisplay}</td>
-                <td>
-                    <i class="fas fa-edit edit-icon action-icon" onclick="editCustomer('${customer.mobile ? customer.mobile.replace(/'/g, "\\'") : ''}')"></i>
-                    <i class="fas fa-trash delete-icon action-icon" onclick="deleteCustomer('${customer.mobile ? customer.mobile.replace(/'/g, "\\'") : ''}')"></i>
-                </td>
-            `;
-            customerTableBody.appendChild(row);
-        });
-    }
-
-    // --------- Customer Form CRUD ---------
-    window.editCustomer = function(mobile) {
-        const customers = JSON.parse(localStorage.getItem('customers')) || [];
-        const customer = customers.find(c => c.mobile === mobile);
-        if (customer) {
-            currentCustomer = customer;
-            customerMobile.value = customer.mobile || '';
-            customerInsta.value = customer.insta || '';
-            customerName.value = customer.name;
-            customerEmail.value = customer.email || '';
-            addresses = customer.addresses ? [...customer.addresses] : [];
-            renderAddresses();
-            referralCodeDisplay.textContent = customer.referralCode || 'Will be generated on save';
-            referredBy.value = customer.referredBy || '';
-            walletBalance.textContent = `₹${(customer.walletBalance || 0).toFixed(2)}`;
-            walletTransactionsData = customer.walletTransactions || [];
-            renderWalletTransactions();
-            coupons = customer.coupons ? [...customer.coupons] : [];
-            renderCoupons();
-            orders = customer.orders ? [...customer.orders] : [];
-            renderOrders();
-            customerFormContainer.classList.add('show');
-        }
-    };
-
-    window.deleteCustomer = function(mobile) {
-        if (confirm('Are you sure you want to delete this customer?')) {
-            const customers = JSON.parse(localStorage.getItem('customers')) || [];
-            const updatedCustomers = customers.filter(c => c.mobile !== mobile);
-            localStorage.setItem('customers', JSON.stringify(updatedCustomers));
-            loadCustomers();
-            showNotification('Customer deleted successfully!');
-        }
-    };
-
-    function renderAddresses() {
-        if (!addressesList) return;
-        addressesList.innerHTML = '';
-        if (addresses.length === 0) return;
-        addresses.forEach((address, index) => {
-            const item = document.createElement('div');
-            item.className = 'address-item';
-            item.innerHTML = `
-                <div class="address-text">${address}</div>
-                <button class="remove-address" data-index="${index}">
-                    <i class="fas fa-times"></i>
-                </button>
-            `;
-            addressesList.appendChild(item);
-        });
-        document.querySelectorAll('.remove-address').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const index = parseInt(this.dataset.index);
-                addresses.splice(index, 1);
-                renderAddresses();
-            });
-        });
-    }
-
-    if (addAddressBtn) {
-        addAddressBtn.addEventListener('click', function() {
-            const address = newAddress.value.trim();
-            if (!address) {
-                showNotification('Please enter an address', false);
-                return;
-            }
-            addresses.push(address);
-            renderAddresses();
-            newAddress.value = '';
-            showNotification('Address added successfully!');
-        });
-    }
-
-   function renderWalletTransactions() {
-    if (!walletTransactions) return;
-    walletTransactions.innerHTML = '';
-    if (walletTransactionsData.length === 0) {
-        walletTransactions.innerHTML = '<div style="color: var(--muted);">No transactions yet</div>';
-        return;
-    }
-    walletTransactionsData
-        .sort((a, b) => new Date(b.date) - new Date(a.date))
-        .forEach(txn => {
-            const item = document.createElement('div');
-            item.className = 'wallet-transaction';
-            item.style.marginBottom = '14px';
-            item.innerHTML = `
-                <div style="font-weight:bold;">₹${txn.amount.toFixed(2)}</div>
-                <div style="color:${txn.type === 'credit' ? 'var(--credit)' : 'var(--debit)'};font-weight:bold;">
-                    ${txn.type === 'credit' ? 'Add' : 'Deduct'}
-                </div>
-                <div style="color:var(--muted);font-size:0.98em;">${txn.description}</div>
-                <div style="font-size:0.8em;color:var(--muted);">${new Date(txn.date).toLocaleString()}</div>
-            `;
-            walletTransactions.appendChild(item);
-        });
-}
-
-    if (applyWalletAction) {
-        applyWalletAction.addEventListener('click', function() {
-            const amount = parseFloat(walletAmount.value) || 0;
-            const action = walletAction.value;
-            const reason = walletReason.value.trim() || 'Manual adjustment';
-            if (amount <= 0) {
-                showNotification('Please enter a valid amount', false);
-                return;
-            }
-            if (!reason) {
-                showNotification('Please enter a reason', false);
-                return;
-            }
-            const transaction = {
-                date: new Date().toISOString(),
-                amount: amount,
-                type: action,
-                description: reason
-            };
-            walletTransactionsData.push(transaction);
-            renderWalletTransactions();
-            // Update balance
-            const currentBalance = parseFloat(walletBalance.textContent.replace('₹', '')) || 0;
-            const newBalance = action === 'credit' ? currentBalance + amount : currentBalance - amount;
-            walletBalance.textContent = `₹${newBalance.toFixed(2)}`;
-            walletAmount.value = '';
-            walletReason.value = '';
-            showNotification('Wallet updated successfully!');
-        });
-    }
-
-    if (manualCouponIdCheckbox) {
-        manualCouponIdCheckbox.addEventListener('change', function() {
-            couponIdInput.classList.toggle('hidden', !this.checked);
-        });
-    }
-
-    if (addCouponBtn) {
-        addCouponBtn.addEventListener('click', function() {
-            const name = couponName.value.trim();
-            const value = parseFloat(couponValue.value) || 0;
-            const type = couponType.value;
-            const id = manualCouponIdCheckbox.checked ? couponIdInput.value.trim() : `CPN-${Math.random().toString(36).substr(2, 8)}`;
-            if (value <= 0) {
-                showNotification('Please enter a valid coupon value', false);
-                return;
-            }
-            if (manualCouponIdCheckbox.checked && !id) {
-                showNotification('Please enter a coupon ID', false);
-                return;
-            }
-            const coupon = {
-                id: id,
-                name: name || 'Discount Coupon',
-                value: value,
-                type: type
-            };
-            coupons.push(coupon);
-            renderCoupons();
-            couponName.value = '';
-            couponValue.value = '';
-            couponIdInput.value = '';
-            manualCouponIdCheckbox.checked = false;
-            couponIdInput.classList.add('hidden');
-            showNotification('Coupon added successfully!');
-        });
-    }
-
-    function renderCoupons() {
-        if (!couponsList) return;
-        couponsList.innerHTML = '';
-        if (coupons.length === 0) {
-            couponsList.innerHTML = '<div style="color: var(--muted);">No coupons yet</div>';
-            return;
-        }
-        coupons.forEach((coupon, index) => {
-            const item = document.createElement('div');
-            item.className = 'coupon-item';
-            item.innerHTML = `
-                <div class="coupon-header">
-                    <span class="coupon-name">${coupon.name}</span>
-                    <span class="coupon-value">${coupon.value}${coupon.type === 'percent' ? '%' : '₹'}</span>
-                </div>
-                <div style="font-size: 0.9em; color: var(--muted);">ID: ${coupon.id}</div>
-                <button class="remove-coupon" data-index="${index}">
-                    <i class="fas fa-times"></i> Remove
-                </button>
-            `;
-            couponsList.appendChild(item);
-        });
-        document.querySelectorAll('.remove-coupon').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const index = parseInt(this.dataset.index);
-                coupons.splice(index, 1);
-                renderCoupons();
-            });
-        });
-    }
-
-    if (addOrderBtn) {
-        addOrderBtn.addEventListener('click', function() {
-            const id = orderId.value.trim();
-            if (!id) {
-                showNotification('Please enter an order ID', false);
-                return;
-            }
-            const allOrders = JSON.parse(localStorage.getItem('orders')) || [];
-            const orderExists = allOrders.some(o => o.id === id);
-            if (!orderExists) {
-                if (!confirm('This order ID doesn\'t exist in orders. Add anyway?')) {
+            // --------- Customer List Rendering with Wallet & Coupons Columns ---------
+            function loadCustomers() {
+                const customers = JSON.parse(localStorage.getItem('customers')) || [];
+                customerTableBody.innerHTML = '';
+                if (customers.length === 0) {
+                    noCustomersMessage.style.display = 'block';
                     return;
                 }
+                noCustomersMessage.style.display = 'none';
+                
+                // Get all orders to check which ones exist
+                const allOrders = JSON.parse(localStorage.getItem('orders')) || [];
+                const orderIds = allOrders.map(o => o.id);
+                
+                customers.forEach(customer => {
+                    const row = document.createElement('tr');
+                    
+                    // Addresses
+                    let addressesDisplay = customer.addresses ? customer.addresses.join(', ') : '';
+                    if (addressesDisplay.length > 50) {
+                        addressesDisplay = addressesDisplay.substring(0, 47) + '...';
+                    }
+                    
+                    // Wallet: balance, then up to 2 transactions (amount and reason per line)
+                    let walletAmountReason = '';
+                    if (customer.walletTransactions && customer.walletTransactions.length > 0) {
+                        walletAmountReason = customer.walletTransactions.slice(0, 2).map(txn => {
+                            return `<div>
+                                <span>${txn.type === 'credit' ? '+' : '-'}₹${txn.amount.toFixed(2)}</span>
+                                <br><span style="color:var(--muted);font-size:0.95em">${txn.description}</span>
+                            </div>`;
+                        }).join('');
+                        if (customer.walletTransactions.length > 2) {
+                            walletAmountReason += `<div style="color:var(--muted);font-size:0.9em;">...${customer.walletTransactions.length-2} more</div>`;
+                        }
+                    } else {
+                        walletAmountReason = '<span style="color:var(--muted);">No transactions</span>';
+                    }
+                    
+                    // Orders - each on a new line
+                    let ordersDisplay = '';
+                    if (customer.orders && customer.orders.length > 0) {
+                        // Filter out orders that don't exist anymore
+                        const validOrders = customer.orders.filter(id => orderIds.includes(id));
+                        
+                        // Update customer's orders if some were invalid
+                        if (validOrders.length !== customer.orders.length) {
+                            customer.orders = validOrders;
+                            const allCustomers = JSON.parse(localStorage.getItem('customers')) || [];
+                            const customerIndex = allCustomers.findIndex(c => 
+                                (customer.mobile && c.mobile === customer.mobile) ||
+                                (customer.insta && c.insta && c.insta.toLowerCase() === customer.insta.toLowerCase())
+                            );
+                            if (customerIndex !== -1) {
+                                allCustomers[customerIndex] = customer;
+                                localStorage.setItem('customers', JSON.stringify(allCustomers));
+                            }
+                        }
+                        
+                        ordersDisplay = validOrders.map(id => {
+                            const order = allOrders.find(o => o.id === id);
+                            if (order) {
+                                const date = new Date(order.date);
+                                const formattedDate = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+                                return `<div class="order-id-cell">
+                                    <span>${id}</span>
+                                    <div style="font-size:0.9em;color:var(--muted);">${formattedDate} - ₹${order.total.toFixed(2)}</div>
+                                </div>`;
+                            }
+                            return `<div class="order-id-cell">${id}</div>`;
+                        }).join('');
+                    } else {
+                        ordersDisplay = '<span style="color:var(--muted);">None</span>';
+                    }
+                    
+                    // Coupons: each on a new line
+                    let couponsDisplay = '';
+                    if (customer.coupons && customer.coupons.length > 0) {
+                        couponsDisplay = customer.coupons.map(c => 
+                            `<div>${c.name || 'Coupon'} (${c.value}${c.type === 'percent' ? '%' : '₹'})<br><span style='font-size:0.9em;color:var(--muted)'>ID:${c.id}</span></div>`
+                        ).join('');
+                    } else {
+                        couponsDisplay = '<span style="color:var(--muted);">None</span>';
+                    }
+                    
+                    row.innerHTML = `
+                        <td>${customer.name}</td>
+                        <td>${customer.mobile || '-'}</td>
+                        <td>${customer.insta || '-'}</td>
+                        <td>${addressesDisplay || '-'}</td>
+                        <td>
+                            <div style="font-weight:bold;">₹${(customer.walletBalance || 0).toFixed(2)}</div>
+                            ${walletAmountReason}
+                        </td>
+                        <td>${ordersDisplay}</td>
+                        <td>${customer.referralCode || '-'}</td>
+                        <td>${couponsDisplay}</td>
+                        <td>
+                            <i class="fas fa-edit edit-icon action-icon" onclick="editCustomer('${customer.mobile ? customer.mobile.replace(/'/g, "\\'") : ''}')"></i>
+                            <i class="fas fa-trash delete-icon action-icon" onclick="deleteCustomer('${customer.mobile ? customer.mobile.replace(/'/g, "\\'") : ''}')"></i>
+                        </td>
+                    `;
+                    customerTableBody.appendChild(row);
+                });
             }
-            if (!orders.includes(id)) {
-                orders.push(id);
-                renderOrders();
-                orderId.value = '';
-                showNotification('Order added successfully!');
-            } else {
-                showNotification('This order is already linked', false);
-            }
-        });
-    }
 
-    function renderOrders() {
-        if (!ordersList) return;
-        ordersList.innerHTML = '';
-        if (orders.length === 0) {
-            ordersList.innerHTML = '<div style="color: var(--muted);">No orders yet</div>';
-            return;
-        }
-        const allOrders = JSON.parse(localStorage.getItem('orders')) || [];
-        orders.forEach((orderId, index) => {
-            const order = allOrders.find(o => o.id === orderId);
-            const item = document.createElement('div');
-            item.className = 'order-item';
-            if (order) {
-                const date = new Date(order.date);
-                const formattedDate = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
-                item.innerHTML = `
-                    <div class="order-header">
-                        <span class="order-id">${order.id}</span>
-                        <span class="order-amount">₹${order.total.toFixed(2)}</span>
-                    </div>
-                    <div class="order-date">${formattedDate}</div>
-                    <button class="remove-order" data-index="${index}">
-                        <i class="fas fa-times"></i> Remove
-                    </button>
-                `;
-            } else {
-                item.innerHTML = `
-                    <div class="order-header">
-                        <span class="order-id">${orderId}</span>
-                        <span style="color: var(--muted);">(Order not found)</span>
-                    </div>
-                    <button class="remove-order" data-index="${index}">
-                        <i class="fas fa-times"></i> Remove
-                    </button>
-                `;
-            }
-            ordersList.appendChild(item);
-        });
-        document.querySelectorAll('.remove-order').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const index = parseInt(this.dataset.index);
-                orders.splice(index, 1);
-                renderOrders();
-            });
-        });
-    }
-
-    if (customerForm) {
-        customerForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            if (!customerMobile.value.trim() && !customerInsta.value.trim()) {
-                showNotification('Please enter either mobile or Instagram ID', false);
-                return;
-            }
-            if (!customerName.value.trim()) {
-                showNotification('Please enter customer name', false);
-                return;
-            }
-            if (addresses.length === 0) {
-                showNotification('Please add at least one address', false);
-                return;
-            }
-            let referralCode = referralCodeDisplay.textContent;
-            if (referralCode === 'Will be generated on save' || !referralCode) {
-                referralCode = `SA${Math.random().toString(36).substr(2, 8).toUpperCase()}`;
-            }
-            const customer = {
-                mobile: customerMobile.value.trim(),
-                insta: customerInsta.value.trim(),
-                name: customerName.value.trim(),
-                email: customerEmail.value.trim(),
-                addresses: [...addresses],
-                referralCode: referralCode,
-                referredBy: referredBy.value.trim(),
-                walletBalance: parseFloat(walletBalance.textContent.replace('₹', '')) || 0,
-                walletTransactions: [...walletTransactionsData],
-                coupons: [...coupons],
-                orders: [...orders]
+            // --------- Customer Form CRUD ---------
+            window.editCustomer = function(mobile) {
+                const customers = JSON.parse(localStorage.getItem('customers')) || [];
+                const customer = customers.find(c => c.mobile === mobile);
+                if (customer) {
+                    currentCustomer = customer;
+                    customerMobile.value = customer.mobile || '';
+                    customerInsta.value = customer.insta || '';
+                    customerName.value = customer.name;
+                    customerEmail.value = customer.email || '';
+                    addresses = customer.addresses ? [...customer.addresses] : [];
+                    renderAddresses();
+                    referralCodeDisplay.textContent = customer.referralCode || 'Will be generated on save';
+                    referredBy.value = customer.referredBy || '';
+                    walletBalance.textContent = `₹${(customer.walletBalance || 0).toFixed(2)}`;
+                    walletTransactionsData = customer.walletTransactions || [];
+                    renderWalletTransactions();
+                    coupons = customer.coupons ? [...customer.coupons] : [];
+                    renderCoupons();
+                    orders = customer.orders ? [...customer.orders] : [];
+                    renderOrders();
+                    customerFormContainer.classList.add('show');
+                }
             };
-            const customers = JSON.parse(localStorage.getItem('customers')) || [];
-            if (currentCustomer) {
-                const customerIndex = customers.findIndex(c => 
-                    (currentCustomer.mobile && c.mobile === currentCustomer.mobile) ||
-                    (currentCustomer.insta && c.insta && c.insta.toLowerCase() === currentCustomer.insta.toLowerCase())
-                );
-                if (customerIndex !== -1) {
-                    customers[customerIndex] = customer;
+
+            window.deleteCustomer = function(mobile) {
+                if (confirm('Are you sure you want to delete this customer?')) {
+                    const customers = JSON.parse(localStorage.getItem('customers')) || [];
+                    const updatedCustomers = customers.filter(c => c.mobile !== mobile);
+                    localStorage.setItem('customers', JSON.stringify(updatedCustomers));
+                    loadCustomers();
+                    showNotification('Customer deleted successfully!');
                 }
-            } else {
-                customers.push(customer);
+            };
+
+            function renderAddresses() {
+                if (!addressesList) return;
+                addressesList.innerHTML = '';
+                if (addresses.length === 0) return;
+                addresses.forEach((address, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'address-item';
+                    item.innerHTML = `
+                        <div class="address-text">${address}</div>
+                        <button class="remove-address" data-index="${index}">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    `;
+                    addressesList.appendChild(item);
+                });
+                document.querySelectorAll('.remove-address').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const index = parseInt(this.dataset.index);
+                        addresses.splice(index, 1);
+                        renderAddresses();
+                    });
+                });
             }
-            localStorage.setItem('customers', JSON.stringify(customers));
-            showNotification('Customer saved successfully!');
-            resetForm();
-            customerFormContainer.classList.remove('show');
+
+            if (addAddressBtn) {
+                addAddressBtn.addEventListener('click', function() {
+                    const address = newAddress.value.trim();
+                    if (!address) {
+                        showNotification('Please enter an address', false);
+                        return;
+                    }
+                    addresses.push(address);
+                    renderAddresses();
+                    newAddress.value = '';
+                    showNotification('Address added successfully!');
+                });
+            }
+
+            function renderWalletTransactions() {
+                if (!walletTransactions) return;
+                walletTransactions.innerHTML = '';
+                if (walletTransactionsData.length === 0) {
+                    walletTransactions.innerHTML = '<div style="color: var(--muted);">No transactions yet</div>';
+                    return;
+                }
+                walletTransactionsData
+                    .sort((a, b) => new Date(b.date) - new Date(a.date))
+                    .forEach(txn => {
+                        const item = document.createElement('div');
+                        item.className = 'wallet-transaction';
+                        item.style.marginBottom = '14px';
+                        item.innerHTML = `
+                            <div style="font-weight:bold;">₹${txn.amount.toFixed(2)}</div>
+                            <div style="color:${txn.type === 'credit' ? 'var(--credit)' : 'var(--debit)'};font-weight:bold;">
+                                ${txn.type === 'credit' ? 'Add' : 'Deduct'}
+                            </div>
+                            <div style="color:var(--muted);font-size:0.98em;">${txn.description}</div>
+                            <div style="font-size:0.8em;color:var(--muted);">${new Date(txn.date).toLocaleString()}</div>
+                        `;
+                        walletTransactions.appendChild(item);
+                    });
+            }
+
+            if (applyWalletAction) {
+                applyWalletAction.addEventListener('click', function() {
+                    const amount = parseFloat(walletAmount.value) || 0;
+                    const action = walletAction.value;
+                    const reason = walletReason.value.trim() || 'Manual adjustment';
+                    if (amount <= 0) {
+                        showNotification('Please enter a valid amount', false);
+                        return;
+                    }
+                    if (!reason) {
+                        showNotification('Please enter a reason', false);
+                        return;
+                    }
+                    const transaction = {
+                        date: new Date().toISOString(),
+                        amount: amount,
+                        type: action,
+                        description: reason
+                    };
+                    walletTransactionsData.push(transaction);
+                    renderWalletTransactions();
+                    // Update balance
+                    const currentBalance = parseFloat(walletBalance.textContent.replace('₹', '')) || 0;
+                    const newBalance = action === 'credit' ? currentBalance + amount : currentBalance - amount;
+                    walletBalance.textContent = `₹${newBalance.toFixed(2)}`;
+                    walletAmount.value = '';
+                    walletReason.value = '';
+                    showNotification('Wallet updated successfully!');
+                });
+            }
+
+            if (manualCouponIdCheckbox) {
+                manualCouponIdCheckbox.addEventListener('change', function() {
+                    couponIdInput.classList.toggle('hidden', !this.checked);
+                });
+            }
+
+            if (addCouponBtn) {
+                addCouponBtn.addEventListener('click', function() {
+                    const name = couponName.value.trim();
+                    const value = parseFloat(couponValue.value) || 0;
+                    const type = couponType.value;
+                    const id = manualCouponIdCheckbox.checked ? couponIdInput.value.trim() : `CPN-${Math.random().toString(36).substr(2, 8)}`;
+                    if (value <= 0) {
+                        showNotification('Please enter a valid coupon value', false);
+                        return;
+                    }
+                    if (manualCouponIdCheckbox.checked && !id) {
+                        showNotification('Please enter a coupon ID', false);
+                        return;
+                    }
+                    const coupon = {
+                        id: id,
+                        name: name || 'Discount Coupon',
+                        value: value,
+                        type: type
+                    };
+                    coupons.push(coupon);
+                    renderCoupons();
+                    couponName.value = '';
+                    couponValue.value = '';
+                    couponIdInput.value = '';
+                    manualCouponIdCheckbox.checked = false;
+                    couponIdInput.classList.add('hidden');
+                    showNotification('Coupon added successfully!');
+                });
+            }
+
+            function renderCoupons() {
+                if (!couponsList) return;
+                couponsList.innerHTML = '';
+                if (coupons.length === 0) {
+                    couponsList.innerHTML = '<div style="color: var(--muted);">No coupons yet</div>';
+                    return;
+                }
+                coupons.forEach((coupon, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'coupon-item';
+                    item.innerHTML = `
+                        <div class="coupon-header">
+                            <span class="coupon-name">${coupon.name}</span>
+                            <span class="coupon-value">${coupon.value}${coupon.type === 'percent' ? '%' : '₹'}</span>
+                        </div>
+                        <div style="font-size: 0.9em; color: var(--muted);">ID: ${coupon.id}</div>
+                        <button class="remove-coupon" data-index="${index}">
+                            <i class="fas fa-times"></i> Remove
+                        </button>
+                    `;
+                    couponsList.appendChild(item);
+                });
+                document.querySelectorAll('.remove-coupon').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const index = parseInt(this.dataset.index);
+                        coupons.splice(index, 1);
+                        renderCoupons();
+                    });
+                });
+            }
+
+            if (addOrderBtn) {
+                addOrderBtn.addEventListener('click', function() {
+                    const id = orderId.value.trim();
+                    if (!id) {
+                        showNotification('Please enter an order ID', false);
+                        return;
+                    }
+                    const allOrders = JSON.parse(localStorage.getItem('orders')) || [];
+                    const orderExists = allOrders.some(o => o.id === id);
+                    if (!orderExists) {
+                        if (!confirm('This order ID doesn\'t exist in orders. Add anyway?')) {
+                            return;
+                        }
+                    }
+                    if (!orders.includes(id)) {
+                        orders.push(id);
+                        renderOrders();
+                        orderId.value = '';
+                        showNotification('Order added successfully!');
+                    } else {
+                        showNotification('This order is already linked', false);
+                    }
+                });
+            }
+
+            function renderOrders() {
+                if (!ordersList) return;
+                ordersList.innerHTML = '';
+                if (orders.length === 0) {
+                    ordersList.innerHTML = '<div style="color: var(--muted);">No orders yet</div>';
+                    return;
+                }
+                const allOrders = JSON.parse(localStorage.getItem('orders')) || [];
+                orders.forEach((orderId, index) => {
+                    const order = allOrders.find(o => o.id === orderId);
+                    const item = document.createElement('div');
+                    item.className = 'order-item';
+                    if (order) {
+                        const date = new Date(order.date);
+                        const formattedDate = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+                        item.innerHTML = `
+                            <div class="order-header">
+                                <span class="order-id">${order.id}</span>
+                                <span class="order-amount">₹${order.total.toFixed(2)}</span>
+                            </div>
+                            <div class="order-date">${formattedDate}</div>
+                            <button class="remove-order" data-index="${index}">
+                                <i class="fas fa-times"></i> Remove
+                            </button>
+                        `;
+                    } else {
+                        item.innerHTML = `
+                            <div class="order-header">
+                                <span class="order-id">${orderId}</span>
+                                <span style="color: var(--muted);">(Order not found)</span>
+                            </div>
+                            <button class="remove-order" data-index="${index}">
+                                <i class="fas fa-times"></i> Remove
+                            </button>
+                        `;
+                    }
+                    ordersList.appendChild(item);
+                });
+                document.querySelectorAll('.remove-order').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const index = parseInt(this.dataset.index);
+                        orders.splice(index, 1);
+                        renderOrders();
+                    });
+                });
+            }
+
+            if (customerForm) {
+                customerForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    if (!customerMobile.value.trim() && !customerInsta.value.trim()) {
+                        showNotification('Please enter either mobile or Instagram ID', false);
+                        return;
+                    }
+                    if (!customerName.value.trim()) {
+                        showNotification('Please enter customer name', false);
+                        return;
+                    }
+                    if (addresses.length === 0) {
+                        showNotification('Please add at least one address', false);
+                        return;
+                    }
+                    let referralCode = referralCodeDisplay.textContent;
+                    if (referralCode === 'Will be generated on save' || !referralCode) {
+                        referralCode = `SA${Math.random().toString(36).substr(2, 8).toUpperCase()}`;
+                    }
+                    const customer = {
+                        mobile: customerMobile.value.trim(),
+                        insta: customerInsta.value.trim(),
+                        name: customerName.value.trim(),
+                        email: customerEmail.value.trim(),
+                        addresses: [...addresses],
+                        referralCode: referralCode,
+                        referredBy: referredBy.value.trim(),
+                        walletBalance: parseFloat(walletBalance.textContent.replace('₹', '')) || 0,
+                        walletTransactions: [...walletTransactionsData],
+                        coupons: [...coupons],
+                        orders: [...orders]
+                    };
+                    const customers = JSON.parse(localStorage.getItem('customers')) || [];
+                    if (currentCustomer) {
+                        const customerIndex = customers.findIndex(c => 
+                            (currentCustomer.mobile && c.mobile === currentCustomer.mobile) ||
+                            (currentCustomer.insta && c.insta && c.insta.toLowerCase() === currentCustomer.insta.toLowerCase())
+                        );
+                        if (customerIndex !== -1) {
+                            customers[customerIndex] = customer;
+                        }
+                    } else {
+                        customers.push(customer);
+                    }
+                    localStorage.setItem('customers', JSON.stringify(customers));
+                    showNotification('Customer saved successfully!');
+                    resetForm();
+                    customerFormContainer.classList.remove('show');
+                    loadCustomers();
+                });
+            }
+
+            function resetForm() {
+                if (customerForm) customerForm.reset();
+                addresses = [];
+                renderAddresses();
+                walletTransactionsData = [];
+                renderWalletTransactions();
+                coupons = [];
+                renderCoupons();
+                orders = [];
+                renderOrders();
+                if (referralCodeDisplay) referralCodeDisplay.textContent = 'Will be generated on save';
+                if (walletBalance) walletBalance.textContent = '₹0.00';
+                currentCustomer = null;
+            }
+
+            // Search customers
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    const searchTerm = this.value.toLowerCase();
+                    const rows = customerTableBody.querySelectorAll('tr');
+                    let hasResults = false;
+                    rows.forEach(row => {
+                        const text = row.textContent.toLowerCase();
+                        if (text.includes(searchTerm)) {
+                            row.style.display = '';
+                            hasResults = true;
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
+                    searchXBtn.style.display = searchTerm.length ? 'block' : 'none';
+                    noCustomersMessage.style.display = hasResults || searchTerm === '' ? 'none' : 'block';
+                    noCustomersMessage.textContent = 'No customers found matching your search.';
+                });
+            }
+            if (searchXBtn) {
+                searchXBtn.addEventListener('click', function() {
+                    searchInput.value = '';
+                    searchInput.dispatchEvent(new Event('input'));
+                    searchInput.focus();
+                });
+            }
+
+            // Notification
+            function showNotification(message, isSuccess = true) {
+                if (!notification) return;
+                const content = notification.querySelector('.notification-content');
+                content.innerHTML = `
+                    <i class="fas ${isSuccess ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+                    <span>${message}</span>
+                `;
+                notification.classList.remove('notification-hidden');
+                notification.classList.add('notification-visible');
+                setTimeout(() => {
+                    notification.classList.remove('notification-visible');
+                    notification.classList.add('notification-hidden');
+                }, 3000);
+            }
+
+            // Show form
+            if (showFormBtn) {
+                showFormBtn.addEventListener('click', function() {
+                    customerFormContainer.classList.add('show');
+                    resetForm();
+                });
+            }
+            if (formCloseBtn) {
+                formCloseBtn.addEventListener('click', function() {
+                    customerFormContainer.classList.remove('show');
+                    resetForm();
+                });
+            }
+
+            // Initial load
             loadCustomers();
-        });
-    }
-
-    function resetForm() {
-        if (customerForm) customerForm.reset();
-        addresses = [];
-        renderAddresses();
-        walletTransactionsData = [];
-        renderWalletTransactions();
-        coupons = [];
-        renderCoupons();
-        orders = [];
-        renderOrders();
-        if (referralCodeDisplay) referralCodeDisplay.textContent = 'Will be generated on save';
-        if (walletBalance) walletBalance.textContent = '₹0.00';
-        currentCustomer = null;
-    }
-
-    // Search customers
-    if (searchInput) {
-        searchInput.addEventListener('input', function() {
-            const searchTerm = this.value.toLowerCase();
-            const rows = customerTableBody.querySelectorAll('tr');
-            let hasResults = false;
-            rows.forEach(row => {
-                const text = row.textContent.toLowerCase();
-                if (text.includes(searchTerm)) {
-                    row.style.display = '';
-                    hasResults = true;
-                } else {
-                    row.style.display = 'none';
+            
+            // Listen for storage events to update when orders are deleted
+            window.addEventListener('storage', function(e) {
+                if (e.key === 'orders') {
+                    loadCustomers();
                 }
             });
-            searchXBtn.style.display = searchTerm.length ? 'block' : 'none';
-            noCustomersMessage.style.display = hasResults || searchTerm === '' ? 'none' : 'block';
-            noCustomersMessage.textContent = 'No customers found matching your search.';
         });
-    }
-    if (searchXBtn) {
-        searchXBtn.addEventListener('click', function() {
-            searchInput.value = '';
-            searchInput.dispatchEvent(new Event('input'));
-            searchInput.focus();
-        });
-    }
+        
+        // This function will be called when an order is deleted to update customer records
+        function removeOrderFromCustomers(orderId) {
+            const customers = JSON.parse(localStorage.getItem('customers')) || [];
+            let updated = false;
+            
+            const updatedCustomers = customers.map(customer => {
+                if (customer.orders && customer.orders.includes(orderId)) {
+                    customer.orders = customer.orders.filter(id => id !== orderId);
+                    updated = true;
+                }
+                return customer;
+            });
+            
+            if (updated) {
+                localStorage.setItem('customers', JSON.stringify(updatedCustomers));
+            }
+        }
+        // Customer-specific functions
+async function loadCustomers() {
+  const sheetData = await getSheetData('Customers', 'A2:K');
+  const customers = sheetData.map(row => ({
+    mobile: row[0],
+    insta: row[1],
+    name: row[2],
+    email: row[3],
+    addresses: JSON.parse(row[4]),
+    walletBalance: parseFloat(row[5]),
+    walletTransactions: JSON.parse(row[6]),
+    coupons: JSON.parse(row[7]),
+    orders: JSON.parse(row[8]),
+    referralCode: row[9],
+    referredBy: row[10]
+  }));
+  
+  renderCustomers(customers);
+}
 
-    // Notification
-    function showNotification(message, isSuccess = true) {
-        if (!notification) return;
-        const content = notification.querySelector('.notification-content');
-        content.innerHTML = `
-            <i class="fas ${isSuccess ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
-            <span>${message}</span>
-        `;
-        notification.classList.remove('notification-hidden');
-        notification.classList.add('notification-visible');
-        setTimeout(() => {
-            notification.classList.remove('notification-visible');
-            notification.classList.add('notification-hidden');
-        }, 3000);
-    }
-
-    // Show form
-    if (showFormBtn) {
-        showFormBtn.addEventListener('click', function() {
-            customerFormContainer.classList.add('show');
-            resetForm();
-        });
-    }
-    if (formCloseBtn) {
-        formCloseBtn.addEventListener('click', function() {
-            customerFormContainer.classList.remove('show');
-            resetForm();
-        });
-    }
-
-    // Initial load
-    loadCustomers();
-});
+async function saveCustomer(customer) {
+  const values = [
+    [
+      customer.mobile,
+      customer.insta,
+      customer.name,
+      customer.email,
+      JSON.stringify(customer.addresses),
+      customer.walletBalance,
+      JSON.stringify(customer.walletTransactions),
+      JSON.stringify(customer.coupons),
+      JSON.stringify(customer.orders),
+      customer.referralCode,
+      customer.referredBy
+    ]
+  ];
+  
+  // Check if exists
+  const customers = await getSheetData('Customers', 'A2:A');
+  const existingIndex = customers.findIndex(row => row[0] === customer.mobile);
+  
+  if (existingIndex >= 0) {
+    await updateSheetData('Customers', `A${existingIndex + 2}:K${existingIndex + 2}`, values);
+    showNotification('Customer updated!');
+  } else {
+    await updateSheetData('Customers', `A${customers.length + 2}:K`, values);
+    showNotification('Customer added!');
+  }
+  
+  loadCustomers();
+}
     </script>
 </body>
 </html>
