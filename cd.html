@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Details System | Truly Personalized</title>
+    <link href="https://fonts.googleapis.com/css?family=Raleway:400,700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #fff5eb;
+            --primary: #ed4167;
+            --accent: #ffa700;
+            --secondary: #96ded5;
+            --card-bg: #fff;
+            --text: #222;
+            --muted: #666;
+            --credit: #4CAF50;
+            --debit: #F44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Raleway', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background-color: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        header {
+            background-color: var(--secondary);
+            color: white;
+            padding: 16px 32px 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 12px var(--primary)33;
+            position: relative;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .logo-img {
+            width: 100px;
+            height: 100%;
+            border-radius: 10px;
+            background: var(--secondary);
+            object-fit: cover;
+            box-shadow: 0 2px 10px var(--secondary)80;
+        }
+        .header-title { font-size: 1.55rem; font-weight: 700; letter-spacing: 0.02em; }
+        .add-customer-btn {
+            background-color: black;
+            color: white;
+            border: none;
+            padding: 10px 22px;
+            border-radius: 60px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 700;
+            box-shadow: 0 2px 8px var(--accent)33;
+            transition: background 0.22s, color 0.22s;
+        }
+        .add-customer-btn:hover { background-color: var(--primary); color: #fff; }
+        .main-container { display: flex; flex: 1; overflow: hidden; }
+        .form-container {
+            width: 410px;
+            background: var(--bg);
+            padding: 32px 26px 26px 26px;
+            border-right: 2px solid var(--secondary);
+            overflow-y: auto;
+            transition: transform 0.3s;
+            transform: translateX(-100%);
+            position: absolute;
+            height: calc(100vh - 64px);
+            z-index: 10;
+            box-shadow: 2px 0 18px var(--primary)11;
+        }
+        .form-container.show { transform: translateX(0); }
+        .form-close-btn {
+            position: absolute;
+            top: 18px;
+            right: 22px;
+            background: none;
+            border: none;
+            color: var(--primary);
+            font-size: 2rem;
+            cursor: pointer;
+            z-index: 999;
+            transition: color 0.2s;
+        }
+        .form-close-btn:hover { color: var(--accent);}
+        .customer-list-container { flex: 1; padding: 32px 28px; overflow-y: auto; }
+        h1 { margin-bottom: 28px; color: var(--primary); font-size: 1.4rem; font-weight: 700; letter-spacing: 0.02em;}
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 6px; font-weight: 600; color: var(--primary);}
+        input[type="text"], input[type="number"], textarea, select, input[type="tel"], input[type="email"] {
+            width: 100%; padding: 11px; border: 1px solid var(--secondary);
+            border-radius: 60px; font-size: 15px; background: var(--bg);
+            transition: border-color 0.18s;
+        }
+        input[type="text"]:focus, input[type="number"]:focus, textarea:focus, input[type="tel"]:focus, input[type="email"]:focus {
+            border-color: var(--accent);
+            outline: none;
+        }
+        textarea { height: 87px; resize: vertical; border-radius: 30px; padding: 15px;}
+        .form-actions { display: flex; gap: 10px; }
+        .form-actions button {
+            flex: 1;
+            padding: 12px;
+            border-radius: 60px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.22s;
+            font-weight: 700;
+        }
+        .save-btn { background-color: var(--primary); color: white; border: none; }
+        .save-btn:hover { background-color: var(--accent); color: var(--primary); }
+        .hidden { display: none; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: var(--bg);
+            box-shadow: 0 0 14px var(--primary)15;
+            font-size: 14px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--secondary);}
+        th {
+            background-color: var(--secondary);
+            font-weight: 700;
+            position: sticky;
+            top: 0;
+            font-size: 12px;
+            color: black;
+        }
+        tr:hover { background-color: var(--bg); }
+        .action-icons { display: flex; gap: 10px; }
+        .action-icon { cursor: pointer; font-size: 16px; transition: color 0.2s; }
+        .edit-icon { color: var(--accent);}
+        .edit-icon:hover { color: var(--primary);}
+        .delete-icon { color: var(--primary);}
+        .delete-icon:hover { color: var(--accent);}
+        .no-customers { text-align: center; padding: 44px; color: var(--muted); font-size: 1.1rem;}
+        .info-section {
+            border: 1px solid var(--secondary);
+            border-radius: 30px;
+            padding: 15px;
+            margin-bottom: 20px;
+            background-color: var(--bg);
+        }
+        .info-section h4 { margin-bottom: 10px; color: var(--primary);}
+        .address-item {
+            background: white;
+            border-radius: 12px;
+            padding: 10px;
+            margin-bottom: 8px;
+            border: 1px solid var(--secondary);
+            position: relative;
+        }
+        .address-text {
+            margin-bottom: 5px;
+        }
+        .remove-address {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: none;
+            border: none;
+            color: var(--primary);
+            cursor: pointer;
+        }
+        .add-address-btn {
+            background: var(--secondary);
+            color: var(--text);
+            border: none;
+            border-radius: 60px;
+            padding: 8px 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        .add-address-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+        .wallet-section {
+            border: 1px solid var(--secondary);
+            border-radius: 30px;
+            padding: 15px;
+            margin-bottom: 20px;
+            background-color: var(--bg);
+        }
+        .wallet-balance {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .wallet-credit { color: var(--credit); }
+        .wallet-debit { color: var(--debit); }
+        .wallet-transaction {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        .wallet-transaction-amount {
+            font-weight: bold;
+        }
+        .wallet-transaction-desc {
+            font-size: 0.9em;
+            color: var(--muted);
+        }
+        .wallet-action {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .wallet-action input {
+            flex: 1;
+        }
+        .wallet-action button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 60px;
+            padding: 10px;
+            cursor: pointer;
+        }
+        .coupon-section {
+            border: 1px solid var(--secondary);
+            border-radius: 30px;
+            padding: 15px;
+            margin-bottom: 20px;
+            background-color: var(--bg);
+        }
+        .coupon-item {
+            background: white;
+            border-radius: 12px;
+            padding: 10px;
+            margin-bottom: 8px;
+            border: 1px solid var(--secondary);
+        }
+        .coupon-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        .coupon-name {
+            font-weight: bold;
+            color: var(--primary);
+        }
+        .coupon-value {
+            font-weight: bold;
+            color: var(--credit);
+        }
+        .remove-coupon {
+            background: none;
+            border: none;
+            color: var(--primary);
+            cursor: pointer;
+        }
+        .add-coupon-btn {
+            background: var(--secondary);
+            color: var(--text);
+            border: none;
+            border-radius: 60px;
+            padding: 8px 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        .add-coupon-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+        .orders-section {
+            border: 1px solid var(--secondary);
+            border-radius: 30px;
+            padding: 15px;
+            margin-bottom: 20px;
+            background-color: var(--bg);
+        }
+        .order-item {
+            background: white;
+            border-radius: 12px;
+            padding: 10px;
+            margin-bottom: 8px;
+            border: 1px solid var(--secondary);
+        }
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        .order-id {
+            font-weight: bold;
+            color: var(--primary);
+        }
+        .order-amount {
+            font-weight: bold;
+        }
+        .order-date {
+            font-size: 0.9em;
+            color: var(--muted);
+        }
+        .add-order-btn {
+            background: var(--secondary);
+            color: var(--text);
+            border: none;
+            border-radius: 60px;
+            padding: 8px 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        .add-order-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+        .referral-section {
+            border: 1px solid var(--secondary);
+            border-radius: 30px;
+            padding: 15px;
+            margin-bottom: 20px;
+            background-color: var(--bg);
+        }
+        .referral-code {
+            font-family: monospace;
+            font-size: 1.2rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background-color: var(--primary);
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            transition: all 0.3s ease;
+            max-width: 300px;
+        }
+        .notification-hidden {
+            transform: translateX(100%);
+            opacity: 0;
+            visibility: hidden;
+        }
+        .notification-visible {
+            transform: translateX(0);
+            opacity: 1;
+            visibility: visible;
+        }
+        .notification-content {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .notification-content i {
+            font-size: 1.2rem;
+        }
+        .search-and-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+        .search-bar-wrapper {
+            flex: 1;
+            position: relative;
+        }
+        .search-x-btn {
+            position: absolute;
+            right: 8px;
+            top: 12px;
+            background: none;
+            border: none;
+            font-size: 22px;
+            color: var(--primary);
+            cursor: pointer;
+            padding: 0 6px;
+            z-index: 2;
+            display: none;
+        }
+        @media (max-width: 900px) {
+            .main-container { flex-direction: column; }
+            .form-container { width: 100vw; position: fixed; left: 0; top: 0; height: 100vh; z-index: 20;}
+            .customer-list-container { padding: 18px 8px; }
+            table { font-size: 12px;}
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <img class="logo-img" src="tp.png" alt="Logo">
+            <span class="header-title">Customer Details System</span>
+        </div>
+        <button id="showFormBtn" class="add-customer-btn">
+            <i class="fas fa-plus"></i> Add Customer
+        </button>
+    </header>
+    <div class="main-container">
+        <div id="customerFormContainer" class="form-container">
+            <button type="button" id="formCloseBtn" class="form-close-btn" title="Close">&times;</button>
+            <h1>Add / Edit Customer</h1>
+            <form id="customerForm">
+                <div class="info-section">
+                    <h4>Basic Information</h4>
+                    <div class="form-group">
+                        <label for="customerMobile">Mobile Number*</label>
+                        <input type="tel" id="customerMobile" placeholder="10-digit mobile number">
+                    </div>
+                    <div class="form-group">
+                        <label for="customerInsta">Instagram ID</label>
+                        <input type="text" id="customerInsta" placeholder="Instagram username (optional)">
+                    </div>
+                    <div class="form-group">
+                        <label for="customerName">Full Name*</label>
+                        <input type="text" id="customerName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="customerEmail">Email (optional)</label>
+                        <input type="email" id="customerEmail" placeholder="Email address">
+                    </div>
+                </div>
+                
+                <div class="info-section">
+                    <h4>Addresses</h4>
+                    <div id="addressesList">
+                        <!-- Addresses will be added here -->
+                    </div>
+                    <div class="form-group">
+                        <label for="newAddress">Add New Address</label>
+                        <textarea id="newAddress" placeholder="Full address"></textarea>
+                    </div>
+                    <button type="button" id="addAddressBtn" class="add-address-btn">
+                        <i class="fas fa-plus"></i> Add Address
+                    </button>
+                </div>
+                
+                <div class="referral-section">
+                    <h4>Referral Code</h4>
+                    <div class="referral-code" id="referralCodeDisplay">
+                        Will be generated on save
+                    </div>
+                    <div class="form-group" style="margin-top: 15px;">
+                        <label for="referredBy">Referred By (optional)</label>
+                        <input type="text" id="referredBy" placeholder="Enter referral code">
+                    </div>
+                </div>
+                
+                <div class="wallet-section">
+                    <h4>Wallet</h4>
+                    <div class="wallet-balance">
+                        Balance: <span id="walletBalance">₹0.00</span>
+                    </div>
+                    <div id="walletTransactions">
+                        <!-- Transactions will be added here -->
+                    </div>
+                    <div class="wallet-action" style="display: flex; flex-direction: column; gap: 8px; margin-top: 12px;">
+    <input type="number" id="walletAmount" placeholder="Amount" step="0.01" style="width:100%;">
+    <select id="walletAction" style="width:100%;">
+        <option value="credit">Add</option>
+        <option value="debit">Deduct</option>
+    </select>
+    <input type="text" id="walletReason" placeholder="Reason" style="width:100%;">
+    <button type="button" id="applyWalletAction" style="width:100%;">
+        <i class="fas fa-check"></i>
+    </button>
+</div>
+                </div>
+                
+                <div class="coupon-section">
+                    <h4>Coupons</h4>
+                    <div id="couponsList">
+                        <!-- Coupons will be added here -->
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="manualCouponId"> Manual Coupon ID
+                        </label>
+                        <input type="text" id="couponId" placeholder="Coupon ID" class="hidden">
+                        <input type="text" id="couponName" placeholder="Coupon name">
+                    </div>
+                    <div class="form-group">
+                        <label for="couponValue">Discount Value</label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="number" id="couponValue" placeholder="Amount" style="flex: 1;">
+                            <select id="couponType" style="width: 100px;">
+                                <option value="amount">₹</option>
+                                <option value="percent">%</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="button" id="addCouponBtn" class="add-coupon-btn">
+                        <i class="fas fa-plus"></i> Add Coupon
+                    </button>
+                </div>
+                
+                <div class="orders-section">
+                    <h4>Orders</h4>
+                    <div id="ordersList">
+                        <!-- Orders will be added here -->
+                    </div>
+                    <div class="form-group">
+                        <label for="orderId">Add Order ID (optional)</label>
+                        <input type="text" id="orderId" placeholder="Order ID">
+                    </div>
+                    <button type="button" id="addOrderBtn" class="add-order-btn">
+                        <i class="fas fa-plus"></i> Add Order
+                    </button>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="save-btn">Save Customer</button>
+                </div>
+            </form>
+        </div>
+        <div class="customer-list-container">
+            <h1>Customer List</h1>
+            <div class="search-and-actions">
+                <div class="search-bar-wrapper">
+                    <input type="text" id="searchInput" placeholder="Search customers by name, mobile, or insta..." style="width: 100%; padding: 12px; border: 1px solid var(--secondary); border-radius: 60px; font-size: 16px;">
+                    <button id="searchXBtn" class="search-x-btn" title="Clear Search">&times;</button>
+                </div>
+            </div>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                           <th>Name</th>
+                            <th>Mobile</th>
+                            <th>Instagram</th>
+                            <th>Addresses</th>
+                            <th>Wallet<br><small>Amount & Reason</small></th>
+                            <th>Orders</th>
+                            <th>Referral</th>
+                            <th>Available Coupons<br><small>(One per line)</small></th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="customerTableBody">
+                        <!-- Customers will be added here -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="noCustomersMessage" class="no-customers">
+                No customers found. Click "Add Customer" to create your first customer.
+            </div>
+        </div>
+    </div>
+    <div id="notification" class="notification-hidden">
+        <div class="notification-content"></div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+    // DOM Elements
+    const showFormBtn = document.getElementById('showFormBtn');
+    const formCloseBtn = document.getElementById('formCloseBtn');
+    const customerFormContainer = document.getElementById('customerFormContainer');
+    const customerForm = document.getElementById('customerForm');
+    const customerTableBody = document.getElementById('customerTableBody');
+    const noCustomersMessage = document.getElementById('noCustomersMessage');
+    const searchInput = document.getElementById('searchInput');
+    const searchXBtn = document.getElementById('searchXBtn');
+    const notification = document.getElementById('notification');
+
+    // Form fields (if present)
+    const customerMobile = document.getElementById('customerMobile');
+    const customerInsta = document.getElementById('customerInsta');
+    const customerName = document.getElementById('customerName');
+    const customerEmail = document.getElementById('customerEmail');
+    const newAddress = document.getElementById('newAddress');
+    const addAddressBtn = document.getElementById('addAddressBtn');
+    const addressesList = document.getElementById('addressesList');
+    const referralCodeDisplay = document.getElementById('referralCodeDisplay');
+    const referredBy = document.getElementById('referredBy');
+    const walletBalance = document.getElementById('walletBalance');
+    const walletAmount = document.getElementById('walletAmount');
+    const walletAction = document.getElementById('walletAction');
+    const walletReason = document.getElementById('walletReason');
+    const applyWalletAction = document.getElementById('applyWalletAction');
+    const walletTransactions = document.getElementById('walletTransactions');
+    const manualCouponIdCheckbox = document.getElementById('manualCouponId');
+    const couponIdInput = document.getElementById('couponId');
+    const couponName = document.getElementById('couponName');
+    const couponValue = document.getElementById('couponValue');
+    const couponType = document.getElementById('couponType');
+    const addCouponBtn = document.getElementById('addCouponBtn');
+    const couponsList = document.getElementById('couponsList');
+    const orderId = document.getElementById('orderId');
+    const addOrderBtn = document.getElementById('addOrderBtn');
+    const ordersList = document.getElementById('ordersList');
+
+    // State
+    let currentCustomer = null;
+    let addresses = [];
+    let walletTransactionsData = [];
+    let coupons = [];
+    let orders = [];
+
+    // --------- Customer List Rendering with Wallet & Coupons Columns ---------
+    function loadCustomers() {
+        const customers = JSON.parse(localStorage.getItem('customers')) || [];
+        customerTableBody.innerHTML = '';
+        if (customers.length === 0) {
+            noCustomersMessage.style.display = 'block';
+            return;
+        }
+        noCustomersMessage.style.display = 'none';
+        customers.forEach(customer => {
+            const row = document.createElement('tr');
+            // Addresses
+            let addressesDisplay = customer.addresses ? customer.addresses.join(', ') : '';
+            if (addressesDisplay.length > 50) {
+                addressesDisplay = addressesDisplay.substring(0, 47) + '...';
+            }
+            // Wallet: balance, then up to 2 transactions (amount and reason per line)
+            let walletAmountReason = '';
+            if (customer.walletTransactions && customer.walletTransactions.length > 0) {
+                walletAmountReason = customer.walletTransactions.slice(0, 2).map(txn => {
+                    return `<div>
+                        <span>${txn.type === 'credit' ? '+' : '-'}₹${txn.amount.toFixed(2)}</span>
+                        <br><span style="color:var(--muted);font-size:0.95em">${txn.description}</span>
+                    </div>`;
+                }).join('');
+                if (customer.walletTransactions.length > 2) {
+                    walletAmountReason += `<div style="color:var(--muted);font-size:0.9em;">...${customer.walletTransactions.length-2} more</div>`;
+                }
+            } else {
+                walletAmountReason = '<span style="color:var(--muted);">No transactions</span>';
+            }
+            // Orders
+            let ordersDisplay = customer.orders ? customer.orders.join(', ') : '';
+            if (ordersDisplay.length > 30) {
+                ordersDisplay = ordersDisplay.substring(0, 27) + '...';
+            }
+            // Coupons: each on a new line
+            let couponsDisplay = '';
+            if (customer.coupons && customer.coupons.length > 0) {
+                couponsDisplay = customer.coupons.map(c => 
+                    `<div>${c.name || 'Coupon'} (${c.value}${c.type === 'percent' ? '%' : '₹'})<br><span style='font-size:0.9em;color:var(--muted)'>ID:${c.id}</span></div>`
+                ).join('');
+            } else {
+                couponsDisplay = '<span style="color:var(--muted);">None</span>';
+            }
+            row.innerHTML = `
+                <td>${customer.name}</td>
+                <td>${customer.mobile || '-'}</td>
+                <td>${customer.insta || '-'}</td>
+                <td>${addressesDisplay || '-'}</td>
+                <td>
+                    <div style="font-weight:bold;">₹${(customer.walletBalance || 0).toFixed(2)}</div>
+                    ${walletAmountReason}
+                </td>
+                <td>${ordersDisplay || '-'}</td>
+                <td>${customer.referralCode || '-'}</td>
+                <td>${couponsDisplay}</td>
+                <td>
+                    <i class="fas fa-edit edit-icon action-icon" onclick="editCustomer('${customer.mobile ? customer.mobile.replace(/'/g, "\\'") : ''}')"></i>
+                    <i class="fas fa-trash delete-icon action-icon" onclick="deleteCustomer('${customer.mobile ? customer.mobile.replace(/'/g, "\\'") : ''}')"></i>
+                </td>
+            `;
+            customerTableBody.appendChild(row);
+        });
+    }
+
+    // --------- Customer Form CRUD ---------
+    window.editCustomer = function(mobile) {
+        const customers = JSON.parse(localStorage.getItem('customers')) || [];
+        const customer = customers.find(c => c.mobile === mobile);
+        if (customer) {
+            currentCustomer = customer;
+            customerMobile.value = customer.mobile || '';
+            customerInsta.value = customer.insta || '';
+            customerName.value = customer.name;
+            customerEmail.value = customer.email || '';
+            addresses = customer.addresses ? [...customer.addresses] : [];
+            renderAddresses();
+            referralCodeDisplay.textContent = customer.referralCode || 'Will be generated on save';
+            referredBy.value = customer.referredBy || '';
+            walletBalance.textContent = `₹${(customer.walletBalance || 0).toFixed(2)}`;
+            walletTransactionsData = customer.walletTransactions || [];
+            renderWalletTransactions();
+            coupons = customer.coupons ? [...customer.coupons] : [];
+            renderCoupons();
+            orders = customer.orders ? [...customer.orders] : [];
+            renderOrders();
+            customerFormContainer.classList.add('show');
+        }
+    };
+
+    window.deleteCustomer = function(mobile) {
+        if (confirm('Are you sure you want to delete this customer?')) {
+            const customers = JSON.parse(localStorage.getItem('customers')) || [];
+            const updatedCustomers = customers.filter(c => c.mobile !== mobile);
+            localStorage.setItem('customers', JSON.stringify(updatedCustomers));
+            loadCustomers();
+            showNotification('Customer deleted successfully!');
+        }
+    };
+
+    function renderAddresses() {
+        if (!addressesList) return;
+        addressesList.innerHTML = '';
+        if (addresses.length === 0) return;
+        addresses.forEach((address, index) => {
+            const item = document.createElement('div');
+            item.className = 'address-item';
+            item.innerHTML = `
+                <div class="address-text">${address}</div>
+                <button class="remove-address" data-index="${index}">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            addressesList.appendChild(item);
+        });
+        document.querySelectorAll('.remove-address').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const index = parseInt(this.dataset.index);
+                addresses.splice(index, 1);
+                renderAddresses();
+            });
+        });
+    }
+
+    if (addAddressBtn) {
+        addAddressBtn.addEventListener('click', function() {
+            const address = newAddress.value.trim();
+            if (!address) {
+                showNotification('Please enter an address', false);
+                return;
+            }
+            addresses.push(address);
+            renderAddresses();
+            newAddress.value = '';
+            showNotification('Address added successfully!');
+        });
+    }
+
+   function renderWalletTransactions() {
+    if (!walletTransactions) return;
+    walletTransactions.innerHTML = '';
+    if (walletTransactionsData.length === 0) {
+        walletTransactions.innerHTML = '<div style="color: var(--muted);">No transactions yet</div>';
+        return;
+    }
+    walletTransactionsData
+        .sort((a, b) => new Date(b.date) - new Date(a.date))
+        .forEach(txn => {
+            const item = document.createElement('div');
+            item.className = 'wallet-transaction';
+            item.style.marginBottom = '14px';
+            item.innerHTML = `
+                <div style="font-weight:bold;">₹${txn.amount.toFixed(2)}</div>
+                <div style="color:${txn.type === 'credit' ? 'var(--credit)' : 'var(--debit)'};font-weight:bold;">
+                    ${txn.type === 'credit' ? 'Add' : 'Deduct'}
+                </div>
+                <div style="color:var(--muted);font-size:0.98em;">${txn.description}</div>
+                <div style="font-size:0.8em;color:var(--muted);">${new Date(txn.date).toLocaleString()}</div>
+            `;
+            walletTransactions.appendChild(item);
+        });
+}
+
+    if (applyWalletAction) {
+        applyWalletAction.addEventListener('click', function() {
+            const amount = parseFloat(walletAmount.value) || 0;
+            const action = walletAction.value;
+            const reason = walletReason.value.trim() || 'Manual adjustment';
+            if (amount <= 0) {
+                showNotification('Please enter a valid amount', false);
+                return;
+            }
+            if (!reason) {
+                showNotification('Please enter a reason', false);
+                return;
+            }
+            const transaction = {
+                date: new Date().toISOString(),
+                amount: amount,
+                type: action,
+                description: reason
+            };
+            walletTransactionsData.push(transaction);
+            renderWalletTransactions();
+            // Update balance
+            const currentBalance = parseFloat(walletBalance.textContent.replace('₹', '')) || 0;
+            const newBalance = action === 'credit' ? currentBalance + amount : currentBalance - amount;
+            walletBalance.textContent = `₹${newBalance.toFixed(2)}`;
+            walletAmount.value = '';
+            walletReason.value = '';
+            showNotification('Wallet updated successfully!');
+        });
+    }
+
+    if (manualCouponIdCheckbox) {
+        manualCouponIdCheckbox.addEventListener('change', function() {
+            couponIdInput.classList.toggle('hidden', !this.checked);
+        });
+    }
+
+    if (addCouponBtn) {
+        addCouponBtn.addEventListener('click', function() {
+            const name = couponName.value.trim();
+            const value = parseFloat(couponValue.value) || 0;
+            const type = couponType.value;
+            const id = manualCouponIdCheckbox.checked ? couponIdInput.value.trim() : `CPN-${Math.random().toString(36).substr(2, 8)}`;
+            if (value <= 0) {
+                showNotification('Please enter a valid coupon value', false);
+                return;
+            }
+            if (manualCouponIdCheckbox.checked && !id) {
+                showNotification('Please enter a coupon ID', false);
+                return;
+            }
+            const coupon = {
+                id: id,
+                name: name || 'Discount Coupon',
+                value: value,
+                type: type
+            };
+            coupons.push(coupon);
+            renderCoupons();
+            couponName.value = '';
+            couponValue.value = '';
+            couponIdInput.value = '';
+            manualCouponIdCheckbox.checked = false;
+            couponIdInput.classList.add('hidden');
+            showNotification('Coupon added successfully!');
+        });
+    }
+
+    function renderCoupons() {
+        if (!couponsList) return;
+        couponsList.innerHTML = '';
+        if (coupons.length === 0) {
+            couponsList.innerHTML = '<div style="color: var(--muted);">No coupons yet</div>';
+            return;
+        }
+        coupons.forEach((coupon, index) => {
+            const item = document.createElement('div');
+            item.className = 'coupon-item';
+            item.innerHTML = `
+                <div class="coupon-header">
+                    <span class="coupon-name">${coupon.name}</span>
+                    <span class="coupon-value">${coupon.value}${coupon.type === 'percent' ? '%' : '₹'}</span>
+                </div>
+                <div style="font-size: 0.9em; color: var(--muted);">ID: ${coupon.id}</div>
+                <button class="remove-coupon" data-index="${index}">
+                    <i class="fas fa-times"></i> Remove
+                </button>
+            `;
+            couponsList.appendChild(item);
+        });
+        document.querySelectorAll('.remove-coupon').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const index = parseInt(this.dataset.index);
+                coupons.splice(index, 1);
+                renderCoupons();
+            });
+        });
+    }
+
+    if (addOrderBtn) {
+        addOrderBtn.addEventListener('click', function() {
+            const id = orderId.value.trim();
+            if (!id) {
+                showNotification('Please enter an order ID', false);
+                return;
+            }
+            const allOrders = JSON.parse(localStorage.getItem('orders')) || [];
+            const orderExists = allOrders.some(o => o.id === id);
+            if (!orderExists) {
+                if (!confirm('This order ID doesn\'t exist in orders. Add anyway?')) {
+                    return;
+                }
+            }
+            if (!orders.includes(id)) {
+                orders.push(id);
+                renderOrders();
+                orderId.value = '';
+                showNotification('Order added successfully!');
+            } else {
+                showNotification('This order is already linked', false);
+            }
+        });
+    }
+
+    function renderOrders() {
+        if (!ordersList) return;
+        ordersList.innerHTML = '';
+        if (orders.length === 0) {
+            ordersList.innerHTML = '<div style="color: var(--muted);">No orders yet</div>';
+            return;
+        }
+        const allOrders = JSON.parse(localStorage.getItem('orders')) || [];
+        orders.forEach((orderId, index) => {
+            const order = allOrders.find(o => o.id === orderId);
+            const item = document.createElement('div');
+            item.className = 'order-item';
+            if (order) {
+                const date = new Date(order.date);
+                const formattedDate = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+                item.innerHTML = `
+                    <div class="order-header">
+                        <span class="order-id">${order.id}</span>
+                        <span class="order-amount">₹${order.total.toFixed(2)}</span>
+                    </div>
+                    <div class="order-date">${formattedDate}</div>
+                    <button class="remove-order" data-index="${index}">
+                        <i class="fas fa-times"></i> Remove
+                    </button>
+                `;
+            } else {
+                item.innerHTML = `
+                    <div class="order-header">
+                        <span class="order-id">${orderId}</span>
+                        <span style="color: var(--muted);">(Order not found)</span>
+                    </div>
+                    <button class="remove-order" data-index="${index}">
+                        <i class="fas fa-times"></i> Remove
+                    </button>
+                `;
+            }
+            ordersList.appendChild(item);
+        });
+        document.querySelectorAll('.remove-order').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const index = parseInt(this.dataset.index);
+                orders.splice(index, 1);
+                renderOrders();
+            });
+        });
+    }
+
+    if (customerForm) {
+        customerForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (!customerMobile.value.trim() && !customerInsta.value.trim()) {
+                showNotification('Please enter either mobile or Instagram ID', false);
+                return;
+            }
+            if (!customerName.value.trim()) {
+                showNotification('Please enter customer name', false);
+                return;
+            }
+            if (addresses.length === 0) {
+                showNotification('Please add at least one address', false);
+                return;
+            }
+            let referralCode = referralCodeDisplay.textContent;
+            if (referralCode === 'Will be generated on save' || !referralCode) {
+                referralCode = `SA${Math.random().toString(36).substr(2, 8).toUpperCase()}`;
+            }
+            const customer = {
+                mobile: customerMobile.value.trim(),
+                insta: customerInsta.value.trim(),
+                name: customerName.value.trim(),
+                email: customerEmail.value.trim(),
+                addresses: [...addresses],
+                referralCode: referralCode,
+                referredBy: referredBy.value.trim(),
+                walletBalance: parseFloat(walletBalance.textContent.replace('₹', '')) || 0,
+                walletTransactions: [...walletTransactionsData],
+                coupons: [...coupons],
+                orders: [...orders]
+            };
+            const customers = JSON.parse(localStorage.getItem('customers')) || [];
+            if (currentCustomer) {
+                const customerIndex = customers.findIndex(c => 
+                    (currentCustomer.mobile && c.mobile === currentCustomer.mobile) ||
+                    (currentCustomer.insta && c.insta && c.insta.toLowerCase() === currentCustomer.insta.toLowerCase())
+                );
+                if (customerIndex !== -1) {
+                    customers[customerIndex] = customer;
+                }
+            } else {
+                customers.push(customer);
+            }
+            localStorage.setItem('customers', JSON.stringify(customers));
+            showNotification('Customer saved successfully!');
+            resetForm();
+            customerFormContainer.classList.remove('show');
+            loadCustomers();
+        });
+    }
+
+    function resetForm() {
+        if (customerForm) customerForm.reset();
+        addresses = [];
+        renderAddresses();
+        walletTransactionsData = [];
+        renderWalletTransactions();
+        coupons = [];
+        renderCoupons();
+        orders = [];
+        renderOrders();
+        if (referralCodeDisplay) referralCodeDisplay.textContent = 'Will be generated on save';
+        if (walletBalance) walletBalance.textContent = '₹0.00';
+        currentCustomer = null;
+    }
+
+    // Search customers
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const rows = customerTableBody.querySelectorAll('tr');
+            let hasResults = false;
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    row.style.display = '';
+                    hasResults = true;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            searchXBtn.style.display = searchTerm.length ? 'block' : 'none';
+            noCustomersMessage.style.display = hasResults || searchTerm === '' ? 'none' : 'block';
+            noCustomersMessage.textContent = 'No customers found matching your search.';
+        });
+    }
+    if (searchXBtn) {
+        searchXBtn.addEventListener('click', function() {
+            searchInput.value = '';
+            searchInput.dispatchEvent(new Event('input'));
+            searchInput.focus();
+        });
+    }
+
+    // Notification
+    function showNotification(message, isSuccess = true) {
+        if (!notification) return;
+        const content = notification.querySelector('.notification-content');
+        content.innerHTML = `
+            <i class="fas ${isSuccess ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+            <span>${message}</span>
+        `;
+        notification.classList.remove('notification-hidden');
+        notification.classList.add('notification-visible');
+        setTimeout(() => {
+            notification.classList.remove('notification-visible');
+            notification.classList.add('notification-hidden');
+        }, 3000);
+    }
+
+    // Show form
+    if (showFormBtn) {
+        showFormBtn.addEventListener('click', function() {
+            customerFormContainer.classList.add('show');
+            resetForm();
+        });
+    }
+    if (formCloseBtn) {
+        formCloseBtn.addEventListener('click', function() {
+            customerFormContainer.classList.remove('show');
+            resetForm();
+        });
+    }
+
+    // Initial load
+    loadCustomers();
+});
+    </script>
+</body>
+</html>
