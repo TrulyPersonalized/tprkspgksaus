@@ -6,7 +6,6 @@
     <title>Product Management System | Truly Personalized</title>
     <link href="https://fonts.googleapis.com/css?family=Raleway:400,700&display=swap" rel="stylesheet">
     <style>
-        /* Your existing CSS styles */
         :root {
             --bg: #fff5eb;
             --primary: #ed4167;
@@ -28,14 +27,565 @@
             display: flex;
             flex-direction: column;
         }
-        /* ... rest of your CSS styles ... */
+        header {
+            background-color: var(--secondary);
+            color: white;
+            padding: 16px 32px 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 12px var(--primary)33;
+            position: relative;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .logo-img {
+            width: 100px;
+            height: 100%;
+            border-radius: 10px;
+            background: var(--secondary);
+            object-fit: cover;
+            box-shadow: 0 2px 10px var(--secondary)80;
+        }
+        .header-title { font-size: 1.55rem; font-weight: 700; letter-spacing: 0.02em; }
+        .add-product-btn {
+            background-color: black;
+            color: white;
+            border: none;
+            padding: 10px 22px;
+            border-radius: 60px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 700;
+            box-shadow: 0 2px 8px var(--accent)33;
+            transition: background 0.22s, color 0.22s;
+        }
+        .add-product-btn:hover { background-color: var(--primary); color: #fff; }
+        .main-container { display: flex; flex: 1; overflow: hidden; }
+        .form-container {
+            width: 410px;
+            background: var(--bg);
+            padding: 32px 26px 26px 26px;
+            border-right: 2px solid var(--secondary);
+            overflow-y: auto;
+            transition: transform 0.3s;
+            transform: translateX(-100%);
+            position: absolute;
+            height: calc(100vh - 64px);
+            z-index: 10;
+            box-shadow: 2px 0 18px var(--primary)11;
+        }
+        .form-container.show { transform: translateX(0); }
+        .form-close-btn {
+            position: absolute;
+            top: 18px;
+            right: 22px;
+            background: none;
+            border: none;
+            color: var(--primary);
+            font-size: 2rem;
+            cursor: pointer;
+            z-index: 999;
+            transition: color 0.2s;
+        }
+        .form-close-btn:hover { color: var(--accent);}
+        .product-list-container { flex: 1; padding: 32px 28px; overflow-y: auto; }
+        h1 { margin-bottom: 28px; color: var(--primary); font-size: 1.4rem; font-weight: 700; letter-spacing: 0.02em;}
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 6px; font-weight: 600; color: var(--primary);}
+        input[type="text"], input[type="number"], textarea, select {
+            width: 100%; padding: 11px; border: 1px solid var(--secondary);
+            border-radius: 60px; font-size: 15px; background: var(--bg);
+            transition: border-color 0.18s;
+        }
+        input[type="text"]:focus, input[type="number"]:focus, textarea:focus {
+            border-color: var(--accent);
+            outline: none;
+        }
+        textarea { height: 87px; resize: vertical; border-radius: 30px; padding: 15px;}
+        .product-code {
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary);
+            letter-spacing: 0.04em;
+        }
+        #editCodeGroup { margin-bottom: 20px; }
+        .form-actions { display: flex; gap: 10px; }
+        .form-actions button {
+            flex: 1;
+            padding: 12px;
+            border-radius: 60px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.22s;
+            font-weight: 700;
+        }
+        .save-btn { background-color: var(--primary); color: white; border: none; }
+        .save-btn:hover { background-color: var(--accent); color: var(--primary); }
+        .delivery-type {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .delivery-type label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            white-space: nowrap;
+            color: var(--text);
+        }
+        .delivery-type input[type="radio"] { margin: 0; width: auto; }
+        .photo-preview {
+            max-width: 90px;
+            max-height: 90px;
+            margin-top: 10px;
+            border: 1.5px solid var(--secondary);
+            border-radius: 8px;
+            display: block;
+            cursor: pointer;
+            object-fit: cover;
+        }
+        .hidden { display: none; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: var(--bg);
+            box-shadow: 0 0 14px var(--primary)15;
+            font-size: 14px;
+            border-radius: 10px;
+            overflow: hidden;
+            table-layout: fixed;
+        }
+        th, td { 
+            padding: 8px 10px; 
+            text-align: left; 
+            border-bottom: 1px solid var(--secondary);
+            word-wrap: break-word;
+        }
+        th {
+            background-color: var(--secondary);
+            font-weight: 700;
+            position: sticky;
+            top: 0;
+            font-size: 12px;
+            color: black;
+        }
+        tr:hover { background-color: var(--bg); }
+        .action-icons { display: flex; gap: 10px; }
+        .action-icon { cursor: pointer; font-size: 16px; transition: color 0.2s; }
+        .edit-icon { color: var(--accent);}
+        .edit-icon:hover { color: var(--primary);}
+        .delete-icon { color: var(--primary);}
+        .delete-icon:hover { color: var(--accent);}
+        .no-products { text-align: center; padding: 44px; color: var(--muted); font-size: 1.1rem;}
+        .product-image {
+            width: 46px;
+            height: 46px;
+            object-fit: cover;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 1px solid var(--secondary);
+        }
+        .same-product-warning {
+            color: var(--primary);
+            margin-top: 5px;
+            font-size: 14px;
+            display: none;
+        }
+        .price-row { display: flex; gap: 11px; }
+        .price-row .form-group { flex: 1; }
+        .calculated-field { background-color: var(--bg); color: var(--muted);}
+        .calculated-value { font-weight: bold; color: var(--accent); }
+        .extra-amount-section {
+            border: 1px solid var(--secondary);
+            border-radius: 30px;
+            padding: 15px;
+            margin-bottom: 20px;
+            background-color: var(--bg);
+        }
+        .extra-amount-section h4 { margin-bottom: 10px; color: var(--primary);}
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(237,65,103,0.15);
+        }
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-width: 90%;
+            max-height: 90%;
+        }
+        .modal-image {
+            width: 100%;
+            height: auto;
+            border-radius: 12px;
+            border: 4px solid var(--accent);
+            background: var(--bg);
+        }
+        .close {
+            position: absolute;
+            top: 15px;
+            right: 35px;
+            color: var(--primary);
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 2;
+        }
+        .close:hover { color: var(--accent);}
+        .insta-modal {
+            display: none;
+            position: fixed;
+            z-index: 1002;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(237,65,103,0.15);
+        }
+        .insta-modal-content {
+            background: var(--card-bg);
+            border-radius: 14px;
+            padding: 28px;
+            max-width: 410px;
+            width: 92%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            box-shadow: 0 8px 44px var(--primary)55;
+            transform: translate(-50%, -50%);
+        }
+        .insta-title {
+            font-size: 1.2rem;
+            margin-bottom: 14px;
+            color: var(--primary);
+            font-weight: bold;
+            text-align: center;
+            letter-spacing: 0.02em;
+        }
+        .insta-textarea {
+            width: 100%;
+            height: 90px;
+            font-size: 15px;
+            padding: 10px;
+            border: 1px solid var(--secondary);
+            border-radius: 8px;
+            margin-bottom: 16px;
+            background: var(--bg);
+            resize: vertical;
+        }
+        .insta-copy-btn {
+            background-color: var(--accent);
+            color: whitesmoke;
+            border: none;
+            border-radius: 60px;
+            padding: 11px 18px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 8px;
+            transition: background-color 0.2s, color 0.2s;
+        }
+        .insta-copy-btn:hover { background-color: var(--primary); color: #fff;}
+        .insta-close {
+            background: none;
+            border: none;
+            color: var(--primary);
+            font-size: 24px;
+            position: absolute;
+            right: 18px;
+            top: 18px;
+            cursor: pointer;
+        }
+        .insta-success {
+            color: var(--secondary);
+            font-size: 15px;
+            text-align: center;
+            margin-bottom: 10px;
+            display: none;
+        }
+        .insta-btn-action {
+            color: var(--accent);
+            background: none;
+            border: none;
+            border-radius: 8px;
+            font-size: 20px;
+            padding: 0 6px;
+            cursor: pointer;
+            transition: color 0.22s;
+        }
+        .insta-btn-action:hover { color: var(--primary);}
+        .select-checkbox {
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            accent-color: var(--primary);
+            appearance: none;
+            border: 2px solid var(--secondary);
+            border-radius: 50%;
+            outline: none;
+            background: var(--bg);
+            position: relative;
+        }
+        .select-checkbox:checked {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+        .select-checkbox:checked::after {
+            content: '';
+            display: block;
+            width: 10px;
+            height: 10px;
+            background: var(--primary);
+            border-radius: 50%;
+            position: absolute;
+            top: 4px;
+            left: 4px;
+        }
+        .search-and-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+        .search-bar-wrapper {
+            flex: 1;
+            position: relative;
+        }
+        .multi-delete-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .multi-delete-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .multi-delete-btn:hover:not(:disabled) {
+            background-color: var(--accent);
+        }
+        .search-x-btn {
+            position: absolute;
+            right: 8px;
+            top: 12px;
+            background: none;
+            border: none;
+            font-size: 22px;
+            color: var(--primary);
+            cursor: pointer;
+            padding: 0 6px;
+            z-index: 2;
+            display: none;
+        }
+        .actions-icons-flex { display: flex; gap: 10px; align-items: center; }
+        
+        /* New styles for extra amounts */
+        .extra-amount-item {
+            background: white;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 10px;
+            border: 1px solid var(--secondary);
+            position: relative;
+        }
+        .extra-amount-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        .extra-amount-title {
+            font-weight: bold;
+            color: var(--primary);
+        }
+        .extra-amount-value {
+            font-weight: bold;
+        }
+        .credit { color: var(--credit); }
+        .debit { color: var(--debit); }
+        .extra-amount-description {
+            font-size: 0.9em;
+            color: var(--muted);
+        }
+        .remove-extra-amount {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: none;
+            border: none;
+            color: var(--primary);
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .extra-amount-type {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .extra-amount-type label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+        }
+        .add-extra-amount-btn {
+            background: var(--secondary);
+            color: var(--text);
+            border: none;
+            border-radius: 60px;
+            padding: 8px 12px;
+            font-size: 0.9em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        .add-extra-amount-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+        .extra-amounts-list {
+            margin-top: 15px;
+        }
+        #notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background-color: var(--primary);
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            transition: all 0.3s ease;
+            max-width: 300px;
+        }
+        
+        .notification-hidden {
+            transform: translateX(100%);
+            opacity: 0;
+            visibility: hidden;
+        }
+        
+        .notification-visible {
+            transform: translateX(0);
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .notification-content {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .notification-content i {
+            font-size: 1.2rem;
+        }
+
+        /* New styles for description cell */
+        .description-cell {
+            white-space: normal;
+            word-wrap: break-word;
+            max-width: 200px;
+        }
+
+        /* Column specific widths */
+        td:nth-child(1) { width: 30px; } /* Checkbox */
+        td:nth-child(2) { width: 80px; } /* Code */
+        td:nth-child(3) { width: 120px; } /* Item Name */
+        td:nth-child(4) { width: 120px; } /* Manufacturer */
+        td:nth-child(5) { width: 60px; } /* Photo */
+        td:nth-child(6), 
+        td:nth-child(7), 
+        td:nth-child(8), 
+        td:nth-child(9) { width: 80px; } /* Prices */
+        td:nth-child(10) { width: 70px; } /* Sales */
+        td:nth-child(11) { width: 90px; } /* Profits */
+        td:nth-child(12) { width: 150px; } /* Extra Amounts */
+        td:nth-child(13) { width: 200px; } /* Description */
+        td:nth-child(14) { width: 100px; } /* Actions */
+        
+        /* Sync UI */
+        .sync-ui {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        .sync-ui div {
+            display: flex;
+            gap: 10px;
+        }
+        .sync-ui button {
+            padding: 10px;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #syncButton {
+            background: #2ea44f;
+        }
+        #authButton {
+            background: #24292e;
+        }
+        
+        @media (max-width: 900px) {
+            .main-container { flex-direction: column; }
+            .form-container { width: 100vw; position: fixed; left: 0; top: 0; height: 100vh; z-index: 20;}
+            .product-list-container { padding: 18px 8px; }
+            table { font-size: 12px;}
+            
+            /* Adjust column widths for mobile */
+            td:nth-child(1) { width: 25px; }
+            td:nth-child(2) { width: 60px; }
+            td:nth-child(3) { width: 100px; }
+            td:nth-child(4) { width: 100px; }
+            td:nth-child(5) { width: 50px; }
+            td:nth-child(6), 
+            td:nth-child(7), 
+            td:nth-child(8), 
+            td:nth-child(9) { width: 70px; }
+            td:nth-child(10) { width: 60px; }
+            td:nth-child(11) { width: 80px; }
+            td:nth-child(12) { width: 120px; }
+            td:nth-child(13) { width: 150px; }
+            td:nth-child(14) { width: 80px; }
+        }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
     <header>
         <div class="logo">
-            <img class="logo-img" src="tp.png" alt="Logo">
+            <img class="logo-img" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjOTZkZWQ1IiAvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkeT0iMC4zNWVtIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiMyMjIiPlRQPC90ZXh0Pjwvc3ZnPg==" alt="Logo">
             <span class="header-title">Product Management System</span>
         </div>
         <button id="showFormBtn" class="add-product-btn">
@@ -211,14 +761,10 @@
     </div>
     
     <!-- Sync UI -->
-    <div id="syncUI" style="position:fixed;bottom:20px;right:20px;z-index:1000;">
-        <div style="display:flex;gap:10px;">
-            <button id="syncButton" style="padding:10px;background:#2ea44f;color:white;border:none;border-radius:5px;">
-                <i class="fas fa-sync-alt"></i> Sync
-            </button>
-            <button id="authButton" style="padding:10px;background:#24292e;color:white;border:none;border-radius:5px;">
-                <i class="fab fa-github"></i> Login
-            </button>
+    <div class="sync-ui">
+        <div>
+            <button id="syncButton"><i class="fas fa-sync-alt"></i> Sync</button>
+            <button id="authButton"><i class="fab fa-github"></i> Login</button>
         </div>
     </div>
 
@@ -1215,4 +1761,3 @@
     </script>
 </body>
 </html>
-
