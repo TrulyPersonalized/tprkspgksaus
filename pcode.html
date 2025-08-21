@@ -1,0 +1,1763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Management System | Truly Personalized</title>
+    <link href="https://fonts.googleapis.com/css?family=Raleway:400,700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #fff5eb;
+            --primary: #ed4167;
+            --accent: #ffa700;
+            --secondary: #96ded5;
+            --card-bg: #fff;
+            --text: #222;
+            --muted: #666;
+            --credit: #4CAF50;
+            --debit: #F44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Raleway', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background-color: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        header {
+            background-color: var(--secondary);
+            color: white;
+            padding: 16px 32px 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 12px var(--primary)33;
+            position: relative;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .logo-img {
+            width: 100px;
+            height: 100%;
+            border-radius: 10px;
+            background: var(--secondary);
+            object-fit: cover;
+            box-shadow: 0 2px 10px var(--secondary)80;
+        }
+        .header-title { font-size: 1.55rem; font-weight: 700; letter-spacing: 0.02em; }
+        .add-product-btn {
+            background-color: black;
+            color: white;
+            border: none;
+            padding: 10px 22px;
+            border-radius: 60px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 700;
+            box-shadow: 0 2px 8px var(--accent)33;
+            transition: background 0.22s, color 0.22s;
+        }
+        .add-product-btn:hover { background-color: var(--primary); color: #fff; }
+        .main-container { display: flex; flex: 1; overflow: hidden; }
+        .form-container {
+            width: 410px;
+            background: var(--bg);
+            padding: 32px 26px 26px 26px;
+            border-right: 2px solid var(--secondary);
+            overflow-y: auto;
+            transition: transform 0.3s;
+            transform: translateX(-100%);
+            position: absolute;
+            height: calc(100vh - 64px);
+            z-index: 10;
+            box-shadow: 2px 0 18px var(--primary)11;
+        }
+        .form-container.show { transform: translateX(0); }
+        .form-close-btn {
+            position: absolute;
+            top: 18px;
+            right: 22px;
+            background: none;
+            border: none;
+            color: var(--primary);
+            font-size: 2rem;
+            cursor: pointer;
+            z-index: 999;
+            transition: color 0.2s;
+        }
+        .form-close-btn:hover { color: var(--accent);}
+        .product-list-container { flex: 1; padding: 32px 28px; overflow-y: auto; }
+        h1 { margin-bottom: 28px; color: var(--primary); font-size: 1.4rem; font-weight: 700; letter-spacing: 0.02em;}
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 6px; font-weight: 600; color: var(--primary);}
+        input[type="text"], input[type="number"], textarea, select {
+            width: 100%; padding: 11px; border: 1px solid var(--secondary);
+            border-radius: 60px; font-size: 15px; background: var(--bg);
+            transition: border-color 0.18s;
+        }
+        input[type="text"]:focus, input[type="number"]:focus, textarea:focus {
+            border-color: var(--accent);
+            outline: none;
+        }
+        textarea { height: 87px; resize: vertical; border-radius: 30px; padding: 15px;}
+        .product-code {
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary);
+            letter-spacing: 0.04em;
+        }
+        #editCodeGroup { margin-bottom: 20px; }
+        .form-actions { display: flex; gap: 10px; }
+        .form-actions button {
+            flex: 1;
+            padding: 12px;
+            border-radius: 60px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.22s;
+            font-weight: 700;
+        }
+        .save-btn { background-color: var(--primary); color: white; border: none; }
+        .save-btn:hover { background-color: var(--accent); color: var(--primary); }
+        .delivery-type {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .delivery-type label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            white-space: nowrap;
+            color: var(--text);
+        }
+        .delivery-type input[type="radio"] { margin: 0; width: auto; }
+        .photo-preview {
+            max-width: 90px;
+            max-height: 90px;
+            margin-top: 10px;
+            border: 1.5px solid var(--secondary);
+            border-radius: 8px;
+            display: block;
+            cursor: pointer;
+            object-fit: cover;
+        }
+        .hidden { display: none; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: var(--bg);
+            box-shadow: 0 0 14px var(--primary)15;
+            font-size: 14px;
+            border-radius: 10px;
+            overflow: hidden;
+            table-layout: fixed;
+        }
+        th, td { 
+            padding: 8px 10px; 
+            text-align: left; 
+            border-bottom: 1px solid var(--secondary);
+            word-wrap: break-word;
+        }
+        th {
+            background-color: var(--secondary);
+            font-weight: 700;
+            position: sticky;
+            top: 0;
+            font-size: 12px;
+            color: black;
+        }
+        tr:hover { background-color: var(--bg); }
+        .action-icons { display: flex; gap: 10px; }
+        .action-icon { cursor: pointer; font-size: 16px; transition: color 0.2s; }
+        .edit-icon { color: var(--accent);}
+        .edit-icon:hover { color: var(--primary);}
+        .delete-icon { color: var(--primary);}
+        .delete-icon:hover { color: var(--accent);}
+        .no-products { text-align: center; padding: 44px; color: var(--muted); font-size: 1.1rem;}
+        .product-image {
+            width: 46px;
+            height: 46px;
+            object-fit: cover;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 1px solid var(--secondary);
+        }
+        .same-product-warning {
+            color: var(--primary);
+            margin-top: 5px;
+            font-size: 14px;
+            display: none;
+        }
+        .price-row { display: flex; gap: 11px; }
+        .price-row .form-group { flex: 1; }
+        .calculated-field { background-color: var(--bg); color: var(--muted);}
+        .calculated-value { font-weight: bold; color: var(--accent); }
+        .extra-amount-section {
+            border: 1px solid var(--secondary);
+            border-radius: 30px;
+            padding: 15px;
+            margin-bottom: 20px;
+            background-color: var(--bg);
+        }
+        .extra-amount-section h4 { margin-bottom: 10px; color: var(--primary);}
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(237,65,103,0.15);
+        }
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-width: 90%;
+            max-height: 90%;
+        }
+        .modal-image {
+            width: 100%;
+            height: auto;
+            border-radius: 12px;
+            border: 4px solid var(--accent);
+            background: var(--bg);
+        }
+        .close {
+            position: absolute;
+            top: 15px;
+            right: 35px;
+            color: var(--primary);
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 2;
+        }
+        .close:hover { color: var(--accent);}
+        .insta-modal {
+            display: none;
+            position: fixed;
+            z-index: 1002;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(237,65,103,0.15);
+        }
+        .insta-modal-content {
+            background: var(--card-bg);
+            border-radius: 14px;
+            padding: 28px;
+            max-width: 410px;
+            width: 92%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            box-shadow: 0 8px 44px var(--primary)55;
+            transform: translate(-50%, -50%);
+        }
+        .insta-title {
+            font-size: 1.2rem;
+            margin-bottom: 14px;
+            color: var(--primary);
+            font-weight: bold;
+            text-align: center;
+            letter-spacing: 0.02em;
+        }
+        .insta-textarea {
+            width: 100%;
+            height: 90px;
+            font-size: 15px;
+            padding: 10px;
+            border: 1px solid var(--secondary);
+            border-radius: 8px;
+            margin-bottom: 16px;
+            background: var(--bg);
+            resize: vertical;
+        }
+        .insta-copy-btn {
+            background-color: var(--accent);
+            color: whitesmoke;
+            border: none;
+            border-radius: 60px;
+            padding: 11px 18px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 8px;
+            transition: background-color 0.2s, color 0.2s;
+        }
+        .insta-copy-btn:hover { background-color: var(--primary); color: #fff;}
+        .insta-close {
+            background: none;
+            border: none;
+            color: var(--primary);
+            font-size: 24px;
+            position: absolute;
+            right: 18px;
+            top: 18px;
+            cursor: pointer;
+        }
+        .insta-success {
+            color: var(--secondary);
+            font-size: 15px;
+            text-align: center;
+            margin-bottom: 10px;
+            display: none;
+        }
+        .insta-btn-action {
+            color: var(--accent);
+            background: none;
+            border: none;
+            border-radius: 8px;
+            font-size: 20px;
+            padding: 0 6px;
+            cursor: pointer;
+            transition: color 0.22s;
+        }
+        .insta-btn-action:hover { color: var(--primary);}
+        .select-checkbox {
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            accent-color: var(--primary);
+            appearance: none;
+            border: 2px solid var(--secondary);
+            border-radius: 50%;
+            outline: none;
+            background: var(--bg);
+            position: relative;
+        }
+        .select-checkbox:checked {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+        .select-checkbox:checked::after {
+            content: '';
+            display: block;
+            width: 10px;
+            height: 10px;
+            background: var(--primary);
+            border-radius: 50%;
+            position: absolute;
+            top: 4px;
+            left: 4px;
+        }
+        .search-and-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+        .search-bar-wrapper {
+            flex: 1;
+            position: relative;
+        }
+        .multi-delete-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .multi-delete-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .multi-delete-btn:hover:not(:disabled) {
+            background-color: var(--accent);
+        }
+        .search-x-btn {
+            position: absolute;
+            right: 8px;
+            top: 12px;
+            background: none;
+            border: none;
+            font-size: 22px;
+            color: var(--primary);
+            cursor: pointer;
+            padding: 0 6px;
+            z-index: 2;
+            display: none;
+        }
+        .actions-icons-flex { display: flex; gap: 10px; align-items: center; }
+        
+        /* New styles for extra amounts */
+        .extra-amount-item {
+            background: white;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 10px;
+            border: 1px solid var(--secondary);
+            position: relative;
+        }
+        .extra-amount-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        .extra-amount-title {
+            font-weight: bold;
+            color: var(--primary);
+        }
+        .extra-amount-value {
+            font-weight: bold;
+        }
+        .credit { color: var(--credit); }
+        .debit { color: var(--debit); }
+        .extra-amount-description {
+            font-size: 0.9em;
+            color: var(--muted);
+        }
+        .remove-extra-amount {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: none;
+            border: none;
+            color: var(--primary);
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .extra-amount-type {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .extra-amount-type label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+        }
+        .add-extra-amount-btn {
+            background: var(--secondary);
+            color: var(--text);
+            border: none;
+            border-radius: 60px;
+            padding: 8px 12px;
+            font-size: 0.9em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        .add-extra-amount-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+        .extra-amounts-list {
+            margin-top: 15px;
+        }
+        #notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background-color: var(--primary);
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            transition: all 0.3s ease;
+            max-width: 300px;
+        }
+        
+        .notification-hidden {
+            transform: translateX(100%);
+            opacity: 0;
+            visibility: hidden;
+        }
+        
+        .notification-visible {
+            transform: translateX(0);
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .notification-content {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .notification-content i {
+            font-size: 1.2rem;
+        }
+
+        /* New styles for description cell */
+        .description-cell {
+            white-space: normal;
+            word-wrap: break-word;
+            max-width: 200px;
+        }
+
+        /* Column specific widths */
+        td:nth-child(1) { width: 30px; } /* Checkbox */
+        td:nth-child(2) { width: 80px; } /* Code */
+        td:nth-child(3) { width: 120px; } /* Item Name */
+        td:nth-child(4) { width: 120px; } /* Manufacturer */
+        td:nth-child(5) { width: 60px; } /* Photo */
+        td:nth-child(6), 
+        td:nth-child(7), 
+        td:nth-child(8), 
+        td:nth-child(9) { width: 80px; } /* Prices */
+        td:nth-child(10) { width: 70px; } /* Sales */
+        td:nth-child(11) { width: 90px; } /* Profits */
+        td:nth-child(12) { width: 150px; } /* Extra Amounts */
+        td:nth-child(13) { width: 200px; } /* Description */
+        td:nth-child(14) { width: 100px; } /* Actions */
+        
+        /* Sync UI */
+        .sync-ui {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        .sync-ui div {
+            display: flex;
+            gap: 10px;
+        }
+        .sync-ui button {
+            padding: 10px;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #syncButton {
+            background: #2ea44f;
+        }
+        #authButton {
+            background: #24292e;
+        }
+        
+        @media (max-width: 900px) {
+            .main-container { flex-direction: column; }
+            .form-container { width: 100vw; position: fixed; left: 0; top: 0; height: 100vh; z-index: 20;}
+            .product-list-container { padding: 18px 8px; }
+            table { font-size: 12px;}
+            
+            /* Adjust column widths for mobile */
+            td:nth-child(1) { width: 25px; }
+            td:nth-child(2) { width: 60px; }
+            td:nth-child(3) { width: 100px; }
+            td:nth-child(4) { width: 100px; }
+            td:nth-child(5) { width: 50px; }
+            td:nth-child(6), 
+            td:nth-child(7), 
+            td:nth-child(8), 
+            td:nth-child(9) { width: 70px; }
+            td:nth-child(10) { width: 60px; }
+            td:nth-child(11) { width: 80px; }
+            td:nth-child(12) { width: 120px; }
+            td:nth-child(13) { width: 150px; }
+            td:nth-child(14) { width: 80px; }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <img class="logo-img" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjOTZkZWQ1IiAvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkeT0iMC4zNWVtIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiMyMjIiPlRQPC90ZXh0Pjwvc3ZnPg==" alt="Logo">
+            <span class="header-title">Product Management System</span>
+        </div>
+        <button id="showFormBtn" class="add-product-btn">
+            <i class="fas fa-plus"></i> Add Product
+        </button>
+    </header>
+    <div class="main-container">
+        <div id="productFormContainer" class="form-container">
+            <button type="button" id="formCloseBtn" class="form-close-btn" title="Close">&times;</button>
+            <h1>Add / Edit Product</h1>
+            <div class="product-code" id="productCodeDisplay">
+                Select delivery type
+            </div>
+            <div class="form-group" id="editCodeGroup" style="display:none;">
+                <label for="editProductCode">Edit Product Code</label>
+                <input type="text" id="editProductCode">
+            </div>
+            <div class="delivery-type">
+                <label>
+                    <input type="radio" name="deliveryType" value="RK" checked>
+                    Non-Free Delivery (RK)
+                </label>
+                <label>
+                    <input type="radio" name="deliveryType" value="SP">
+                    Free Delivery (SP)
+                </label>
+                <label>
+                    <input type="radio" name="deliveryType" value="GK">
+                    Free Delivery By Us (GK)
+                </label>
+            </div>
+            <form id="productForm">
+                <div class="form-group">
+                    <label for="itemName">Item Name*</label>
+                    <input type="text" id="itemName" required>
+                    <div id="sameProductWarning" class="same-product-warning">
+                        A product with this name already exists!
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="manufacturerName">Manufacturer Item Name</label>
+                    <input type="text" id="manufacturerName">
+                </div>
+                <div class="form-group">
+                    <label for="skuPhoto">SKU Photo</label>
+                    <input type="file" id="skuPhoto" accept="image/*">
+                    <img id="photoPreview" class="photo-preview hidden">
+                </div>
+                <div class="form-group">
+                    <label for="unitPrice">Unit Price (₹)*</label>
+                    <input type="number" id="unitPrice" min="0" step="0.01" required>
+                </div>
+                <div class="price-row">
+                    <div class="form-group">
+                        <label for="sellingPrice">Selling Price (₹)</label>
+                        <input type="number" id="sellingPrice" min="0" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label for="margin">Margin (%)</label>
+                        <input type="number" id="margin" min="0" step="0.01">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="marginAmount">Margin Amount (₹)</label>
+                    <input type="number" id="marginAmount" class="calculated-field" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="totalSales">Total Sales (Quantity)</label>
+                    <input type="number" id="totalSales" min="0" value="0">
+                </div>
+                <div class="form-group">
+                    <label for="totalProfits">Total Profits (₹)</label>
+                    <input type="number" id="totalProfits" class="calculated-field" readonly>
+                </div>
+                
+                <!-- Enhanced Extra Amounts Section -->
+                <div class="extra-amount-section">
+                    <h4>Extra Amounts</h4>
+                    <div class="form-group">
+                        <label for="extraAmount">Amount (₹)</label>
+                        <input type="number" id="extraAmount" min="0" step="0.01" value="0">
+                    </div>
+                    <div class="extra-amount-type">
+                        <label>
+                            <input type="radio" name="extraAmountType" value="credit" checked>
+                            <span>Credit (+)</span>
+                        </label>
+                        <label>
+                            <input type="radio" name="extraAmountType" value="debit">
+                            <span>Debit (-)</span>
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label for="extraDescription">Description</label>
+                        <input type="text" id="extraDescription" placeholder="e.g., Shipping, Tax, Discount, etc.">
+                    </div>
+                    <button type="button" id="addExtraAmountBtn" class="add-extra-amount-btn">
+                        <i class="fas fa-plus"></i> Add Extra Amount
+                    </button>
+                    
+                    <div class="extra-amounts-list" id="extraAmountsList">
+                        <!-- Extra amounts will be added here -->
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="save-btn">Save Product</button>
+                </div>
+            </form>
+        </div>
+        <div class="product-list-container">
+            <h1>Product List</h1>
+            <div class="search-and-actions">
+                <div class="search-bar-wrapper">
+                    <input type="text" id="searchInput" placeholder="Search products by name, code, or manufacturer..." style="width: 100%; padding: 12px; border: 1px solid var(--secondary); border-radius: 60px; font-size: 16px;">
+                    <button id="searchXBtn" class="search-x-btn" title="Clear Search">&times;</button>
+                </div>
+                <button id="multiDeleteBtn" class="multi-delete-btn" disabled title="Delete Selected"><i class="fas fa-trash"></i></button>
+            </div>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox" id="selectAll" class="select-checkbox"></th>
+                            <th>Code</th>
+                            <th>Item Name</th>
+                            <th>Manufacturer Name</th>
+                            <th>SKU Photo</th>
+                            <th>Unit Price</th>
+                            <th>Selling Price</th>
+                            <th>Margin</th>
+                            <th>Margin Amount</th>
+                            <th>Total Sales</th>
+                            <th>Total Profits</th>
+                            <th>Extra Amounts</th>
+                            <th>Description</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productTableBody">
+                        <!-- Products will be added here -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="noProductsMessage" class="no-products">
+                No products found. Click "Add Product" to create your first product.
+            </div>
+        </div>
+    </div>
+    <!-- Insta Modal -->
+    <div id="instaModal" class="insta-modal">
+        <div class="insta-modal-content">
+            <button class="insta-close" id="closeInstaModal">&times;</button>
+            <div class="insta-title">Copy for Instagram</div>
+            <div id="instaSuccess" class="insta-success">Copied to clipboard!</div>
+            <textarea id="instaTextarea" class="insta-textarea" readonly></textarea>
+            <button id="instaCopyBtn" class="insta-copy-btn">Copy to Clipboard</button>
+        </div>
+    </div>
+    <!-- Image Modal -->
+    <div id="imageModal" class="modal">
+        <span class="close">&times;</span>
+        <div class="modal-content">
+            <img id="modalImage" class="modal-image">
+        </div>
+    </div>
+    <div id="notification" class="notification-hidden">
+        <div class="notification-content"></div>
+    </div>
+    
+    <!-- Sync UI -->
+    <div class="sync-ui">
+        <div>
+            <button id="syncButton"><i class="fas fa-sync-alt"></i> Sync</button>
+            <button id="authButton"><i class="fab fa-github"></i> Login</button>
+        </div>
+    </div>
+
+    <script>
+        // GitHub API Configuration
+        const GITHUB_CLIENT_ID = 'Ov23liY1IeBA190abpYU';
+        const REPO_OWNER = 'trulypersonalized';
+        const REPO_NAME = 'tprkspgksaus';
+        const DATA_FILE_PATH = 'data.json';
+        const AUTH_KEY = 'github-auth';
+
+        // Global data store
+        let appData = {
+            products: [],
+            orders: [],
+            customers: [],
+            pcodes: {}
+        };
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Check for GitHub auth code in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+            
+            if (code) {
+                // We just came back from GitHub auth
+                await exchangeCodeForToken(code);
+                // Remove code from URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+            
+            // Load data
+            await loadData();
+            
+            // Initialize the rest of your app
+            initializeApp();
+            
+            // Update auth button
+            updateAuthButton();
+        });
+
+        // ======================
+        // GitHub Authentication
+        // ======================
+
+        function authenticateWithGitHub() {
+            const redirectUri = encodeURIComponent(window.location.href.split('?')[0]);
+            const scope = encodeURIComponent('repo');
+            const authUrl = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&redirect_uri=${redirectUri}&scope=${scope}`;
+            window.location.href = authUrl;
+        }
+
+        async function exchangeCodeForToken(code) {
+            try {
+                // In a real app, this should be done server-side
+                // For demo purposes, we'll use a proxy service or do it client-side with limited permissions
+                const response = await fetch(`https://git-auth-proxy.herokuapp.com/authenticate/${code}`);
+                const data = await response.json();
+                
+                if (data.token) {
+                    localStorage.setItem(AUTH_KEY, data.token);
+                    showNotification('Successfully authenticated with GitHub!');
+                    updateAuthButton();
+                }
+            } catch (error) {
+                console.error('Auth error:', error);
+                showNotification('Authentication failed. Please try again.', false);
+            }
+        }
+
+        function isAuthenticated() {
+            return !!localStorage.getItem(AUTH_KEY);
+        }
+
+        function logout() {
+            localStorage.removeItem(AUTH_KEY);
+            showNotification('Logged out from GitHub');
+            updateAuthButton();
+        }
+
+        function updateAuthButton() {
+            const authButton = document.getElementById('authButton');
+            if (authButton) {
+                if (isAuthenticated()) {
+                    authButton.innerHTML = '<i class="fas fa-check"></i> GitHub';
+                    authButton.onclick = logout;
+                } else {
+                    authButton.innerHTML = '<i class="fab fa-github"></i> Login';
+                    authButton.onclick = authenticateWithGitHub;
+                }
+            }
+        }
+
+        // ======================
+        // Data Synchronization
+        // ======================
+
+        async function loadData() {
+            try {
+                // Try to get from GitHub first
+                if (isAuthenticated()) {
+                    const data = await fetchFromGitHub();
+                    if (data) {
+                        appData = data;
+                        // Also save to localStorage for offline use
+                        localStorage.setItem('localData', JSON.stringify(appData));
+                        showNotification('Data loaded from GitHub');
+                        return;
+                    }
+                }
+                
+                // Fall back to local storage
+                const localData = localStorage.getItem('localData');
+                if (localData) {
+                    appData = JSON.parse(localData);
+                    showNotification('Data loaded from local storage');
+                }
+            } catch (error) {
+                console.error('Load error:', error);
+                showNotification('Error loading data', false);
+            }
+        }
+
+        async function saveData() {
+            try {
+                // Always save to local storage
+                localStorage.setItem('localData', JSON.stringify(appData));
+                
+                // Save to GitHub if authenticated
+                if (isAuthenticated()) {
+                    await saveToGitHub();
+                    showNotification('Data saved to GitHub and locally');
+                } else {
+                    showNotification('Data saved locally (login to sync with GitHub)');
+                }
+            } catch (error) {
+                console.error('Save error:', error);
+                showNotification('Error saving data', false);
+            }
+        }
+
+        async function fetchFromGitHub() {
+            const token = localStorage.getItem(AUTH_KEY);
+            if (!token) return null;
+            
+            const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${DATA_FILE_PATH}`;
+            const response = await fetch(url, {
+                headers: {
+                    'Authorization': `token ${token}`,
+                    'Accept': 'application/vnd.github.v3+json'
+                }
+            });
+            
+            if (!response.ok) throw new Error('GitHub fetch failed');
+            
+            const result = await response.json();
+            const content = atob(result.content.replace(/\s/g, ''));
+            return JSON.parse(content);
+        }
+
+        async function saveToGitHub() {
+            const token = localStorage.getItem(AUTH_KEY);
+            if (!token) throw new Error('Not authenticated');
+            
+            // First get the current SHA (needed for updates)
+            let sha = null;
+            try {
+                const getUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${DATA_FILE_PATH}`;
+                const getResponse = await fetch(getUrl, {
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+                
+                if (getResponse.ok) {
+                    const result = await getResponse.json();
+                    sha = result.sha;
+                }
+            } catch (error) {
+                console.log('File may not exist yet');
+            }
+            
+            // Prepare the update
+            const content = btoa(JSON.stringify(appData, null, 2));
+            const message = `Update data from ${new Date().toISOString()}`;
+            
+            const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${DATA_FILE_PATH}`;
+            const response = await fetch(url, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `token ${token}`,
+                    'Accept': 'application/vnd.github.v3+json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message: message,
+                    content: content,
+                    sha: sha || undefined
+                })
+            });
+            
+            if (!response.ok) throw new Error('GitHub save failed');
+            return await response.json();
+        }
+
+        // ======================
+        // Your App Functions
+        // ======================
+
+        function initializeApp() {
+            // DOM Elements
+            const showFormBtn = document.getElementById('showFormBtn');
+            const formCloseBtn = document.getElementById('formCloseBtn');
+            const productFormContainer = document.getElementById('productFormContainer');
+            const productForm = document.getElementById('productForm');
+            const productTableBody = document.getElementById('productTableBody');
+            const noProductsMessage = document.getElementById('noProductsMessage');
+            const itemNameInput = document.getElementById('itemName');
+            const sameProductWarning = document.getElementById('sameProductWarning');
+            const editCodeGroup = document.getElementById('editCodeGroup');
+            const editProductCode = document.getElementById('editProductCode');
+            const skuPhotoInput = document.getElementById('skuPhoto');
+            const photoPreview = document.getElementById('photoPreview');
+            const unitPriceInput = document.getElementById('unitPrice');
+            const sellingPriceInput = document.getElementById('sellingPrice');
+            const marginInput = document.getElementById('margin');
+            const marginAmountInput = document.getElementById('marginAmount');
+            const totalSalesInput = document.getElementById('totalSales');
+            const totalProfitsInput = document.getElementById('totalProfits');
+            const extraAmountInput = document.getElementById('extraAmount');
+            const extraDescriptionInput = document.getElementById('extraDescription');
+            const addExtraAmountBtn = document.getElementById('addExtraAmountBtn');
+            const extraAmountsList = document.getElementById('extraAmountsList');
+            const multiDeleteBtn = document.getElementById('multiDeleteBtn');
+            const selectAllCheckbox = document.getElementById('selectAll');
+            const searchInput = document.getElementById('searchInput');
+            const searchXBtn = document.getElementById('searchXBtn');
+            const instaModal = document.getElementById('instaModal');
+            const instaTextarea = document.getElementById('instaTextarea');
+            const instaCopyBtn = document.getElementById('instaCopyBtn');
+            const closeInstaModal = document.getElementById('closeInstaModal');
+            const instaSuccess = document.getElementById('instaSuccess');
+            const imageModal = document.getElementById('imageModal');
+            const modalImage = document.getElementById('modalImage');
+            const closeModal = document.querySelector('.close');
+            const syncButton = document.getElementById('syncButton');
+
+            let calculationTimeout;
+            let extraAmounts = [];
+
+            // Setup sync button
+            if (syncButton) {
+                syncButton.addEventListener('click', async () => {
+                    await loadData();
+                    loadProducts();
+                    showNotification('Data synchronized');
+                });
+            }
+
+            // Initialize pcodes if not exists
+            if (!appData.pcodes) {
+                appData.pcodes = {};
+            }
+
+            // Fixed rebuildProductCodes function
+            function rebuildProductCodes() {
+                const orders = appData.orders || [];
+                const allProducts = appData.products || [];
+                const pcodes = appData.pcodes || {};
+
+                // Reset all order-related data before recalculating
+                Object.keys(pcodes).forEach(code => {
+                    if (pcodes[code]) {
+                        pcodes[code].orderSales = 0;
+                        pcodes[code].totalRevenue = 0;
+                        pcodes[code].totalLoss = 0;
+                        pcodes[code].orders = [];
+                        pcodes[code].coupons = [];
+                        pcodes[code].extraAmounts = [];
+                    }
+                });
+
+                // First pass: calculate order-based quantities
+                orders.forEach(order => {
+                    order.products.forEach(product => {
+                        if (!pcodes[product.id]) {
+                            pcodes[product.id] = {
+                                name: product.name,
+                                orderSales: 0,
+                                manualSales: 0,
+                                totalRevenue: 0,
+                                totalLoss: 0,
+                                orders: [],
+                                coupons: [],
+                                extraAmounts: []
+                            };
+                        }
+
+                        // Track order-based sales (only add once)
+                        pcodes[product.id].orderSales += product.qty;
+                        
+                        // Calculate loss if needed
+                        const originalProduct = allProducts.find(p => p.code === product.id);
+                        let loss = 0;
+                        if (originalProduct) {
+                            const sellingPrice = parseFloat(originalProduct.sellingPrice) || 0;
+                            const actualPrice = parseFloat(product.price) || 0;
+                            if (actualPrice < sellingPrice) {
+                                loss = (sellingPrice - actualPrice) * product.qty;
+                            }
+                        }
+
+                        // Update other order data
+                        pcodes[product.id].totalRevenue += product.total;
+                        pcodes[product.id].totalLoss += loss;
+
+                        // Add order details
+                        pcodes[product.id].orders.push({
+                            orderId: order.id,
+                            date: order.date,
+                            qty: product.qty,
+                            price: product.price,
+                            total: product.total,
+                            extra: product.extra || 0,
+                            extraReason: product.extraReason || '',
+                            loss: loss,
+                            customer: order.customer.name,
+                            mobile: order.customer.mobile
+                        });
+
+                        // Add order-based extra amount if present
+                        if (product.extra && product.extra !== 0) {
+                            pcodes[product.id].extraAmounts.push({
+                                type: 'order',
+                                orderId: order.id,
+                                date: order.date,
+                                amount: product.extra,
+                                reason: product.extraReason || 'Order extra',
+                                customer: order.customer.name,
+                                mobile: order.customer.mobile
+                            });
+                        }
+                    });
+
+                    // Handle coupons
+                    if (order.coupons) {
+                        order.coupons.forEach(coupon => {
+                            if (coupon.productId && pcodes[coupon.productId]) {
+                                pcodes[coupon.productId].coupons.push({
+                                    orderId: order.id,
+                                    date: order.date,
+                                    couponName: coupon.name,
+                                    couponValue: coupon.value,
+                                    couponType: coupon.type,
+                                    customer: order.customer.name,
+                                    mobile: order.customer.mobile
+                                });
+                            }
+                        });
+                    }
+                });
+
+                // Second pass: update products with combined totals
+                const updatedProducts = allProducts.map(product => {
+                    const pcodeData = pcodes[product.code] || {};
+                    
+                    // Get manual sales from product data (preserve existing value)
+                    const manualSales = product._manualSales || 0;
+                    // Get order sales from pcodes (recalculated above)
+                    const orderSales = pcodeData.orderSales || 0;
+                    
+                    // Calculate total sales
+                    const totalSales = manualSales + orderSales;
+                    
+                    // Calculate profits
+                    const totalProfits = (product.marginAmount * totalSales) + 
+                                       (product.extraAmounts ? product.extraAmounts.reduce((total, item) => {
+                                           return item.type === 'credit' ? total + item.amount : total - item.amount;
+                                       }, 0) : 0);
+
+                    return {
+                        ...product,
+                        totalSales: totalSales,
+                        totalProfits: totalProfits,
+                        // Preserve manual sales value for editing
+                        _manualSales: manualSales,
+                        _orderSales: orderSales
+                    };
+                });
+
+                appData.products = updatedProducts;
+                appData.pcodes = pcodes;
+                return pcodes;
+            }
+
+            // Modified editTotalSales function
+            window.editTotalSales = function(index) {
+                const products = appData.products || [];
+                const product = products[index];
+                if (product) {
+                    // Show current manual sales value (excluding order-based sales)
+                    const currentManual = product._manualSales || 0;
+                    const newManualSales = prompt('Edit manual sales quantity (orders will add to this):', currentManual);
+                    
+                    if (newManualSales !== null && !isNaN(newManualSales) && newManualSales >= 0) {
+                        // Update only the manual portion
+                        product._manualSales = parseFloat(newManualSales);
+                        
+                        // Recalculate total sales (manual + orders)
+                        const orderSales = product._orderSales || 0;
+                        product.totalSales = parseFloat(newManualSales) + orderSales;
+                        
+                        // Recalculate profits
+                        const totalExtraAmount = product.extraAmounts ? 
+                            product.extraAmounts.reduce((total, item) => {
+                                return item.type === 'credit' ? total + item.amount : total - item.amount;
+                            }, 0) : 0;
+                        
+                        product.totalProfits = (product.marginAmount * product.totalSales) + totalExtraAmount;
+                        
+                        appData.products = products;
+                        saveData();
+                        loadProducts();
+                    } else if (newManualSales !== null) {
+                        alert('Please enter a valid number greater than or equal to 0.');
+                    }
+                }
+            };
+
+            // Function to update from oh.html changes
+            window.updateProductSalesFromOrders = function() {
+                rebuildProductCodes();
+                loadProducts();
+            };
+
+            // Load products with proper sales counts
+            function loadProducts() {
+                const pcodes = rebuildProductCodes();
+                const products = appData.products || [];
+                productTableBody.innerHTML = '';
+                
+                if (products.length === 0) {
+                    noProductsMessage.style.display = 'block';
+                    multiDeleteBtn.disabled = true;
+                    selectAllCheckbox.checked = false;
+                    return;
+                }
+                
+                noProductsMessage.style.display = 'none';
+                multiDeleteBtn.disabled = true;
+                
+                products.forEach((product, index) => {
+                    const row = document.createElement('tr');
+                    let deliveryColor = '';
+                    if (product.prefix === 'RK') deliveryColor = 'color: var(--primary);';
+                    if (product.prefix === 'SP') deliveryColor = 'color: var(--accent);';
+                    if (product.prefix === 'GK') deliveryColor = 'color: var(--secondary);';
+                    
+                    // Get the pcode data for this product
+                    const pcodeData = pcodes[product.code] || {};
+                    
+                    // Format extra amounts display
+                    let extraAmountsDisplay = '-';
+                    if (pcodeData.extraAmounts && pcodeData.extraAmounts.length > 0) {
+                        extraAmountsDisplay = pcodeData.extraAmounts.map(item => {
+                            const sign = item.type === 'credit' ? '+' : '-';
+                            const source = item.orderId ? `(Order: ${item.orderId})` : '(Manual)';
+                            return `${sign}₹${Math.abs(item.amount).toFixed(2)} - ${item.reason} ${source}`;
+                        }).join('<br>');
+                    }
+                    
+                    row.innerHTML = `
+                        <td>
+                            <input type="checkbox" class="select-checkbox" data-index="${index}">
+                        </td>
+                        <td style="${deliveryColor} font-weight: bold;">${product.code}</td>
+                        <td>${product.name}</td>
+                        <td>${product.manufacturer || '-'}</td>
+                        <td>
+                            ${product.photo ? `<img src="${product.photo}" class="product-image" onclick="showImageModal('${product.photo.replace(/'/g, "\\'")}')">` : 'No Image'}
+                        </td>
+                        <td>₹${product.unitPrice.toFixed(2)}</td>
+                        <td>₹${product.sellingPrice.toFixed(2)}${product.prefix === 'GK' ? '<br><small>(incl. ₹60 delivery)</small>' : ''}</td>
+                        <td>${product.margin.toFixed(2)}%</td>
+                        <td>₹${product.marginAmount.toFixed(2)}</td>
+                        <td>${product.totalSales} 
+                            <i class="fas fa-edit edit-icon action-icon" 
+                               onclick="editTotalSales(${index})" 
+                               style="margin-left: 5px; font-size: 12px;" 
+                               title="Edit Manual Sales (Orders: ${product._orderSales || 0})">
+                            </i>
+                        </td>
+                        <td class="calculated-value">₹${product.totalProfits.toFixed(2)}</td>
+                        <td>${extraAmountsDisplay}</td>
+                        <td class="description-cell">${product.description || '-'}</td>
+                        <td>
+                            <div class="actions-icons-flex">
+                                <button class="insta-btn-action" onclick="showInstaModal(${index})" title="Copy for Instagram">
+                                    <i class="fab fa-instagram"></i>
+                                </button>
+                                <i class="fas fa-edit edit-icon action-icon" onclick="editProduct(${index})"></i>
+                                <i class="fas fa-trash delete-icon action-icon" onclick="deleteProduct(${index})"></i>
+                            </div>
+                        </td>
+                    `;
+                    productTableBody.appendChild(row);
+                });
+
+                // Setup checkboxes
+                const checkboxes = productTableBody.querySelectorAll('.select-checkbox');
+                checkboxes.forEach(cb => {
+                    cb.addEventListener('change', function() {
+                        updateMultiDeleteBtn();
+                    });
+                });
+
+                selectAllCheckbox.checked = false;
+                selectAllCheckbox.addEventListener('change', function() {
+                    checkboxes.forEach(cb => {
+                        cb.checked = this.checked;
+                    });
+                    updateMultiDeleteBtn();
+                });
+
+                function updateMultiDeleteBtn() {
+                    const selectedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
+                    multiDeleteBtn.disabled = selectedCount === 0;
+                    selectAllCheckbox.checked = selectedCount === checkboxes.length && checkboxes.length > 0;
+                }
+            }
+
+            // Initialize
+            loadProducts();
+
+            // Price Calculation Functions
+            function calculatePrices() {
+                const unitPrice = parseFloat(unitPriceInput.value) || 0;
+                let sellingPrice = parseFloat(sellingPriceInput.value) || 0;
+                let margin = parseFloat(marginInput.value) || 0;
+                const totalSales = parseFloat(totalSalesInput.value) || 0;
+                const deliveryType = document.querySelector('input[name="deliveryType"]:checked').value;
+                const isGK = deliveryType === 'GK';
+                const deliveryCost = isGK ? 60 : 0;
+
+                // Calculate total extra amounts
+                const totalExtraAmount = calculateTotalExtraAmounts();
+
+                // Determine which field was last active
+                const activeElement = document.activeElement;
+                
+                if (activeElement === marginInput && margin > 0 && unitPrice > 0) {
+                    // Calculate selling price from margin %
+                    if (isGK) {
+                        sellingPrice = unitPrice * (1 + margin/100) + deliveryCost;
+                    } else {
+                        sellingPrice = unitPrice * (1 + margin/100);
+                    }
+                    sellingPriceInput.value = sellingPrice.toFixed(2);
+                } 
+                else if (activeElement === sellingPriceInput && sellingPrice > 0 && unitPrice > 0) {
+                    // Calculate margin % from selling price
+                    if (isGK) {
+                        margin = ((sellingPrice - unitPrice - deliveryCost) / unitPrice) * 100;
+                    } else {
+                        margin = ((sellingPrice - unitPrice) / unitPrice) * 100;
+                    }
+                    marginInput.value = margin.toFixed(2);
+                }
+
+                // Calculate margin amount
+                let marginAmount = isGK ? (sellingPrice - unitPrice - deliveryCost) : (sellingPrice - unitPrice);
+                marginAmountInput.value = marginAmount.toFixed(2);
+                
+                // Calculate total profits
+                const totalProfits = (marginAmount * totalSales) + totalExtraAmount;
+                totalProfitsInput.value = totalProfits.toFixed(2);
+            }
+
+            function calculateTotalExtraAmounts() {
+                let total = 0;
+                extraAmounts.forEach(item => {
+                    if (item.type === 'credit') {
+                        total += item.amount;
+                    } else {
+                        total -= item.amount;
+                    }
+                });
+                return total;
+            }
+
+            function setupCalculationListener(input) {
+                input.addEventListener('input', function() {
+                    clearTimeout(calculationTimeout);
+                    calculationTimeout = setTimeout(calculatePrices, 500);
+                });
+                input.addEventListener('change', calculatePrices);
+            }
+
+            // Event Listeners for Calculations
+            setupCalculationListener(unitPriceInput);
+            setupCalculationListener(sellingPriceInput);
+            setupCalculationListener(marginInput);
+            setupCalculationListener(totalSalesInput);
+
+            // Delivery Type Change
+            document.querySelectorAll('input[name="deliveryType"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    generateProductCode(this.value);
+                    calculatePrices();
+                });
+            });
+
+            // Extra Amount Functions
+            function addExtraAmount() {
+                const amount = parseFloat(extraAmountInput.value) || 0;
+                const description = extraDescriptionInput.value.trim();
+                const type = document.querySelector('input[name="extraAmountType"]:checked').value;
+
+                if (amount <= 0) {
+                    showNotification('Please enter a valid amount greater than 0', false);
+                    return;
+                }
+
+                if (!description) {
+                    showNotification('Please enter a description for the extra amount', false);
+                    return;
+                }
+
+                const extraAmount = {
+                    amount,
+                    description,
+                    type
+                };
+
+                extraAmounts.push(extraAmount);
+                renderExtraAmounts();
+                
+                // Clear inputs
+                extraAmountInput.value = '';
+                extraDescriptionInput.value = '';
+                
+                // Recalculate prices
+                calculatePrices();
+                
+                showNotification('Extra amount added successfully!');
+            }
+
+            function removeExtraAmount(index) {
+                extraAmounts.splice(index, 1);
+                renderExtraAmounts();
+                calculatePrices();
+            }
+
+            function renderExtraAmounts() {
+                extraAmountsList.innerHTML = '';
+                
+                if (extraAmounts.length === 0) {
+                    return;
+                }
+                
+                extraAmounts.forEach((item, index) => {
+                    const amountItem = document.createElement('div');
+                    amountItem.className = 'extra-amount-item';
+                    
+                    amountItem.innerHTML = `
+                        <div class="extra-amount-header">
+                            <span class="extra-amount-title">${item.description}</span>
+                            <span class="extra-amount-value ${item.type}">${item.type === 'credit' ? '+' : '-'}₹${item.amount.toFixed(2)}</span>
+                        </div>
+                        <div class="extra-amount-description">${item.type === 'credit' ? 'Credit' : 'Debit'}</div>
+                        <button class="remove-extra-amount" onclick="removeExtraAmount(${index})">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    `;
+                    
+                    extraAmountsList.appendChild(amountItem);
+                });
+            }
+
+            // Form Functions
+            function generateProductCode(prefix) {
+                const randomNum = Math.floor(1000 + Math.random() * 9000);
+                const productCode = `${prefix}${randomNum}`;
+                document.getElementById('productCodeDisplay').textContent = productCode;
+                return productCode;
+            }
+
+            function checkForDuplicateProduct(name) {
+                const products = appData.products || [];
+                const editIndex = productForm.dataset.editIndex;
+                const exists = products.some((product, index) => {
+                    if (editIndex !== undefined && index == editIndex) return false;
+                    return product.name.toLowerCase() === name.toLowerCase();
+                });
+                sameProductWarning.style.display = exists ? 'block' : 'none';
+                return exists;
+            }
+
+            function saveProduct() {
+                let prefix = document.querySelector('input[name="deliveryType"]:checked').value;
+                let productCode = document.getElementById('productCodeDisplay').textContent;
+                let itemName = itemNameInput.value;
+                let manufacturerName = document.getElementById('manufacturerName').value;
+                let unitPrice = parseFloat(unitPriceInput.value) || 0;
+                let sellingPrice = parseFloat(sellingPriceInput.value) || 0;
+                let margin = parseFloat(marginInput.value) || 0;
+                let marginAmount = parseFloat(marginAmountInput.value) || 0;
+                let totalSales = parseFloat(totalSalesInput.value) || 0;
+                let totalProfits = parseFloat(totalProfitsInput.value) || 0;
+                let description = document.getElementById('description').value;
+                const editIndex = productForm.dataset.editIndex;
+                
+                if (editIndex === undefined && checkForDuplicateProduct(itemName)) {
+                    if (!confirm('A product with this name already exists. Are you sure you want to continue?')) return;
+                }
+                if (editIndex !== undefined && editProductCode.value) {
+                    productCode = editProductCode.value;
+                }
+                
+                let photoBase64 = '';
+                if (skuPhotoInput.files.length > 0) {
+                    const file = skuPhotoInput.files[0];
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        photoBase64 = event.target.result;
+                        saveToStorage(productCode, itemName, manufacturerName, unitPrice, sellingPrice, margin, marginAmount, totalSales, totalProfits, description, photoBase64, prefix);
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    if (editIndex !== undefined) {
+                        const products = appData.products || [];
+                        photoBase64 = products[editIndex].photo || '';
+                    }
+                    saveToStorage(productCode, itemName, manufacturerName, unitPrice, sellingPrice, margin, marginAmount, totalSales, totalProfits, description, photoBase64, prefix);
+                }
+            }
+
+            function saveToStorage(code, name, manufacturer, unitPrice, sellingPrice, margin, marginAmount, totalSales, totalProfits, description, photo, prefix) {
+                const products = appData.products || [];
+                const editIndex = productForm.dataset.editIndex;
+                
+                // For GK type, adjust margin amount by subtracting 60
+                let finalMarginAmount = sellingPrice - unitPrice;
+                if (prefix === 'GK') {
+                    finalMarginAmount -= 60;
+                }
+                
+                const product = { 
+                    code, 
+                    name, 
+                    manufacturer, 
+                    unitPrice, 
+                    sellingPrice, 
+                    margin, 
+                    marginAmount: finalMarginAmount, 
+                    totalSales, 
+                    totalProfits,
+                    extraAmounts: [...extraAmounts], // Save all extra amounts
+                    description, 
+                    photo, 
+                    prefix,
+                    // Store manual sales separately
+                    _manualSales: totalSales,
+                    _orderSales: 0
+                };
+                
+                if (editIndex !== undefined) {
+                    // Preserve the existing order sales if editing
+                    const existingProduct = products[editIndex];
+                    product._orderSales = existingProduct._orderSales || 0;
+                    products[editIndex] = product;
+                    delete productForm.dataset.editIndex;
+                    showNotification('Product updated successfully!');
+                } else {
+                    products.push(product);
+                    showNotification('Product saved successfully!');
+                }
+                
+                appData.products = products;
+                saveData();
+                resetForm();
+                productFormContainer.classList.remove('show');
+                loadProducts();
+            }
+
+            function resetForm() {
+                productForm.reset();
+                photoPreview.classList.add('hidden');
+                photoPreview.src = '';
+                sameProductWarning.style.display = 'none';
+                skuPhotoInput.value = '';
+                marginAmountInput.value = '';
+                totalProfitsInput.value = '';
+                editCodeGroup.style.display = 'none';
+                editProductCode.value = '';
+                extraAmounts = [];
+                extraAmountsList.innerHTML = '';
+                delete productForm.dataset.editIndex;
+            }
+
+            // Global Functions
+            window.editProduct = function(index) {
+                const products = appData.products || [];
+                const product = products[index];
+                if (product) {
+                    document.querySelector(`input[value="${product.prefix}"]`).checked = true;
+                    document.getElementById('productCodeDisplay').textContent = product.code;
+                    itemNameInput.value = product.name;
+                    document.getElementById('manufacturerName').value = product.manufacturer || '';
+                    unitPriceInput.value = product.unitPrice;
+                    sellingPriceInput.value = product.sellingPrice;
+                    marginInput.value = product.margin;
+                    marginAmountInput.value = product.marginAmount;
+                    totalSalesInput.value = product._manualSales || 0;
+                    totalProfitsInput.value = product.totalProfits;
+                    document.getElementById('description').value = product.description || '';
+                    editCodeGroup.style.display = 'block';
+                    editProductCode.value = product.code;
+                    
+                    // Load extra amounts
+                    extraAmounts = product.extraAmounts ? [...product.extraAmounts] : [];
+                    renderExtraAmounts();
+                    
+                    if (product.photo) {
+                        photoPreview.src = product.photo;
+                        photoPreview.classList.remove('hidden');
+                    } else {
+                        photoPreview.classList.add('hidden');
+                    }
+                    productFormContainer.classList.add('show');
+                    productForm.dataset.editIndex = index;
+                }
+            };
+
+            window.deleteProduct = function(index) {
+                if (confirm('Are you sure you want to delete this product?')) {
+                    const products = appData.products || [];
+                    products.splice(index, 1);
+                    appData.products = products;
+                    saveData();
+                    loadProducts();
+                }
+            };
+
+            window.removeExtraAmount = function(index) {
+                extraAmounts.splice(index, 1);
+                renderExtraAmounts();
+                calculatePrices();
+            };
+
+            window.showImageModal = function(imageSrc) {
+                modalImage.src = imageSrc;
+                imageModal.style.display = 'block';
+            };
+
+            window.showInstaModal = function(index) {
+                const products = appData.products || [];
+                const product = products[index];
+                let desc = product.description || "";
+                desc = desc.replace(/SAUSc/gi, product.code);
+                const instaText = `${product.name}\n${desc}`;
+                instaTextarea.value = instaText;
+                instaSuccess.style.display = 'none';
+                instaModal.style.display = 'block';
+            };
+
+            // Event Listeners
+            showFormBtn.addEventListener('click', function() {
+                productFormContainer.classList.add('show');
+                generateProductCode(document.querySelector('input[name="deliveryType"]:checked').value);
+                editCodeGroup.style.display = 'none';
+                editProductCode.value = '';
+                extraAmounts = [];
+                renderExtraAmounts();
+            });
+
+            formCloseBtn.addEventListener('click', function() {
+                productFormContainer.classList.remove('show');
+                resetForm();
+            });
+
+            productForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                saveProduct();
+            });
+
+            itemNameInput.addEventListener('input', function() {
+                checkForDuplicateProduct(this.value);
+            });
+
+            skuPhotoInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        photoPreview.src = event.target.result;
+                        photoPreview.classList.remove('hidden');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            photoPreview.addEventListener('click', function() {
+                if (this.src) {
+                    modalImage.src = this.src;
+                    imageModal.style.display = 'block';
+                }
+            });
+
+            addExtraAmountBtn.addEventListener('click', addExtraAmount);
+
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const rows = productTableBody.querySelectorAll('tr');
+                let hasResults = false;
+                
+                rows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    if (text.includes(searchTerm)) {
+                        row.style.display = '';
+                        hasResults = true;
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+                
+                searchXBtn.style.display = searchTerm.length ? 'block' : 'none';
+                noProductsMessage.style.display = hasResults || searchTerm === '' ? 'none' : 'block';
+                noProductsMessage.textContent = 'No products found matching your search.';
+            });
+
+            searchXBtn.addEventListener('click', function() {
+                searchInput.value = '';
+                searchInput.dispatchEvent(new Event('input'));
+                searchInput.focus();
+            });
+
+            multiDeleteBtn.addEventListener('click', function() {
+                const products = appData.products || [];
+                const checkboxes = productTableBody.querySelectorAll('.select-checkbox');
+                const toDelete = [];
+                
+                checkboxes.forEach(cb => {
+                    if (cb.checked) toDelete.push(parseInt(cb.dataset.index));
+                });
+                
+                if (toDelete.length === 0) return;
+                if (!confirm(`Delete ${toDelete.length} selected product(s)?`)) return;
+                
+                toDelete.sort((a,b) => b-a).forEach(idx => products.splice(idx, 1));
+                appData.products = products;
+                saveData();
+                loadProducts();
+            });
+
+            closeModal.addEventListener('click', () => { imageModal.style.display = 'none'; });
+            closeInstaModal.addEventListener('click', () => { instaModal.style.display = 'none'; });
+            window.addEventListener('click', (e) => {
+                if (e.target === imageModal) imageModal.style.display = 'none';
+                if (e.target === instaModal) instaModal.style.display = 'none';
+            });
+
+            instaCopyBtn.addEventListener('click', function() {
+                instaTextarea.select();
+                document.execCommand('copy');
+                instaSuccess.style.display = 'block';
+                setTimeout(() => {
+                    instaSuccess.style.display = 'none';
+                }, 1200);
+            });
+        }
+
+        function showNotification(message, isSuccess = true) {
+            const notification = document.getElementById('notification');
+            const content = notification.querySelector('.notification-content');
+            
+            // Set icon and message
+            content.innerHTML = `
+                <i class="fas ${isSuccess ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+                <span>${message}</span>
+            `;
+            // Show notification
+            notification.classList.remove('notification-hidden');
+            notification.classList.add('notification-visible');
+            
+            // Auto-hide after 3 seconds
+            setTimeout(() => {
+                notification.classList.remove('notification-visible');
+                notification.classList.add('notification-hidden');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
