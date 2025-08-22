@@ -574,7 +574,7 @@
             padding: 20px;
             border-radius: 10px;
             width: 80%;
-            max-width: 400px;
+            max-width: 500px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
         .auth-modal h3 {
@@ -599,6 +599,23 @@
         }
         .auth-modal button:hover {
             background-color: var(--accent);
+        }
+        .setup-info {
+            background-color: #f8f9fa;
+            border-left: 4px solid var(--accent);
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        .setup-info h4 {
+            margin-top: 0;
+            color: var(--primary);
+        }
+        .setup-info code {
+            background-color: #eee;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: monospace;
         }
         
         @media (max-width: 900px) {
@@ -629,7 +646,7 @@
 <body>
     <header>
         <div class="logo">
-            <img class="logo-img" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjOTZkZWQ1IiAvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkeT0iMC4zNWVtIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiMyMjIiPlRQPC90ZXh0Pjwvc3ZnPg==" alt="Logo">
+            <img class="logo-img" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjOTZkZWQ1IiAvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkeT0iMC4zNWVtIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjQi            IHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiMyMjIiPlRQPC90ZXh0Pjwvc3ZnPg==" alt="Logo">
             <span class="header-title">Product Management System</span>
         </div>
         <button id="showFormBtn" class="add-product-btn">
@@ -704,6 +721,7 @@
                     <label for="totalProfits">Total Profits (₹)</label>
                     <input type="number" id="totalProfits" class="calculated-field" readonly>
                 </div>
+                
                 <!-- Enhanced Extra Amounts Section -->
                 <div class="extra-amount-section">
                     <h4>Extra Amounts</h4>
@@ -802,17 +820,68 @@
     <div id="notification" class="notification-hidden">
         <div class="notification-content"></div>
     </div>
+    
     <!-- Auth Modal -->
     <div id="authModal" class="auth-modal">
         <div class="auth-modal-content">
-            <h3>GitHub Authentication</h3>
-            <p>For security reasons, GitHub authentication requires a server-side component.</p>
-            <p>For demonstration purposes, you can use this mock authentication:</p>
-            <input type="text" id="mockToken" placeholder="Enter any mock token">
-            <div>
-                <button id="mockAuthBtn">Mock Authenticate</button>
-                <button id="closeAuthModal">Cancel</button>
+            <h3>GitHub Authentication Setup</h3>
+            <p>For full multi-device synchronization, you need to set up a server-side component.</p>
+            
+            <div class="setup-info">
+                <h4>Option 1: Simple Setup (No Backend Required)</h4>
+                <p>Use this simple approach for testing:</p>
+                <ol>
+                    <li>Click "Enable Simple Sync" below</li>
+                    <li>Data will be saved to your browser's localStorage</li>
+                    <li>To sync across devices, manually export/import data</li>
+                </ol>
+                <button id="enableSimpleSync">Enable Simple Sync</button>
             </div>
+            
+            <div class="setup-info">
+                <h4>Option 2: Full GitHub Integration (Requires Backend)</h4>
+                <p>For true multi-device sync, you need to:</p>
+                <ol>
+                    <li>Set up a server with a GitHub OAuth endpoint</li>
+                    <li>Update the client ID and server URL below</li>
+                    <li>Deploy the server component</li>
+                </ol>
+                <div class="form-group">
+                    <label for="serverUrl">Server URL (for OAuth):</label>
+                    <input type="text" id="serverUrl" placeholder="https://your-server.com">
+                </div>
+                <div class="form-group">
+                    <label for="clientId">GitHub Client ID:</label>
+                    <input type="text" id="clientId" placeholder="Ov23liUc9hR9XzW2iGtC">
+                </div>
+                <button id="saveServerConfig">Save Configuration</button>
+            </div>
+            
+            <button id="closeAuthModal">Cancel</button>
+        </div>
+    </div>
+    
+    <!-- Export/Import Modal -->
+    <div id="exportImportModal" class="auth-modal">
+        <div class="auth-modal-content">
+            <h3>Data Transfer</h3>
+            <p>Since we're using simple sync, you can manually transfer data between devices:</p>
+            
+            <div class="setup-info">
+                <h4>Export Data</h4>
+                <p>Copy this data and import it on another device:</p>
+                <textarea id="exportData" readonly style="width: 100%; height: 100px; margin-bottom: 15px;"></textarea>
+                <button id="copyExportData">Copy to Clipboard</button>
+            </div>
+            
+            <div class="setup-info">
+                <h4>Import Data</h4>
+                <p>Paste exported data here:</p>
+                <textarea id="importData" style="width: 100%; height: 100px; margin-bottom: 15px;"></textarea>
+                <button id="performImport">Import Data</button>
+            </div>
+            
+            <button id="closeExportImportModal">Close</button>
         </div>
     </div>
     
@@ -821,16 +890,18 @@
         <div>
             <button id="syncButton"><i class="fas fa-sync-alt"></i> Sync</button>
             <button id="authButton"><i class="fab fa-github"></i> Login</button>
+            <button id="exportImportButton"><i class="fas fa-exchange-alt"></i> Transfer</button>
         </div>
     </div>
 
     <script>
-        // GitHub API Configuration
-        const GITHUB_CLIENT_ID = 'Ov23liY1IeBA190abpYU';
+        // Configuration
         const REPO_OWNER = 'trulypersonalized';
         const REPO_NAME = 'tprkspgksaus';
         const DATA_FILE_PATH = 'data.json';
         const AUTH_KEY = 'github-auth';
+        const SERVER_CONFIG_KEY = 'server-config';
+        const SYNC_MODE_KEY = 'sync-mode';
 
         // Global data store
         let appData = {
@@ -842,17 +913,6 @@
 
         // Initialize the app
         document.addEventListener('DOMContentLoaded', async function() {
-            // Check for GitHub auth code in URL
-            const urlParams = new URLSearchParams(window.location.search);
-            const code = urlParams.get('code');
-            
-            if (code) {
-                // We just came back from GitHub auth
-                await exchangeCodeForToken(code);
-                // Remove code from URL
-                window.history.replaceState({}, document.title, window.location.pathname);
-            }
-            
             // Load data
             await loadData();
             
@@ -864,32 +924,21 @@
         });
 
         // ======================
-        // GitHub Authentication
+        // Authentication & Sync
         // ======================
 
-        function authenticateWithGitHub() {
-            // Show the auth modal instead of redirecting
+        function showAuthModal() {
             document.getElementById('authModal').style.display = 'block';
         }
 
-        async function exchangeCodeForToken(code) {
-            try {
-                // In a real app, this should be done server-side
-                // For demo purposes, we'll use a mock authentication
-                showNotification('GitHub authentication requires a server-side component. Using mock authentication for demo.', false);
-                
-                // Use a mock token for demonstration
-                const mockToken = 'github_pat_mock_token_' + Math.random().toString(36).substr(2);
-                localStorage.setItem(AUTH_KEY, mockToken);
-                showNotification('Mock authentication successful!');
-                updateAuthButton();
-            } catch (error) {
-                console.error('Auth error:', error);
-                showNotification('Authentication failed. Please try again.', false);
-            }
+        function getSyncMode() {
+            return localStorage.getItem(SYNC_MODE_KEY) || 'simple';
         }
 
         function isAuthenticated() {
+            if (getSyncMode() === 'simple') {
+                return true; // Always "authenticated" in simple mode
+            }
             return !!localStorage.getItem(AUTH_KEY);
         }
 
@@ -907,7 +956,7 @@
                     authButton.onclick = logout;
                 } else {
                     authButton.innerHTML = '<i class="fab fa-github"></i> Login';
-                    authButton.onclick = authenticateWithGitHub;
+                    authButton.onclick = showAuthModal;
                 }
             }
         }
@@ -918,24 +967,23 @@
 
         async function loadData() {
             try {
-                // Try to get from GitHub first
-                if (isAuthenticated()) {
-                    const data = await fetchFromGitHub();
-                    if (data) {
-                        appData = data;
-                        // Also save to localStorage for offline use
-                        localStorage.setItem('localData', JSON.stringify(appData));
-                        showNotification('Data loaded from GitHub');
-                        return;
-                    }
-                }
-                
-                // Fall back to local storage
+                // Always load from local storage first
                 const localData = localStorage.getItem('localData');
                 if (localData) {
                     appData = JSON.parse(localData);
                     showNotification('Data loaded from local storage');
+                    return;
                 }
+                
+                // Initialize empty data structure if none exists
+                appData = {
+                    products: [],
+                    orders: [],
+                    customers: [],
+                    pcodes: {}
+                };
+                saveData();
+                
             } catch (error) {
                 console.error('Load error:', error);
                 showNotification('Error loading data', false);
@@ -946,50 +994,35 @@
             try {
                 // Always save to local storage
                 localStorage.setItem('localData', JSON.stringify(appData));
+                showNotification('Data saved locally');
                 
-                // Save to GitHub if authenticated
-                if (isAuthenticated()) {
-                    await saveToGitHub();
-                    showNotification('Data saved to GitHub and locally');
-                } else {
-                    showNotification('Data saved locally (login to sync with GitHub)');
-                }
             } catch (error) {
                 console.error('Save error:', error);
                 showNotification('Error saving data', false);
             }
         }
 
-        async function fetchFromGitHub() {
-            const token = localStorage.getItem(AUTH_KEY);
-            if (!token) return null;
-            
-            try {
-                // For demo purposes, we'll simulate GitHub API response
-                // In a real app, this would fetch from the actual GitHub API
-                const mockData = localStorage.getItem('localData');
-                if (mockData) {
-                    return JSON.parse(mockData);
-                }
-                return null;
-            } catch (error) {
-                console.error('GitHub fetch failed:', error);
-                return null;
-            }
+        // ======================
+        // Export/Import Functions
+        // ======================
+
+        function exportData() {
+            const dataStr = JSON.stringify(appData, null, 2);
+            document.getElementById('exportData').value = dataStr;
+            document.getElementById('exportImportModal').style.display = 'block';
         }
 
-        async function saveToGitHub() {
-            const token = localStorage.getItem(AUTH_KEY);
-            if (!token) throw new Error('Not authenticated');
-            
+        function importData() {
+            const dataStr = document.getElementById('importData').value;
             try {
-                // For demo purposes, we'll simulate saving to GitHub
-                // In a real app, this would make a PUT request to the GitHub API
-                showNotification('Data synced with GitHub (simulated)');
-                return { success: true };
+                const importedData = JSON.parse(dataStr);
+                appData = importedData;
+                saveData();
+                loadProducts();
+                showNotification('Data imported successfully!');
+                document.getElementById('exportImportModal').style.display = 'none';
             } catch (error) {
-                console.error('GitHub save failed:', error);
-                throw new Error('GitHub save failed');
+                showNotification('Invalid data format. Import failed.', false);
             }
         }
 
@@ -1035,34 +1068,71 @@
             const closeModal = document.querySelector('.close');
             const syncButton = document.getElementById('syncButton');
             const authButton = document.getElementById('authButton');
+            const exportImportButton = document.getElementById('exportImportButton');
             const authModal = document.getElementById('authModal');
-            const mockAuthBtn = document.getElementById('mockAuthBtn');
+            const enableSimpleSync = document.getElementById('enableSimpleSync');
+            const saveServerConfig = document.getElementById('saveServerConfig');
             const closeAuthModal = document.getElementById('closeAuthModal');
-            const mockTokenInput = document.getElementById('mockToken');
+            const exportImportModal = document.getElementById('exportImportModal');
+            const copyExportData = document.getElementById('copyExportData');
+            const performImport = document.getElementById('performImport');
+            const closeExportImportModal = document.getElementById('closeExportImportModal');
 
             let calculationTimeout;
             let extraAmounts = [];
 
             // Setup auth modal buttons
-            mockAuthBtn.addEventListener('click', function() {
-                const mockToken = mockTokenInput.value || 'github_pat_mock_token_' + Math.random().toString(36).substr(2);
-                localStorage.setItem(AUTH_KEY, mockToken);
+            enableSimpleSync.addEventListener('click', function() {
+                localStorage.setItem(SYNC_MODE_KEY, 'simple');
+                showNotification('Simple sync mode enabled. Use Transfer button to move data between devices.');
                 authModal.style.display = 'none';
-                showNotification('Mock authentication successful!');
                 updateAuthButton();
-                loadData().then(() => {
-                    loadProducts();
-                });
+            });
+
+            saveServerConfig.addEventListener('click', function() {
+                const serverUrl = document.getElementById('serverUrl').value;
+                const clientId = document.getElementById('clientId').value;
+                
+                if (serverUrl && clientId) {
+                    localStorage.setItem(SERVER_CONFIG_KEY, JSON.stringify({
+                        serverUrl: serverUrl,
+                        clientId: clientId
+                    }));
+                    localStorage.setItem(SYNC_MODE_KEY, 'github');
+                    showNotification('Server configuration saved. Please reload to use GitHub sync.');
+                    authModal.style.display = 'none';
+                } else {
+                    showNotification('Please provide both server URL and client ID', false);
+                }
             });
 
             closeAuthModal.addEventListener('click', function() {
                 authModal.style.display = 'none';
             });
 
-            // Close auth modal when clicking outside
+            // Export/Import functionality
+            exportImportButton.addEventListener('click', exportData);
+            
+            copyExportData.addEventListener('click', function() {
+                const exportData = document.getElementById('exportData');
+                exportData.select();
+                document.execCommand('copy');
+                showNotification('Data copied to clipboard!');
+            });
+            
+            performImport.addEventListener('click', importData);
+            
+            closeExportImportModal.addEventListener('click', function() {
+                exportImportModal.style.display = 'none';
+            });
+
+            // Close modals when clicking outside
             window.addEventListener('click', function(event) {
                 if (event.target === authModal) {
                     authModal.style.display = 'none';
+                }
+                if (event.target === exportImportModal) {
+                    exportImportModal.style.display = 'none';
                 }
             });
 
@@ -1107,7 +1177,7 @@
                                 orderSales: 0,
                                 manualSales: 0,
                                 totalRevenue: 0,
-                                totalLoss: 0,
+                                totalLoss = 0;
                                 orders: [],
                                 coupons: [],
                                 extraAmounts: []
@@ -1482,7 +1552,7 @@
                     
                     amountItem.innerHTML = `
                         <div class="extra-amount-header">
-                            <span class="extra-amount-title">${item.description}</span>
+                            <span class="extra-amount-title">${item.description</span>
                             <span class="extra-amount-value ${item.type}">${item.type === 'credit' ? '+' : '-'}₹${item.amount.toFixed(2)}</span>
                         </div>
                         <div class="extra-amount-description">${item.type === 'credit' ? 'Credit' : 'Debit'}</div>
@@ -1534,6 +1604,7 @@
                 if (editIndex !== undefined && editProductCode.value) {
                     productCode = editProductCode.value;
                 }
+                
                 let photoBase64 = '';
                 if (skuPhotoInput.files.length > 0) {
                     const file = skuPhotoInput.files[0];
@@ -1786,7 +1857,6 @@
                 }, 1200);
             });
         }
-
         function showNotification(message, isSuccess = true) {
             const notification = document.getElementById('notification');
             const content = notification.querySelector('.notification-content');
@@ -1799,6 +1869,7 @@
             // Show notification
             notification.classList.remove('notification-hidden');
             notification.classList.add('notification-visible');
+            
             // Auto-hide after 3 seconds
             setTimeout(() => {
                 notification.classList.remove('notification-visible');
