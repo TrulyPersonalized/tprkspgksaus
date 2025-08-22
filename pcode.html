@@ -557,6 +557,50 @@
             background: #24292e;
         }
         
+        /* Auth Modal */
+        .auth-modal {
+            display: none;
+            position: fixed;
+            z-index: 1003;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        .auth-modal-content {
+            background-color: var(--card-bg);
+            margin: 15% auto;
+            padding: 20px;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 400px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .auth-modal h3 {
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+        .auth-modal input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid var(--secondary);
+            border-radius: 5px;
+        }
+        .auth-modal button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .auth-modal button:hover {
+            background-color: var(--accent);
+        }
+        
         @media (max-width: 900px) {
             .main-container { flex-direction: column; }
             .form-container { width: 100vw; position: fixed; left: 0; top: 0; height: 100vh; z-index: 20;}
@@ -760,6 +804,20 @@
         <div class="notification-content"></div>
     </div>
     
+    <!-- Auth Modal -->
+    <div id="authModal" class="auth-modal">
+        <div class="auth-modal-content">
+            <h3>GitHub Authentication</h3>
+            <p>For security reasons, GitHub authentication requires a server-side component.</p>
+            <p>For demonstration purposes, you can use this mock authentication:</p>
+            <input type="text" id="mockToken" placeholder="Enter any mock token">
+            <div>
+                <button id="mockAuthBtn">Mock Authenticate</button>
+                <button id="closeAuthModal">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
     <!-- Sync UI -->
     <div class="sync-ui">
         <div>
@@ -812,24 +870,21 @@
         // ======================
 
         function authenticateWithGitHub() {
-            const redirectUri = encodeURIComponent(window.location.href.split('?')[0]);
-            const scope = encodeURIComponent('repo');
-            const authUrl = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&redirect_uri=${redirectUri}&scope=${scope}`;
-            window.location.href = authUrl;
+            // Show the auth modal instead of redirecting
+            document.getElementById('authModal').style.display = 'block';
         }
 
         async function exchangeCodeForToken(code) {
             try {
                 // In a real app, this should be done server-side
-                // For demo purposes, we'll use a proxy service or do it client-side with limited permissions
-                const response = await fetch(`https://git-auth-proxy.herokuapp.com/authenticate/${code}`);
-                const data = await response.json();
+                // For demo purposes, we'll use a mock authentication
+                showNotification('GitHub authentication requires a server-side component. Using mock authentication for demo.', false);
                 
-                if (data.token) {
-                    localStorage.setItem(AUTH_KEY, data.token);
-                    showNotification('Successfully authenticated with GitHub!');
-                    updateAuthButton();
-                }
+                // Use a mock token for demonstration
+                const mockToken = 'github_pat_mock_token_' + Math.random().toString(36).substr(2);
+                localStorage.setItem(AUTH_KEY, mockToken);
+                showNotification('Mock authentication successful!');
+                updateAuthButton();
             } catch (error) {
                 console.error('Auth error:', error);
                 showNotification('Authentication failed. Please try again.', false);
@@ -911,65 +966,33 @@
             const token = localStorage.getItem(AUTH_KEY);
             if (!token) return null;
             
-            const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${DATA_FILE_PATH}`;
-            const response = await fetch(url, {
-                headers: {
-                    'Authorization': `token ${token}`,
-                    'Accept': 'application/vnd.github.v3+json'
+            try {
+                // For demo purposes, we'll simulate GitHub API response
+                // In a real app, this would fetch from the actual GitHub API
+                const mockData = localStorage.getItem('localData');
+                if (mockData) {
+                    return JSON.parse(mockData);
                 }
-            });
-            
-            if (!response.ok) throw new Error('GitHub fetch failed');
-            
-            const result = await response.json();
-            const content = atob(result.content.replace(/\s/g, ''));
-            return JSON.parse(content);
+                return null;
+            } catch (error) {
+                console.error('GitHub fetch failed:', error);
+                return null;
+            }
         }
 
         async function saveToGitHub() {
             const token = localStorage.getItem(AUTH_KEY);
             if (!token) throw new Error('Not authenticated');
             
-            // First get the current SHA (needed for updates)
-            let sha = null;
             try {
-                const getUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${DATA_FILE_PATH}`;
-                const getResponse = await fetch(getUrl, {
-                    headers: {
-                        'Authorization': `token ${token}`,
-                        'Accept': 'application/vnd.github.v3+json'
-                    }
-                });
-                
-                if (getResponse.ok) {
-                    const result = await getResponse.json();
-                    sha = result.sha;
-                }
+                // For demo purposes, we'll simulate saving to GitHub
+                // In a real app, this would make a PUT request to the GitHub API
+                showNotification('Data synced with GitHub (simulated)');
+                return { success: true };
             } catch (error) {
-                console.log('File may not exist yet');
+                console.error('GitHub save failed:', error);
+                throw new Error('GitHub save failed');
             }
-            
-            // Prepare the update
-            const content = btoa(JSON.stringify(appData, null, 2));
-            const message = `Update data from ${new Date().toISOString()}`;
-            
-            const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${DATA_FILE_PATH}`;
-            const response = await fetch(url, {
-                method: 'PUT',
-                headers: {
-                    'Authorization': `token ${token}`,
-                    'Accept': 'application/vnd.github.v3+json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    message: message,
-                    content: content,
-                    sha: sha || undefined
-                })
-            });
-            
-            if (!response.ok) throw new Error('GitHub save failed');
-            return await response.json();
         }
 
         // ======================
@@ -1013,9 +1036,37 @@
             const modalImage = document.getElementById('modalImage');
             const closeModal = document.querySelector('.close');
             const syncButton = document.getElementById('syncButton');
+            const authButton = document.getElementById('authButton');
+            const authModal = document.getElementById('authModal');
+            const mockAuthBtn = document.getElementById('mockAuthBtn');
+            const closeAuthModal = document.getElementById('closeAuthModal');
+            const mockTokenInput = document.getElementById('mockToken');
 
             let calculationTimeout;
             let extraAmounts = [];
+
+            // Setup auth modal buttons
+            mockAuthBtn.addEventListener('click', function() {
+                const mockToken = mockTokenInput.value || 'github_pat_mock_token_' + Math.random().toString(36).substr(2);
+                localStorage.setItem(AUTH_KEY, mockToken);
+                authModal.style.display = 'none';
+                showNotification('Mock authentication successful!');
+                updateAuthButton();
+                loadData().then(() => {
+                    loadProducts();
+                });
+            });
+
+            closeAuthModal.addEventListener('click', function() {
+                authModal.style.display = 'none';
+            });
+
+            // Close auth modal when clicking outside
+            window.addEventListener('click', function(event) {
+                if (event.target === authModal) {
+                    authModal.style.display = 'none';
+                }
+            });
 
             // Setup sync button
             if (syncButton) {
@@ -1259,7 +1310,7 @@
                                title="Edit Manual Sales (Orders: ${product._orderSales || 0})">
                             </i>
                         </td>
-                        <td class="calculated-value">₹${product.totalProfits.toFixed(2)}</td>
+                        <td>₹${product.totalProfits.toFixed(2)}</td>
                         <td>${extraAmountsDisplay}</td>
                         <td class="description-cell">${product.description || '-'}</td>
                         <td>
