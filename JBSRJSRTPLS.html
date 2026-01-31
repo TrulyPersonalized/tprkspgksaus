@@ -1,0 +1,4058 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Truly Personalized Management System</title>
+    <link href="https://fonts.googleapis.com/css?family=Raleway:400,700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #fff5eb;
+            --primary: #ed4167;
+            --accent: #ffa700;
+            --secondary: #96ded5;
+            --card-bg: #fff;
+            --text: #222;
+            --muted: #666;
+            --credit: #4CAF50;
+            --debit: #F44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Raleway', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background-color: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        header {
+            background-color: var(--secondary);
+            color: white;
+            padding: 16px 32px 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 12px var(--primary)33;
+            position: relative;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .logo-img {
+            width: 100px;
+            height: 100%;
+            border-radius: 10px;
+            background: var(--secondary);
+            object-fit: cover;
+            box-shadow: 0 2px 10px var(--secondary)80;
+        }
+        .header-title { font-size: 1.55rem; font-weight: 700; letter-spacing: 0.02em; }
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-left: 30px;
+        }
+        .nav-tab {
+            background: none;
+            color: var(--text);
+            border: none;
+            padding: 8px 20px;
+            border-radius: 60px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 700;
+            transition: all 0.22s;
+        }
+        .nav-tab.active {
+            background-color: var(--primary);
+            color: white;
+        }
+        .nav-tab:hover:not(.active) {
+            background-color: rgba(237, 65, 103, 0.1);
+        }
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .action-btn {
+            background-color: black;
+            color: white;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 60px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 700;
+            box-shadow: 0 2px 8px var(--accent)33;
+            transition: background 0.22s, color 0.22s;
+        }
+        .action-btn:hover { 
+            background-color: var(--primary); 
+            color: #fff; 
+        }
+        .action-btn i { margin-right: 5px; }
+        
+        .main-container { 
+            display: flex; 
+            flex: 1; 
+            overflow: hidden; 
+        }
+        
+        /* Sidebar for forms */
+        .sidebar {
+            width: 410px;
+            background: var(--bg);
+            padding: 32px 26px 26px 26px;
+            border-right: 2px solid var(--secondary);
+            overflow-y: auto;
+            transition: transform 0.3s;
+            transform: translateX(-100%);
+            position: absolute;
+            height: calc(100vh - 64px);
+            z-index: 10;
+            box-shadow: 2px 0 18px var(--primary)11;
+        }
+        .sidebar.show { 
+            transform: translateX(0); 
+        }
+        .sidebar-close-btn {
+            position: absolute;
+            top: 18px;
+            right: 22px;
+            background: none;
+            border: none;
+            color: var(--primary);
+            font-size: 2rem;
+            cursor: pointer;
+            z-index: 999;
+            transition: color 0.2s;
+        }
+        .sidebar-close-btn:hover { 
+            color: var(--accent);
+        }
+        
+        /* Content area */
+        .content-area {
+            flex: 1;
+            padding: 32px 28px;
+            overflow-y: auto;
+            display: none;
+        }
+        .content-area.active {
+            display: block;
+        }
+        
+        h1 { 
+            margin-bottom: 28px; 
+            color: var(--primary); 
+            font-size: 1.4rem; 
+            font-weight: 700; 
+            letter-spacing: 0.02em;
+        }
+        
+        .form-group { 
+            margin-bottom: 20px; 
+        }
+        label { 
+            display: block; 
+            margin-bottom: 6px; 
+            font-weight: 600; 
+            color: var(--primary);
+        }
+        input[type="text"], input[type="number"], textarea, select, input[type="tel"], input[type="email"] {
+            width: 100%; 
+            padding: 11px; 
+            border: 1px solid var(--secondary);
+            border-radius: 60px; 
+            font-size: 15px; 
+            background: var(--bg);
+            transition: border-color 0.18s;
+        }
+        input[type="text"]:focus, input[type="number"]:focus, textarea:focus, input[type="tel"]:focus, input[type="email"]:focus {
+            border-color: var(--accent);
+            outline: none;
+        }
+        textarea { 
+            height: 87px; 
+            resize: vertical; 
+            border-radius: 30px; 
+            padding: 15px;
+        }
+        
+        /* Product-specific styles */
+        .product-code, .order-id, .referral-code {
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary);
+            letter-spacing: 0.04em;
+        }
+        
+        .delivery-type {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .delivery-type label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            white-space: nowrap;
+            color: var(--text);
+        }
+        .delivery-type input[type="radio"] { 
+            margin: 0; 
+            width: auto; 
+        }
+        
+        .photo-preview {
+            max-width: 90px;
+            max-height: 90px;
+            margin-top: 10px;
+            border: 1.5px solid var(--secondary);
+            border-radius: 8px;
+            display: block;
+            cursor: pointer;
+            object-fit: cover;
+        }
+        
+        .hidden { 
+            display: none; 
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: var(--bg);
+            box-shadow: 0 0 14px var(--primary)15;
+            font-size: 14px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        th, td { 
+            padding: 8px 10px; 
+            text-align: left; 
+            border-bottom: 1px solid var(--secondary);
+            word-wrap: break-word;
+        }
+        th {
+            background-color: var(--secondary);
+            font-weight: 700;
+            position: sticky;
+            top: 0;
+            font-size: 12px;
+            color: black;
+        }
+        tr:hover { 
+            background-color: var(--bg); 
+        }
+        
+        .action-icons { 
+            display: flex; 
+            gap: 10px; 
+        }
+        .action-icon { 
+            cursor: pointer; 
+            font-size: 16px; 
+            transition: color 0.2s; 
+        }
+        .edit-icon { 
+            color: var(--accent);
+        }
+        .edit-icon:hover { 
+            color: var(--primary);
+        }
+        .delete-icon { 
+            color: var(--primary);
+        }
+        .delete-icon:hover { 
+            color: var(--accent);
+        }
+        
+        .no-data { 
+            text-align: center; 
+            padding: 44px; 
+            color: var(--muted); 
+            font-size: 1.1rem;
+        }
+        
+        .price-row { 
+            display: flex; 
+            gap: 11px; 
+        }
+        .price-row .form-group { 
+            flex: 1; 
+        }
+        
+        .calculated-field { 
+            background-color: var(--bg); 
+            color: var(--muted);
+        }
+        
+        .extra-amount-section, .customer-info, .summary-section, .coupon-section, .info-section, .wallet-section, .referral-section, .orders-section {
+            border: 1px solid var(--secondary);
+            border-radius: 30px;
+            padding: 15px;
+            margin-bottom: 20px;
+            background-color: var(--bg);
+        }
+        .extra-amount-section h4, .customer-info h4, .summary-section h4, .coupon-section h4, .info-section h4, .wallet-section h4, .referral-section h4, .orders-section h4 { 
+            margin-bottom: 10px; 
+            color: var(--primary);
+        }
+        
+        .extra-amount-item, .address-item, .coupon-item, .order-item, .product-row {
+            background: white;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 10px;
+            border: 1px solid var(--secondary);
+            position: relative;
+        }
+        
+        .extra-amount-header, .coupon-header, .order-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        
+        .extra-amount-title, .coupon-name, .order-id {
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        .extra-amount-value, .coupon-value, .order-amount {
+            font-weight: bold;
+        }
+        
+        .credit { 
+            color: var(--credit); 
+        }
+        .debit { 
+            color: var(--debit); 
+        }
+        
+        .remove-extra-amount, .remove-address, .remove-coupon, .remove-order, .remove-product-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: none;
+            border: none;
+            color: var(--primary);
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .extra-amount-type {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .extra-amount-type label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+        }
+        
+        .add-extra-amount-btn, .add-address-btn, .add-coupon-btn, .add-order-btn, .add-product-btn {
+            background: var(--secondary);
+            color: var(--text);
+            border: none;
+            border-radius: 60px;
+            padding: 8px 12px;
+            font-size: 0.9em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        .add-extra-amount-btn:hover, .add-address-btn:hover, .add-coupon-btn:hover, .add-order-btn:hover, .add-product-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        .summary-total {
+            font-weight: bold;
+            border-top: 1px solid var(--secondary);
+            padding-top: 8px;
+            margin-top: 8px;
+        }
+        
+        .product-line {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+        .product-line input, .product-line select {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid var(--secondary);
+            border-radius: 30px;
+        }
+        .product-line .short-input {
+            flex: 0.5;
+        }
+        
+        .delivery-reason {
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        .address-dropdown {
+            width: 100%;
+            padding: 8px;
+            border-radius: 30px;
+            border: 1px solid var(--secondary);
+            margin-bottom: 10px;
+        }
+        
+        .wallet-balance {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .wallet-credit { 
+            color: var(--credit); 
+        }
+        .wallet-debit { 
+            color: var(--debit); 
+        }
+        .wallet-transaction {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        
+        .form-actions { 
+            display: flex; 
+            gap: 10px; 
+        }
+        .form-actions button {
+            flex: 1;
+            padding: 12px;
+            border-radius: 60px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.22s;
+            font-weight: 700;
+        }
+        .save-btn { 
+            background-color: var(--primary); 
+            color: white; 
+            border: none; 
+        }
+        .save-btn:hover { 
+            background-color: var(--accent); 
+            color: var(--primary); 
+        }
+        
+        .search-and-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+        .search-bar-wrapper {
+            flex: 1;
+            position: relative;
+        }
+        .search-x-btn {
+            position: absolute;
+            right: 8px;
+            top: 12px;
+            background: none;
+            border: none;
+            font-size: 22px;
+            color: var(--primary);
+            cursor: pointer;
+            padding: 0 6px;
+            z-index: 2;
+            display: none;
+        }
+        
+        .multi-delete-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .multi-delete-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .multi-delete-btn:hover:not(:disabled) {
+            background-color: var(--accent);
+        }
+        
+        .select-checkbox {
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            accent-color: var(--primary);
+            appearance: none;
+            border: 2px solid var(--secondary);
+            border-radius: 50%;
+            outline: none;
+            background: var(--bg);
+            position: relative;
+        }
+        .select-checkbox:checked {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+        .select-checkbox:checked::after {
+            content: '';
+            display: block;
+            width: 10px;
+            height: 10px;
+            background: var(--primary);
+            border-radius: 50%;
+            position: absolute;
+            top: 4px;
+            left: 4px;
+        }
+        
+        .actions-icons-flex { 
+            display: flex; 
+            gap: 10px; 
+            align-items: center; 
+        }
+        
+        .insta-btn-action {
+            color: var(--accent);
+            background: none;
+            border: none;
+            border-radius: 8px;
+            font-size: 20px;
+            padding: 0 6px;
+            cursor: pointer;
+            transition: color 0.22s;
+        }
+        .insta-btn-action:hover { 
+            color: var(--primary);
+        }
+        
+        .product-image {
+            width: 46px;
+            height: 46px;
+            object-fit: cover;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 1px solid var(--secondary);
+        }
+        
+        .loss-indicator {
+            color: var(--debit);
+            font-weight: bold;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        
+        .order-id-cell {
+            max-width: 150px;
+            word-break: break-all;
+        }
+        
+        .description-cell {
+            white-space: normal;
+            word-wrap: break-word;
+            max-width: 200px;
+        }
+        
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(237,65,103,0.15);
+        }
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-width: 90%;
+            max-height: 90%;
+        }
+        .modal-image {
+            width: 100%;
+            height: auto;
+            border-radius: 12px;
+            border: 4px solid var(--accent);
+            background: var(--bg);
+        }
+        .close {
+            position: absolute;
+            top: 15px;
+            right: 35px;
+            color: var(--primary);
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 2;
+        }
+        .close:hover { 
+            color: var(--accent);
+        }
+        
+        .insta-modal {
+            display: none;
+            position: fixed;
+            z-index: 1002;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(237,65,103,0.15);
+        }
+        .insta-modal-content {
+            background: var(--card-bg);
+            border-radius: 14px;
+            padding: 28px;
+            max-width: 410px;
+            width: 92%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            box-shadow: 0 8px 44px var(--primary)55;
+            transform: translate(-50%, -50%);
+        }
+        .insta-title {
+            font-size: 1.2rem;
+            margin-bottom: 14px;
+            color: var(--primary);
+            font-weight: bold;
+            text-align: center;
+            letter-spacing: 0.02em;
+        }
+        .insta-textarea {
+            width: 100%;
+            height: 90px;
+            font-size: 15px;
+            padding: 10px;
+            border: 1px solid var(--secondary);
+            border-radius: 8px;
+            margin-bottom: 16px;
+            background: var(--bg);
+            resize: vertical;
+        }
+        .insta-copy-btn {
+            background-color: var(--accent);
+            color: whitesmoke;
+            border: none;
+            border-radius: 60px;
+            padding: 11px 18px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 8px;
+            transition: background-color 0.2s, color 0.2s;
+        }
+        .insta-copy-btn:hover { 
+            background-color: var(--primary); 
+            color: #fff;
+        }
+        .insta-close {
+            background: none;
+            border: none;
+            color: var(--primary);
+            font-size: 24px;
+            position: absolute;
+            right: 18px;
+            top: 18px;
+            cursor: pointer;
+        }
+        .insta-success {
+            color: var(--secondary);
+            font-size: 15px;
+            text-align: center;
+            margin-bottom: 10px;
+            display: none;
+        }
+        
+        /* Notification */
+        #notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background-color: var(--primary);
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            transition: all 0.3s ease;
+            max-width: 300px;
+        }
+        .notification-hidden {
+            transform: translateX(100%);
+            opacity: 0;
+            visibility: hidden;
+        }
+        .notification-visible {
+            transform: translateX(0);
+            opacity: 1;
+            visibility: visible;
+        }
+        .notification-content {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .notification-content i {
+            font-size: 1.2rem;
+        }
+        
+        /* Sync UI */
+        .sync-ui {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        .sync-ui div {
+            display: flex;
+            gap: 10px;
+        }
+        .sync-ui button {
+            padding: 10px;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #syncButton {
+            background: #2ea44f;
+        }
+        #authButton {
+            background: #24292e;
+        }
+        #exportImportButton {
+            background: #6f42c1;
+        }
+        
+        /* Auth Modal */
+        .auth-modal, .export-import-modal {
+            display: none;
+            position: fixed;
+            z-index: 1003;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        .auth-modal-content, .export-import-modal-content {
+            background-color: var(--card-bg);
+            margin: 15% auto;
+            padding: 20px;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 500px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .auth-modal h3, .export-import-modal h3 {
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+        .auth-modal input, .export-import-modal textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid var(--secondary);
+            border-radius: 5px;
+        }
+        .auth-modal button, .export-import-modal button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .auth-modal button:hover, .export-import-modal button:hover {
+            background-color: var(--accent);
+        }
+        .setup-info {
+            background-color: #f8f9fa;
+            border-left: 4px solid var(--accent);
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        .setup-info h4 {
+            margin-top: 0;
+            color: var(--primary);
+        }
+        .setup-info code {
+            background-color: #eee;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        
+        @media (max-width: 900px) {
+            .main-container { 
+                flex-direction: column; 
+            }
+            .sidebar { 
+                width: 100vw; 
+                position: fixed; 
+                left: 0; 
+                top: 0; 
+                height: 100vh; 
+                z-index: 20;
+            }
+            .content-area { 
+                padding: 18px 8px; 
+            }
+            table { 
+                font-size: 12px;
+            }
+            .nav-tabs {
+                display: none;
+            }
+            .mobile-nav {
+                display: flex;
+                justify-content: center;
+                margin-top: 10px;
+            }
+        }
+        
+        .mobile-nav {
+            display: none;
+        }
+        @media (max-width: 900px) {
+            .mobile-nav {
+                display: flex;
+                gap: 10px;
+                margin-top: 10px;
+                justify-content: center;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <img class="logo-img" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjOTZkZWQ1IiAvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkeT0iMC4zNWVtIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiMyMjIiPlRQPC90ZXh0Pjwvc3ZnPg==" alt="Logo">
+            <span class="header-title">Truly Personalized Management</span>
+        </div>
+        <div class="nav-tabs">
+            <button class="nav-tab active" data-tab="products">
+                <i class="fas fa-box"></i> Products
+            </button>
+            <button class="nav-tab" data-tab="orders">
+                <i class="fas fa-shopping-cart"></i> Orders
+            </button>
+            <button class="nav-tab" data-tab="customers">
+                <i class="fas fa-users"></i> Customers
+            </button>
+        </div>
+        <div class="header-actions">
+            <button id="showProductsForm" class="action-btn">
+                <i class="fas fa-plus"></i> Add Product
+            </button>
+            <button id="showOrdersForm" class="action-btn">
+                <i class="fas fa-plus"></i> Create Order
+            </button>
+            <button id="showCustomersForm" class="action-btn">
+                <i class="fas fa-plus"></i> Add Customer
+            </button>
+        </div>
+    </header>
+    
+    <div class="mobile-nav">
+        <button class="nav-tab active" data-tab="products">
+            <i class="fas fa-box"></i> Products
+        </button>
+        <button class="nav-tab" data-tab="orders">
+            <i class="fas fa-shopping-cart"></i> Orders
+        </button>
+        <button class="nav-tab" data-tab="customers">
+            <i class="fas fa-users"></i> Customers
+        </button>
+    </div>
+    
+    <div class="main-container">
+        <!-- Products Sidebar -->
+        <div id="productsSidebar" class="sidebar">
+            <button type="button" class="sidebar-close-btn" title="Close">&times;</button>
+            <h1>Add / Edit Product</h1>
+            <div class="product-code" id="productCodeDisplay">
+                Select delivery type
+            </div>
+            <div class="form-group" id="editCodeGroup" style="display:none;">
+                <label for="editProductCode">Edit Product Code</label>
+                <input type="text" id="editProductCode">
+            </div>
+            <div class="delivery-type">
+                <label>
+                    <input type="radio" name="deliveryType" value="RK" checked>
+                    Non-Free Delivery (RK)
+                </label>
+                <label>
+                    <input type="radio" name="deliveryType" value="SP">
+                    Free Delivery (SP)
+                </label>
+                <label>
+                    <input type="radio" name="deliveryType" value="GK">
+                    Free Delivery By Us (GK)
+                </label>
+            </div>
+            <form id="productForm">
+                <div class="form-group">
+                    <label for="itemName">Item Name*</label>
+                    <input type="text" id="itemName" required>
+                    <div id="sameProductWarning" class="same-product-warning" style="color: var(--primary); margin-top: 5px; font-size: 14px; display: none;">
+                        A product with this name already exists!
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="manufacturerName">Manufacturer Item Name</label>
+                    <input type="text" id="manufacturerName">
+                </div>
+                <div class="form-group">
+                    <label for="skuPhoto">SKU Photo</label>
+                    <input type="file" id="skuPhoto" accept="image/*">
+                    <img id="photoPreview" class="photo-preview hidden">
+                </div>
+                <div class="form-group">
+                    <label for="unitPrice">Unit Price (₹)*</label>
+                    <input type="number" id="unitPrice" min="0" step="0.01" required>
+                </div>
+                <div class="price-row">
+                    <div class="form-group">
+                        <label for="sellingPrice">Selling Price (₹)</label>
+                        <input type="number" id="sellingPrice" min="0" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label for="margin">Margin (%)</label>
+                        <input type="number" id="margin" min="0" step="0.01">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="marginAmount">Margin Amount (₹)</label>
+                    <input type="number" id="marginAmount" class="calculated-field" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="totalSales">Total Sales (Quantity)</label>
+                    <input type="number" id="totalSales" min="0" value="0">
+                </div>
+                <div class="form-group">
+                    <label for="totalProfits">Total Profits (₹)</label>
+                    <input type="number" id="totalProfits" class="calculated-field" readonly>
+                </div>
+                
+                <!-- Enhanced Extra Amounts Section -->
+                <div class="extra-amount-section">
+                    <h4>Extra Amounts</h4>
+                    <div class="form-group">
+                        <label for="extraAmount">Amount (₹)</label>
+                        <input type="number" id="extraAmount" min="0" step="0.01" value="0">
+                    </div>
+                    <div class="extra-amount-type">
+                        <label>
+                            <input type="radio" name="extraAmountType" value="credit" checked>
+                            <span>Credit (+)</span>
+                        </label>
+                        <label>
+                            <input type="radio" name="extraAmountType" value="debit">
+                            <span>Debit (-)</span>
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label for="extraDescription">Description</label>
+                        <input type="text" id="extraDescription" placeholder="e.g., Shipping, Tax, Discount, etc.">
+                    </div>
+                    <button type="button" id="addExtraAmountBtn" class="add-extra-amount-btn">
+                        <i class="fas fa-plus"></i> Add Extra Amount
+                    </button>
+                    
+                    <div class="extra-amounts-list" id="extraAmountsList">
+                        <!-- Extra amounts will be added here -->
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="save-btn">Save Product</button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Orders Sidebar -->
+        <div id="ordersSidebar" class="sidebar">
+            <button type="button" class="sidebar-close-btn" title="Close">&times;</button>
+            <h1>Create New Order</h1>
+            <div class="order-id" id="orderIdDisplay">
+                Generating Order ID...
+            </div>
+            <form id="orderForm">
+                <div class="customer-info">
+                    <h4>Customer Information</h4>
+                    <div class="form-group">
+                        <label for="customerMobile">Mobile Number</label>
+                        <input type="tel" id="customerMobile" name="customerMobile" placeholder="10-digit mobile number" list="customerMobiles">
+                        <datalist id="customerMobiles"></datalist>
+                    </div>
+                    <div class="form-group">
+                        <label for="customerInsta">Instagram ID</label>
+                        <input type="text" id="customerInsta" name="customerInsta" placeholder="Instagram username (optional)" list="customerInstas">
+                        <datalist id="customerInstas"></datalist>
+                    </div>
+                    <div id="customerDetails" class="hidden">
+                        <div class="form-group">
+                            <label for="customerName">Customer Name</label>
+                            <input type="text" id="customerName" name="customerName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="customerEmail">Email (optional)</label>
+                            <input type="email" id="customerEmail" name="customerEmail" placeholder="Email address">
+                        </div>
+                        <div class="form-group">
+                            <label for="customerAddress">Address</label>
+                            <select id="customerAddressDropdown" name="customerAddressDropdown" class="address-dropdown hidden">
+                                <option value="">Select saved address</option>
+                            </select>
+                            <textarea id="customerAddress" name="customerAddress" placeholder="Full address" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="customerWallet">Wallet Balance</label>
+                            <input type="number" id="customerWallet" name="customerWallet" readonly>
+                            <div id="walletApplySection" class="hidden" style="margin-top: 10px;">
+                                <label>
+                                    <input type="checkbox" id="applyWallet" name="applyWallet"> Apply 10% of order value from wallet
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="products-section">
+                    <h4>Products</h4>
+                    <div id="productsContainer">
+                        <!-- Product rows will be added here -->
+                    </div>
+                    <button type="button" id="addProductBtn" class="add-product-btn">
+                        <i class="fas fa-plus"></i> Add Product
+                    </button>
+                </div>
+
+                <div class="form-group">
+                    <label for="orderExtraAmount">Order Extra Amount</label>
+                    <div style="display:flex;gap:10px;">
+                        <select id="orderExtraType" style="width: 60px;">
+                            <option value="+">+</option>
+                            <option value="-">-</option>
+                        </select>
+                        <input type="number" id="orderExtraAmount" name="orderExtraAmount" value="0">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="deliveryAmountInput">Delivery Charges (editable)</label>
+                    <input type="number" id="deliveryAmountInput" name="deliveryAmountInput" value="70">
+                </div>
+                
+                <div class="coupon-section">
+                    <h4>Coupons & Discounts</h4>
+                    <div id="availableCoupons" class="hidden">
+                        <label>Available Coupons:</label>
+                        <select id="couponDropdown" name="couponDropdown" class="address-dropdown">
+                            <option value="">Select a coupon</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="couponCode">Coupon Code (optional)</label>
+                        <input type="text" id="couponCode" name="couponCode" placeholder="Enter coupon code">
+                    </div>
+                    <div class="form-group">
+                        <label for="couponName">Coupon Name</label>
+                        <input type="text" id="couponName" name="couponName" placeholder="Coupon Name">
+                    </div>
+                    <div id="couponUsedNotice" style="display:none;color:red;"></div>
+                    <div class="form-group">
+                        <label for="couponValue">Discount Value</label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="number" id="couponValue" name="couponValue" placeholder="Amount" style="flex: 1;">
+                            <select id="couponType" name="couponType" style="width: 100px;">
+                                <option value="amount">₹</option>
+                                <option value="percent">%</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="couponProductId">Apply to Product ID (optional)</label>
+                        <input type="text" id="couponProductId" name="couponProductId" placeholder="Leave blank for order-wide discount">
+                    </div>
+                    <button type="button" id="addCouponBtn" class="add-product-btn">
+                        <i class="fas fa-plus"></i> Add Coupon
+                    </button>
+                    <div id="appliedCoupons">
+                        <!-- Applied coupons will be shown here -->
+                    </div>
+                </div>
+                
+                <div class="summary-section">
+                    <h4>Order Summary</h4>
+                    <div class="summary-row">
+                        <span>Subtotal:</span>
+                        <span id="subtotalAmount">₹0.00</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Delivery:</span>
+                        <span id="deliveryAmount">₹0.00</span>
+                    </div>
+                    <div class="summary-row" id="discountRow" style="display: none;">
+                        <span>Discount:</span>
+                        <span id="discountAmount">-₹0.00</span>
+                    </div>
+                    <div class="summary-row" id="couponNameRow" style="display: none;">
+                        <span>Coupon Name:</span>
+                        <span id="couponNameDisplay">-</span>
+                    </div>
+                    <div class="summary-row" id="walletRow" style="display: none;">
+                        <span>Wallet Used:</span>
+                        <span id="walletAmount">-₹0.00</span>
+                    </div>
+                    <div class="summary-row summary-total">
+                        <span>Total:</span>
+                        <span id="totalAmount">₹0.00</span>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="save-btn">Create Order</button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Customers Sidebar -->
+        <div id="customersSidebar" class="sidebar">
+            <button type="button" class="sidebar-close-btn" title="Close">&times;</button>
+            <h1>Add / Edit Customer</h1>
+            <form id="customerForm">
+                <div class="info-section">
+                    <h4>Basic Information</h4>
+                    <div class="form-group">
+                        <label for="customerMobile">Mobile Number*</label>
+                        <input type="tel" id="customerMobile" placeholder="10-digit mobile number">
+                    </div>
+                    <div class="form-group">
+                        <label for="customerInsta">Instagram ID</label>
+                        <input type="text" id="customerInsta" placeholder="Instagram username (optional)">
+                    </div>
+                    <div class="form-group">
+                        <label for="customerName">Full Name*</label>
+                        <input type="text" id="customerName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="customerEmail">Email (optional)</label>
+                        <input type="email" id="customerEmail" placeholder="Email address">
+                    </div>
+                </div>
+                
+                <div class="info-section">
+                    <h4>Addresses</h4>
+                    <div id="addressesList">
+                        <!-- Addresses will be added here -->
+                    </div>
+                    <div class="form-group">
+                        <label for="newAddress">Add New Address</label>
+                        <textarea id="newAddress" placeholder="Full address"></textarea>
+                    </div>
+                    <button type="button" id="addAddressBtn" class="add-address-btn">
+                        <i class="fas fa-plus"></i> Add Address
+                    </button>
+                </div>
+                
+                <div class="referral-section">
+                    <h4>Referral Code</h4>
+                    <div class="referral-code" id="referralCodeDisplay">
+                        Will be generated on save
+                    </div>
+                    <div class="form-group" style="margin-top: 15px;">
+                        <label for="referredBy">Referred By (optional)</label>
+                        <input type="text" id="referredBy" placeholder="Enter referral code">
+                    </div>
+                </div>
+                
+                <div class="wallet-section">
+                    <h4>Wallet</h4>
+                    <div class="wallet-balance">
+                        Balance: <span id="walletBalance">₹0.00</span>
+                    </div>
+                    <div id="walletTransactions">
+                        <!-- Transactions will be added here -->
+                    </div>
+                    <div class="wallet-action" style="display: flex; flex-direction: column; gap: 8px; margin-top: 12px;">
+                        <input type="number" id="walletAmount" placeholder="Amount" step="0.01" style="width:100%;">
+                        <select id="walletAction" style="width:100%;">
+                            <option value="credit">Add</option>
+                            <option value="debit">Deduct</option>
+                        </select>
+                        <input type="text" id="walletReason" placeholder="Reason" style="width:100%;">
+                        <button type="button" id="applyWalletAction" style="width:100%;">
+                            <i class="fas fa-check"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="coupon-section">
+                    <h4>Coupons</h4>
+                    <div id="couponsList">
+                        <!-- Coupons will be added here -->
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="manualCouponId"> Manual Coupon ID
+                        </label>
+                        <input type="text" id="couponId" placeholder="Coupon ID" class="hidden">
+                        <input type="text" id="couponName" placeholder="Coupon name">
+                    </div>
+                    <div class="form-group">
+                        <label for="couponValue">Discount Value</label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="number" id="couponValue" placeholder="Amount" style="flex: 1;">
+                            <select id="couponType" style="width: 100px;">
+                                <option value="amount">₹</option>
+                                <option value="percent">%</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="button" id="addCouponBtn" class="add-coupon-btn">
+                        <i class="fas fa-plus"></i> Add Coupon
+                    </button>
+                </div>
+                
+                <div class="orders-section">
+                    <h4>Orders</h4>
+                    <div id="ordersList">
+                        <!-- Orders will be added here -->
+                    </div>
+                    <div class="form-group">
+                        <label for="orderId">Add Order ID (optional)</label>
+                        <input type="text" id="orderId" placeholder="Order ID">
+                    </div>
+                    <button type="button" id="addOrderBtn" class="add-order-btn">
+                        <i class="fas fa-plus"></i> Add Order
+                    </button>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="save-btn">Save Customer</button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Products Content -->
+        <div id="productsContent" class="content-area active">
+            <h1>Product List</h1>
+            <div class="search-and-actions">
+                <div class="search-bar-wrapper">
+                    <input type="text" id="productsSearchInput" placeholder="Search products by name, code, or manufacturer..." style="width: 100%; padding: 12px; border: 1px solid var(--secondary); border-radius: 60px; font-size: 16px;">
+                    <button id="productsSearchXBtn" class="search-x-btn" title="Clear Search">&times;</button>
+                </div>
+                <button id="productsMultiDeleteBtn" class="multi-delete-btn" disabled title="Delete Selected"><i class="fas fa-trash"></i></button>
+            </div>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox" id="selectAllProducts" class="select-checkbox"></th>
+                            <th>Code</th>
+                            <th>Item Name</th>
+                            <th>Manufacturer Name</th>
+                            <th>SKU Photo</th>
+                            <th>Unit Price</th>
+                            <th>Selling Price</th>
+                            <th>Margin</th>
+                            <th>Margin Amount</th>
+                            <th>Total Sales</th>
+                            <th>Total Profits</th>
+                            <th>Extra Amounts</th>
+                            <th>Description</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productsTableBody">
+                        <!-- Products will be added here -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="noProductsMessage" class="no-data">
+                No products found. Click "Add Product" to create your first product.
+            </div>
+        </div>
+        
+        <!-- Orders Content -->
+        <div id="ordersContent" class="content-area">
+            <h1>Order History</h1>
+            <div class="search-and-actions">
+                <div class="search-bar-wrapper">
+                    <input type="text" id="ordersSearchInput" placeholder="Search orders by ID, customer, or product..." style="width: 100%; padding: 12px; border: 1px solid var(--secondary); border-radius: 60px; font-size: 16px;">
+                    <button id="ordersSearchXBtn" class="search-x-btn" title="Clear Search">&times;</button>
+                </div>
+            </div>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Date</th>
+                            <th>Customer</th>
+                            <th>Mobile</th>
+                            <th>Products</th>
+                            <th>Subtotal</th>
+                            <th>Delivery</th>
+                            <th>Discount</th>
+                            <th>Coupon Name</th>
+                            <th>Wallet Used</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ordersTableBody">
+                        <!-- Orders will be added here -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="noOrdersMessage" class="no-data">
+                No orders found. Click "Create Order" to start.
+            </div>
+        </div>
+        
+        <!-- Customers Content -->
+        <div id="customersContent" class="content-area">
+            <h1>Customer List</h1>
+            <div class="search-and-actions">
+                <div class="search-bar-wrapper">
+                    <input type="text" id="customersSearchInput" placeholder="Search customers by name, mobile, or insta..." style="width: 100%; padding: 12px; border: 1px solid var(--secondary); border-radius: 60px; font-size: 16px;">
+                    <button id="customersSearchXBtn" class="search-x-btn" title="Clear Search">&times;</button>
+                </div>
+            </div>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Mobile</th>
+                            <th>Instagram</th>
+                            <th>Addresses</th>
+                            <th>Wallet<br><small>Amount & Reason</small></th>
+                            <th>Orders</th>
+                            <th>Referral</th>
+                            <th>Available Coupons<br><small>(One per line)</small></th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="customersTableBody">
+                        <!-- Customers will be added here -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="noCustomersMessage" class="no-data">
+                No customers found. Click "Add Customer" to create your first customer.
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modals -->
+    <div id="instaModal" class="insta-modal">
+        <div class="insta-modal-content">
+            <button class="insta-close" id="closeInstaModal">&times;</button>
+            <div class="insta-title">Copy for Instagram</div>
+            <div id="instaSuccess" class="insta-success">Copied to clipboard!</div>
+            <textarea id="instaTextarea" class="insta-textarea" readonly></textarea>
+            <button id="instaCopyBtn" class="insta-copy-btn">Copy to Clipboard</button>
+        </div>
+    </div>
+    
+    <div id="imageModal" class="modal">
+        <span class="close">&times;</span>
+        <div class="modal-content">
+            <img id="modalImage" class="modal-image">
+        </div>
+    </div>
+    
+    <div id="notification" class="notification-hidden">
+        <div class="notification-content"></div>
+    </div>
+    
+    <div id="authModal" class="auth-modal">
+        <div class="auth-modal-content">
+            <h3>Data Synchronization</h3>
+            <div class="setup-info">
+                <h4>Export Data</h4>
+                <p>Save your data to a file:</p>
+                <button id="exportDataBtn">Export All Data</button>
+            </div>
+            
+            <div class="setup-info">
+                <h4>Import Data</h4>
+                <p>Import data from a file:</p>
+                <input type="file" id="importFile" accept=".json">
+                <button id="importDataBtn">Import Data</button>
+            </div>
+            
+            <div class="setup-info">
+                <h4>Sync Settings</h4>
+                <p>Current sync mode: <span id="syncModeDisplay">Local Storage</span></p>
+                <button id="clearAllData">Clear All Data</button>
+            </div>
+            
+            <button id="closeAuthModal">Close</button>
+        </div>
+    </div>
+    
+    <div id="exportImportModal" class="export-import-modal">
+        <div class="export-import-modal-content">
+            <h3>Export/Import Data</h3>
+            <div class="setup-info">
+                <h4>Export Data</h4>
+                <p>Copy this data and save it:</p>
+                <textarea id="exportData" readonly style="width: 100%; height: 150px; margin-bottom: 15px; font-family: monospace;"></textarea>
+                <button id="copyExportData">Copy to Clipboard</button>
+                <button id="downloadExportData">Download File</button>
+            </div>
+            
+            <div class="setup-info">
+                <h4>Import Data</h4>
+                <p>Paste exported data here:</p>
+                <textarea id="importData" style="width: 100%; height: 150px; margin-bottom: 15px; font-family: monospace;" placeholder="Paste JSON data here"></textarea>
+                <button id="performImport">Import Data</button>
+            </div>
+            
+            <button id="closeExportImportModal">Close</button>
+        </div>
+    </div>
+    
+    <!-- Sync UI -->
+    <div class="sync-ui">
+        <div>
+            <button id="syncButton"><i class="fas fa-sync-alt"></i> Sync</button>
+            <button id="exportImportButton"><i class="fas fa-exchange-alt"></i> Data</button>
+        </div>
+    </div>
+
+    <script>
+        // ======================
+        // Global State Management
+        // ======================
+        let appData = {
+            products: [],
+            orders: [],
+            customers: [],
+            pcodes: {},
+            settings: {
+                deliveryCharge: 70,
+                lastSync: null,
+                syncMode: 'local'
+            }
+        };
+
+        // ======================
+        // Initialization
+        // ======================
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Load data from localStorage
+            await loadData();
+            
+            // Initialize UI
+            initializeNavigation();
+            initializeProductsSystem();
+            initializeOrdersSystem();
+            initializeCustomersSystem();
+            initializeSyncSystem();
+            
+            // Load initial data
+            loadProducts();
+            loadOrders();
+            loadCustomers();
+            
+            // Update delivery charge display
+            document.getElementById('deliveryAmountInput').value = appData.settings.deliveryCharge || 70;
+            
+            showNotification('System loaded successfully!');
+        });
+
+        // ======================
+        // Data Management
+        // ======================
+        async function loadData() {
+            try {
+                const savedData = localStorage.getItem('trulyPersonalizedData');
+                if (savedData) {
+                    appData = JSON.parse(savedData);
+                    console.log('Data loaded from localStorage');
+                }
+            } catch (error) {
+                console.error('Load error:', error);
+                // Initialize with empty data
+                appData = {
+                    products: [],
+                    orders: [],
+                    customers: [],
+                    pcodes: {},
+                    settings: {
+                        deliveryCharge: 70,
+                        lastSync: null,
+                        syncMode: 'local'
+                    }
+                };
+            }
+        }
+
+        async function saveData() {
+            try {
+                appData.settings.lastSync = new Date().toISOString();
+                localStorage.setItem('trulyPersonalizedData', JSON.stringify(appData));
+                console.log('Data saved to localStorage');
+                return true;
+            } catch (error) {
+                console.error('Save error:', error);
+                showNotification('Error saving data', false);
+                return false;
+            }
+        }
+
+        function exportAllData() {
+            const dataStr = JSON.stringify(appData, null, 2);
+            document.getElementById('exportData').value = dataStr;
+            document.getElementById('exportImportModal').style.display = 'block';
+        }
+
+        function importAllData() {
+            const dataStr = document.getElementById('importData').value;
+            try {
+                const importedData = JSON.parse(dataStr);
+                appData = importedData;
+                saveData();
+                loadProducts();
+                loadOrders();
+                loadCustomers();
+                showNotification('Data imported successfully!');
+                document.getElementById('exportImportModal').style.display = 'none';
+                document.getElementById('importData').value = '';
+            } catch (error) {
+                showNotification('Invalid data format. Import failed.', false);
+            }
+        }
+
+        function downloadData() {
+            const dataStr = JSON.stringify(appData, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `truly-personalized-backup-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showNotification('Data downloaded successfully!');
+        }
+
+        function clearAllData() {
+            if (confirm('Are you sure you want to clear ALL data? This cannot be undone.')) {
+                appData = {
+                    products: [],
+                    orders: [],
+                    customers: [],
+                    pcodes: {},
+                    settings: {
+                        deliveryCharge: 70,
+                        lastSync: null,
+                        syncMode: 'local'
+                    }
+                };
+                saveData();
+                loadProducts();
+                loadOrders();
+                loadCustomers();
+                showNotification('All data cleared');
+            }
+        }
+
+        // ======================
+        // Navigation System
+        // ======================
+        function initializeNavigation() {
+            const navTabs = document.querySelectorAll('.nav-tab');
+            const contentAreas = document.querySelectorAll('.content-area');
+            const sidebars = document.querySelectorAll('.sidebar');
+            const showButtons = {
+                products: document.getElementById('showProductsForm'),
+                orders: document.getElementById('showOrdersForm'),
+                customers: document.getElementById('showCustomersForm')
+            };
+            const closeButtons = document.querySelectorAll('.sidebar-close-btn');
+
+            // Tab switching
+            navTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabId = this.dataset.tab;
+                    
+                    // Update active tab
+                    navTabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Update content area
+                    contentAreas.forEach(area => area.classList.remove('active'));
+                    document.getElementById(`${tabId}Content`).classList.add('active');
+                    
+                    // Close any open sidebar
+                    sidebars.forEach(sidebar => sidebar.classList.remove('show'));
+                });
+            });
+
+            // Show sidebar buttons
+            Object.entries(showButtons).forEach(([system, button]) => {
+                if (button) {
+                    button.addEventListener('click', function() {
+                        // Switch to the correct tab first
+                        navTabs.forEach(tab => tab.classList.remove('active'));
+                        document.querySelector(`[data-tab="${system}"]`).classList.add('active');
+                        
+                        contentAreas.forEach(area => area.classList.remove('active'));
+                        document.getElementById(`${system}Content`).classList.add('active');
+                        
+                        // Show the sidebar
+                        sidebars.forEach(sidebar => sidebar.classList.remove('show'));
+                        document.getElementById(`${system}Sidebar`).classList.add('show');
+                    });
+                }
+            });
+
+            // Close sidebar buttons
+            closeButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const sidebar = this.closest('.sidebar');
+                    if (sidebar) {
+                        sidebar.classList.remove('show');
+                    }
+                });
+            });
+
+            // Close sidebar when clicking outside (on mobile)
+            document.addEventListener('click', function(event) {
+                if (window.innerWidth <= 900) {
+                    const sidebars = document.querySelectorAll('.sidebar.show');
+                    const isClickInsideSidebar = Array.from(sidebars).some(sidebar => 
+                        sidebar.contains(event.target)
+                    );
+                    const isClickOnShowButton = 
+                        event.target.closest('#showProductsForm') ||
+                        event.target.closest('#showOrdersForm') ||
+                        event.target.closest('#showCustomersForm');
+                    
+                    if (!isClickInsideSidebar && !isClickOnShowButton && sidebars.length > 0) {
+                        sidebars.forEach(sidebar => sidebar.classList.remove('show'));
+                    }
+                }
+            });
+        }
+
+        // ======================
+        // Notification System
+        // ======================
+        function showNotification(message, isSuccess = true) {
+            const notification = document.getElementById('notification');
+            const content = notification.querySelector('.notification-content');
+            
+            content.innerHTML = `
+                <i class="fas ${isSuccess ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+                <span>${message}</span>
+            `;
+            
+            notification.classList.remove('notification-hidden');
+            notification.classList.add('notification-visible');
+            
+            setTimeout(() => {
+                notification.classList.remove('notification-visible');
+                notification.classList.add('notification-hidden');
+            }, 3000);
+        }
+
+        // ======================
+        // Products System
+        // ======================
+        function initializeProductsSystem() {
+            // DOM Elements
+            const productForm = document.getElementById('productForm');
+            const productsSearchInput = document.getElementById('productsSearchInput');
+            const productsSearchXBtn = document.getElementById('productsSearchXBtn');
+            const productsMultiDeleteBtn = document.getElementById('productsMultiDeleteBtn');
+            const selectAllProducts = document.getElementById('selectAllProducts');
+            const unitPriceInput = document.getElementById('unitPrice');
+            const sellingPriceInput = document.getElementById('sellingPrice');
+            const marginInput = document.getElementById('margin');
+            const marginAmountInput = document.getElementById('marginAmount');
+            const totalSalesInput = document.getElementById('totalSales');
+            const totalProfitsInput = document.getElementById('totalProfits');
+            const extraAmountInput = document.getElementById('extraAmount');
+            const extraDescriptionInput = document.getElementById('extraDescription');
+            const addExtraAmountBtn = document.getElementById('addExtraAmountBtn');
+            const extraAmountsList = document.getElementById('extraAmountsList');
+            const itemNameInput = document.getElementById('itemName');
+            const sameProductWarning = document.getElementById('sameProductWarning');
+            const editCodeGroup = document.getElementById('editCodeGroup');
+            const editProductCode = document.getElementById('editProductCode');
+            const skuPhotoInput = document.getElementById('skuPhoto');
+            const photoPreview = document.getElementById('photoPreview');
+            const deliveryTypeRadios = document.querySelectorAll('input[name="deliveryType"]');
+            const productCodeDisplay = document.getElementById('productCodeDisplay');
+
+            // State
+            let calculationTimeout;
+            let extraAmounts = [];
+            let editingProductIndex = null;
+
+            // Initialize product code
+            generateProductCode('RK');
+
+            // Delivery type change
+            deliveryTypeRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    generateProductCode(this.value);
+                    calculatePrices();
+                });
+            });
+
+            // Generate product code
+            function generateProductCode(prefix) {
+                const randomNum = Math.floor(1000 + Math.random() * 9000);
+                const productCode = `${prefix}${randomNum}`;
+                productCodeDisplay.textContent = productCode;
+                return productCode;
+            }
+
+            // Price calculations
+            function calculatePrices() {
+                const unitPrice = parseFloat(unitPriceInput.value) || 0;
+                let sellingPrice = parseFloat(sellingPriceInput.value) || 0;
+                let margin = parseFloat(marginInput.value) || 0;
+                const totalSales = parseFloat(totalSalesInput.value) || 0;
+                const deliveryType = document.querySelector('input[name="deliveryType"]:checked').value;
+                const isGK = deliveryType === 'GK';
+                const deliveryCost = isGK ? appData.settings.deliveryCharge : 0;
+
+                // Calculate total extra amounts
+                const totalExtraAmount = calculateTotalExtraAmounts();
+
+                // Determine which field was last active
+                const activeElement = document.activeElement;
+                
+                if (activeElement === marginInput && margin > 0 && unitPrice > 0) {
+                    // Calculate selling price from margin %
+                    if (isGK) {
+                        sellingPrice = unitPrice * (1 + margin/100) + deliveryCost;
+                    } else {
+                        sellingPrice = unitPrice * (1 + margin/100);
+                    }
+                    sellingPriceInput.value = sellingPrice.toFixed(2);
+                } 
+                else if (activeElement === sellingPriceInput && sellingPrice > 0 && unitPrice > 0) {
+                    // Calculate margin % from selling price
+                    if (isGK) {
+                        margin = ((sellingPrice - unitPrice - deliveryCost) / unitPrice) * 100;
+                    } else {
+                        margin = ((sellingPrice - unitPrice) / unitPrice) * 100;
+                    }
+                    marginInput.value = margin.toFixed(2);
+                }
+
+                // Calculate margin amount
+                let marginAmount = isGK ? (sellingPrice - unitPrice - deliveryCost) : (sellingPrice - unitPrice);
+                marginAmountInput.value = marginAmount.toFixed(2);
+                
+                // Calculate total profits
+                const totalProfits = (marginAmount * totalSales) + totalExtraAmount;
+                totalProfitsInput.value = totalProfits.toFixed(2);
+            }
+
+            function calculateTotalExtraAmounts() {
+                let total = 0;
+                extraAmounts.forEach(item => {
+                    if (item.type === 'credit') {
+                        total += item.amount;
+                    } else {
+                        total -= item.amount;
+                    }
+                });
+                return total;
+            }
+
+            // Setup calculation listeners
+            [unitPriceInput, sellingPriceInput, marginInput, totalSalesInput].forEach(input => {
+                input.addEventListener('input', function() {
+                    clearTimeout(calculationTimeout);
+                    calculationTimeout = setTimeout(calculatePrices, 300);
+                });
+            });
+
+            // Extra amounts management
+            function addExtraAmount() {
+                const amount = parseFloat(extraAmountInput.value) || 0;
+                const description = extraDescriptionInput.value.trim();
+                const type = document.querySelector('input[name="extraAmountType"]:checked').value;
+
+                if (amount <= 0) {
+                    showNotification('Please enter a valid amount greater than 0', false);
+                    return;
+                }
+
+                if (!description) {
+                    showNotification('Please enter a description for the extra amount', false);
+                    return;
+                }
+
+                const extraAmount = {
+                    amount,
+                    description,
+                    type
+                };
+
+                extraAmounts.push(extraAmount);
+                renderExtraAmounts();
+                
+                // Clear inputs
+                extraAmountInput.value = '';
+                extraDescriptionInput.value = '';
+                
+                // Recalculate prices
+                calculatePrices();
+                
+                showNotification('Extra amount added successfully!');
+            }
+
+            function removeExtraAmount(index) {
+                extraAmounts.splice(index, 1);
+                renderExtraAmounts();
+                calculatePrices();
+            }
+
+            function renderExtraAmounts() {
+                extraAmountsList.innerHTML = '';
+                
+                if (extraAmounts.length === 0) {
+                    return;
+                }
+                
+                extraAmounts.forEach((item, index) => {
+                    const amountItem = document.createElement('div');
+                    amountItem.className = 'extra-amount-item';
+                    
+                    amountItem.innerHTML = `
+                        <div class="extra-amount-header">
+                            <span class="extra-amount-title">${item.description}</span>
+                            <span class="extra-amount-value ${item.type}">${item.type === 'credit' ? '+' : '-'}₹${item.amount.toFixed(2)}</span>
+                        </div>
+                        <div class="extra-amount-description">${item.type === 'credit' ? 'Credit' : 'Debit'}</div>
+                        <button class="remove-extra-amount" onclick="window.removeExtraAmount(${index})">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    `;
+                    
+                    extraAmountsList.appendChild(amountItem);
+                });
+            }
+
+            // Check for duplicate product
+            function checkForDuplicateProduct(name) {
+                const exists = appData.products.some((product, index) => {
+                    if (editingProductIndex !== null && index == editingProductIndex) return false;
+                    return product.name.toLowerCase() === name.toLowerCase();
+                });
+                sameProductWarning.style.display = exists ? 'block' : 'none';
+                return exists;
+            }
+
+            // Form submission
+            if (productForm) {
+                productForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    saveProduct();
+                });
+            }
+
+            // Save product
+            function saveProduct() {
+                let prefix = document.querySelector('input[name="deliveryType"]:checked').value;
+                let productCode = productCodeDisplay.textContent;
+                let itemName = itemNameInput.value;
+                let manufacturerName = document.getElementById('manufacturerName').value;
+                let unitPrice = parseFloat(unitPriceInput.value) || 0;
+                let sellingPrice = parseFloat(sellingPriceInput.value) || 0;
+                let margin = parseFloat(marginInput.value) || 0;
+                let marginAmount = parseFloat(marginAmountInput.value) || 0;
+                let totalSales = parseFloat(totalSalesInput.value) || 0;
+                let totalProfits = parseFloat(totalProfitsInput.value) || 0;
+                let description = document.getElementById('description').value;
+                
+                if (editingProductIndex !== null && editProductCode.value) {
+                    productCode = editProductCode.value;
+                }
+                
+                if (editingProductIndex === null && checkForDuplicateProduct(itemName)) {
+                    if (!confirm('A product with this name already exists. Are you sure you want to continue?')) return;
+                }
+                
+                let photoBase64 = '';
+                if (skuPhotoInput.files.length > 0) {
+                    const file = skuPhotoInput.files[0];
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        photoBase64 = event.target.result;
+                        saveProductToStorage(productCode, itemName, manufacturerName, unitPrice, sellingPrice, margin, marginAmount, totalSales, totalProfits, description, photoBase64, prefix);
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    if (editingProductIndex !== null) {
+                        photoBase64 = appData.products[editingProductIndex].photo || '';
+                    }
+                    saveProductToStorage(productCode, itemName, manufacturerName, unitPrice, sellingPrice, margin, marginAmount, totalSales, totalProfits, description, photoBase64, prefix);
+                }
+            }
+
+            function saveProductToStorage(code, name, manufacturer, unitPrice, sellingPrice, margin, marginAmount, totalSales, totalProfits, description, photo, prefix) {
+                // For GK type, adjust margin amount by subtracting delivery charge
+                let finalMarginAmount = sellingPrice - unitPrice;
+                if (prefix === 'GK') {
+                    finalMarginAmount -= appData.settings.deliveryCharge;
+                }
+                
+                const product = { 
+                    code, 
+                    name, 
+                    manufacturer, 
+                    unitPrice, 
+                    sellingPrice, 
+                    margin, 
+                    marginAmount: finalMarginAmount, 
+                    totalSales, 
+                    totalProfits,
+                    extraAmounts: [...extraAmounts],
+                    description, 
+                    photo, 
+                    prefix,
+                    _manualSales: totalSales,
+                    _orderSales: 0
+                };
+                
+                if (editingProductIndex !== null) {
+                    // Preserve the existing order sales if editing
+                    const existingProduct = appData.products[editingProductIndex];
+                    product._orderSales = existingProduct._orderSales || 0;
+                    appData.products[editingProductIndex] = product;
+                    editingProductIndex = null;
+                    showNotification('Product updated successfully!');
+                } else {
+                    appData.products.push(product);
+                    showNotification('Product saved successfully!');
+                }
+                
+                saveData();
+                resetProductForm();
+                document.getElementById('productsSidebar').classList.remove('show');
+                loadProducts();
+            }
+
+            // Reset form
+            function resetProductForm() {
+                if (productForm) productForm.reset();
+                if (photoPreview) {
+                    photoPreview.classList.add('hidden');
+                    photoPreview.src = '';
+                }
+                if (sameProductWarning) sameProductWarning.style.display = 'none';
+                if (skuPhotoInput) skuPhotoInput.value = '';
+                if (marginAmountInput) marginAmountInput.value = '';
+                if (totalProfitsInput) totalProfitsInput.value = '';
+                if (editCodeGroup) editCodeGroup.style.display = 'none';
+                if (editProductCode) editProductCode.value = '';
+                extraAmounts = [];
+                renderExtraAmounts();
+                editingProductIndex = null;
+                generateProductCode('RK');
+            }
+
+            // Load products
+            window.loadProducts = function() {
+                const productsTableBody = document.getElementById('productsTableBody');
+                const noProductsMessage = document.getElementById('noProductsMessage');
+                
+                if (!productsTableBody) return;
+                
+                productsTableBody.innerHTML = '';
+                
+                if (appData.products.length === 0) {
+                    noProductsMessage.style.display = 'block';
+                    if (productsMultiDeleteBtn) productsMultiDeleteBtn.disabled = true;
+                    if (selectAllProducts) selectAllProducts.checked = false;
+                    return;
+                }
+                
+                noProductsMessage.style.display = 'none';
+                
+                appData.products.forEach((product, index) => {
+                    const row = document.createElement('tr');
+                    let deliveryColor = '';
+                    if (product.prefix === 'RK') deliveryColor = 'color: var(--primary);';
+                    if (product.prefix === 'SP') deliveryColor = 'color: var(--accent);';
+                    if (product.prefix === 'GK') deliveryColor = 'color: var(--secondary);';
+                    
+                    // Format extra amounts display
+                    let extraAmountsDisplay = '-';
+                    if (product.extraAmounts && product.extraAmounts.length > 0) {
+                        extraAmountsDisplay = product.extraAmounts.map(item => {
+                            const sign = item.type === 'credit' ? '+' : '-';
+                            return `${sign}₹${Math.abs(item.amount).toFixed(2)} - ${item.description}`;
+                        }).join('<br>');
+                    }
+                    
+                    row.innerHTML = `
+                        <td>
+                            <input type="checkbox" class="select-checkbox" data-index="${index}">
+                        </td>
+                        <td style="${deliveryColor} font-weight: bold;">${product.code}</td>
+                        <td>${product.name}</td>
+                        <td>${product.manufacturer || '-'}</td>
+                        <td>
+                            ${product.photo ? `<img src="${product.photo}" class="product-image" onclick="showImageModal('${product.photo.replace(/'/g, "\\'")}')">` : 'No Image'}
+                        </td>
+                        <td>₹${product.unitPrice.toFixed(2)}</td>
+                        <td>₹${product.sellingPrice.toFixed(2)}${product.prefix === 'GK' ? '<br><small>(incl. ₹' + appData.settings.deliveryCharge + ' delivery)</small>' : ''}</td>
+                        <td>${product.margin.toFixed(2)}%</td>
+                        <td>₹${product.marginAmount.toFixed(2)}</td>
+                        <td>${product.totalSales} 
+                            <i class="fas fa-edit edit-icon action-icon" 
+                               onclick="editTotalSales(${index})" 
+                               style="margin-left: 5px; font-size: 12px;" 
+                               title="Edit Manual Sales (Orders: ${product._orderSales || 0})">
+                            </i>
+                        </td>
+                        <td>₹${product.totalProfits.toFixed(2)}</td>
+                        <td>${extraAmountsDisplay}</td>
+                        <td class="description-cell">${product.description || '-'}</td>
+                        <td>
+                            <div class="actions-icons-flex">
+                                <button class="insta-btn-action" onclick="showInstaModal(${index})" title="Copy for Instagram">
+                                    <i class="fab fa-instagram"></i>
+                                </button>
+                                <i class="fas fa-edit edit-icon action-icon" onclick="editProduct(${index})"></i>
+                                <i class="fas fa-trash delete-icon action-icon" onclick="deleteProduct(${index})"></i>
+                            </div>
+                        </td>
+                    `;
+                    productsTableBody.appendChild(row);
+                });
+
+                // Setup checkboxes
+                const checkboxes = productsTableBody.querySelectorAll('.select-checkbox');
+                checkboxes.forEach(cb => {
+                    cb.addEventListener('change', function() {
+                        updateMultiDeleteBtn();
+                    });
+                });
+
+                if (selectAllProducts) {
+                    selectAllProducts.checked = false;
+                    selectAllProducts.addEventListener('change', function() {
+                        checkboxes.forEach(cb => {
+                            cb.checked = this.checked;
+                        });
+                        updateMultiDeleteBtn();
+                    });
+                }
+
+                function updateMultiDeleteBtn() {
+                    if (!productsMultiDeleteBtn) return;
+                    const selectedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
+                    productsMultiDeleteBtn.disabled = selectedCount === 0;
+                    if (selectAllProducts) {
+                        selectAllProducts.checked = selectedCount === checkboxes.length && checkboxes.length > 0;
+                    }
+                }
+            }
+
+            // Global functions for products
+            window.editProduct = function(index) {
+                const product = appData.products[index];
+                if (product) {
+                    editingProductIndex = index;
+                    
+                    // Set delivery type
+                    document.querySelector(`input[value="${product.prefix}"]`).checked = true;
+                    
+                    // Set form values
+                    productCodeDisplay.textContent = product.code;
+                    itemNameInput.value = product.name;
+                    document.getElementById('manufacturerName').value = product.manufacturer || '';
+                    unitPriceInput.value = product.unitPrice;
+                    sellingPriceInput.value = product.sellingPrice;
+                    marginInput.value = product.margin;
+                    marginAmountInput.value = product.marginAmount;
+                    totalSalesInput.value = product._manualSales || 0;
+                    totalProfitsInput.value = product.totalProfits;
+                    document.getElementById('description').value = product.description || '';
+                    
+                    // Show edit code field
+                    editCodeGroup.style.display = 'block';
+                    editProductCode.value = product.code;
+                    
+                    // Load extra amounts
+                    extraAmounts = product.extraAmounts ? [...product.extraAmounts] : [];
+                    renderExtraAmounts();
+                    
+                    // Load photo
+                    if (product.photo) {
+                        photoPreview.src = product.photo;
+                        photoPreview.classList.remove('hidden');
+                    } else {
+                        photoPreview.classList.add('hidden');
+                    }
+                    
+                    // Show sidebar
+                    document.getElementById('productsSidebar').classList.add('show');
+                    
+                    // Switch to products tab
+                    document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+                    document.querySelector('[data-tab="products"]').classList.add('active');
+                    document.querySelectorAll('.content-area').forEach(area => area.classList.remove('active'));
+                    document.getElementById('productsContent').classList.add('active');
+                }
+            };
+
+            window.deleteProduct = function(index) {
+                if (confirm('Are you sure you want to delete this product?')) {
+                    appData.products.splice(index, 1);
+                    saveData();
+                    loadProducts();
+                    showNotification('Product deleted successfully!');
+                }
+            };
+
+            window.removeExtraAmount = removeExtraAmount;
+
+            window.editTotalSales = function(index) {
+                const product = appData.products[index];
+                if (product) {
+                    const currentManual = product._manualSales || 0;
+                    const newManualSales = prompt('Edit manual sales quantity (orders will add to this):', currentManual);
+                    
+                    if (newManualSales !== null && !isNaN(newManualSales) && newManualSales >= 0) {
+                        product._manualSales = parseFloat(newManualSales);
+                        
+                        const orderSales = product._orderSales || 0;
+                        product.totalSales = parseFloat(newManualSales) + orderSales;
+                        
+                        const totalExtraAmount = product.extraAmounts ? 
+                            product.extraAmounts.reduce((total, item) => {
+                                return item.type === 'credit' ? total + item.amount : total - item.amount;
+                            }, 0) : 0;
+                        
+                        product.totalProfits = (product.marginAmount * product.totalSales) + totalExtraAmount;
+                        
+                        saveData();
+                        loadProducts();
+                        showNotification('Sales updated successfully!');
+                    } else if (newManualSales !== null) {
+                        alert('Please enter a valid number greater than or equal to 0.');
+                    }
+                }
+            };
+
+            window.showInstaModal = function(index) {
+                const product = appData.products[index];
+                let desc = product.description || "";
+                desc = desc.replace(/SAUSc/gi, product.code);
+                const instaText = `${product.name}\n${desc}`;
+                document.getElementById('instaTextarea').value = instaText;
+                document.getElementById('instaSuccess').style.display = 'none';
+                document.getElementById('instaModal').style.display = 'block';
+            };
+
+            window.showImageModal = function(imageSrc) {
+                document.getElementById('modalImage').src = imageSrc;
+                document.getElementById('imageModal').style.display = 'block';
+            };
+
+            // Search functionality
+            if (productsSearchInput) {
+                productsSearchInput.addEventListener('input', function() {
+                    const searchTerm = this.value.toLowerCase();
+                    const rows = productsTableBody.querySelectorAll('tr');
+                    let hasResults = false;
+                    
+                    rows.forEach(row => {
+                        const text = row.textContent.toLowerCase();
+                        if (text.includes(searchTerm)) {
+                            row.style.display = '';
+                            hasResults = true;
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
+                    
+                    if (productsSearchXBtn) {
+                        productsSearchXBtn.style.display = searchTerm.length ? 'block' : 'none';
+                    }
+                    
+                    noProductsMessage.style.display = hasResults || searchTerm === '' ? 'none' : 'block';
+                    noProductsMessage.textContent = 'No products found matching your search.';
+                });
+            }
+
+            if (productsSearchXBtn) {
+                productsSearchXBtn.addEventListener('click', function() {
+                    productsSearchInput.value = '';
+                    productsSearchInput.dispatchEvent(new Event('input'));
+                    productsSearchInput.focus();
+                });
+            }
+
+            // Multi-delete functionality
+            if (productsMultiDeleteBtn) {
+                productsMultiDeleteBtn.addEventListener('click', function() {
+                    const checkboxes = productsTableBody.querySelectorAll('.select-checkbox');
+                    const toDelete = [];
+                    
+                    checkboxes.forEach(cb => {
+                        if (cb.checked) toDelete.push(parseInt(cb.dataset.index));
+                    });
+                    
+                    if (toDelete.length === 0) return;
+                    if (!confirm(`Delete ${toDelete.length} selected product(s)?`)) return;
+                    
+                    toDelete.sort((a,b) => b-a).forEach(idx => appData.products.splice(idx, 1));
+                    saveData();
+                    loadProducts();
+                    showNotification(`${toDelete.length} product(s) deleted successfully!`);
+                });
+            }
+
+            // Photo preview
+            if (skuPhotoInput) {
+                skuPhotoInput.addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(event) {
+                            photoPreview.src = event.target.result;
+                            photoPreview.classList.remove('hidden');
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+
+            if (photoPreview) {
+                photoPreview.addEventListener('click', function() {
+                    if (this.src) {
+                        showImageModal(this.src);
+                    }
+                });
+            }
+
+            // Add extra amount button
+            if (addExtraAmountBtn) {
+                addExtraAmountBtn.addEventListener('click', addExtraAmount);
+            }
+
+            // Duplicate check
+            if (itemNameInput) {
+                itemNameInput.addEventListener('input', function() {
+                    checkForDuplicateProduct(this.value);
+                });
+            }
+
+            // Initialize
+            calculatePrices();
+        }
+
+        // ======================
+        // Orders System
+        // ======================
+        function initializeOrdersSystem() {
+            // DOM Elements
+            const orderForm = document.getElementById('orderForm');
+            const orderIdDisplay = document.getElementById('orderIdDisplay');
+            const customerMobile = document.getElementById('customerMobile');
+            const customerInsta = document.getElementById('customerInsta');
+            const customerMobiles = document.getElementById('customerMobiles');
+            const customerInstas = document.getElementById('customerInstas');
+            const customerDetails = document.getElementById('customerDetails');
+            const customerName = document.getElementById('customerName');
+            const customerEmail = document.getElementById('customerEmail');
+            const customerAddress = document.getElementById('customerAddress');
+            const customerAddressDropdown = document.getElementById('customerAddressDropdown');
+            const customerWallet = document.getElementById('customerWallet');
+            const walletApplySection = document.getElementById('walletApplySection');
+            const applyWallet = document.getElementById('applyWallet');
+            const productsContainer = document.getElementById('productsContainer');
+            const addProductBtn = document.getElementById('addProductBtn');
+            const availableCoupons = document.getElementById('availableCoupons');
+            const couponDropdown = document.getElementById('couponDropdown');
+            const couponCode = document.getElementById('couponCode');
+            const couponName = document.getElementById('couponName');
+            const couponValue = document.getElementById('couponValue');
+            const couponType = document.getElementById('couponType');
+            const couponProductId = document.getElementById('couponProductId');
+            const addCouponBtn = document.getElementById('addCouponBtn');
+            const appliedCoupons = document.getElementById('appliedCoupons');
+            const subtotalAmount = document.getElementById('subtotalAmount');
+            const deliveryAmount = document.getElementById('deliveryAmount');
+            const deliveryAmountInput = document.getElementById('deliveryAmountInput');
+            const discountRow = document.getElementById('discountRow');
+            const discountAmount = document.getElementById('discountAmount');
+            const couponNameRow = document.getElementById('couponNameRow');
+            const couponNameDisplay = document.getElementById('couponNameDisplay');
+            const walletRow = document.getElementById('walletRow');
+            const walletAmount = document.getElementById('walletAmount');
+            const totalAmount = document.getElementById('totalAmount');
+            const ordersSearchInput = document.getElementById('ordersSearchInput');
+            const ordersSearchXBtn = document.getElementById('ordersSearchXBtn');
+            const orderExtraType = document.getElementById('orderExtraType');
+            const orderExtraAmount = document.getElementById('orderExtraAmount');
+            const couponUsedNotice = document.getElementById('couponUsedNotice');
+
+            // State
+            let currentOrderId = '';
+            let currentCustomer = null;
+            let appliedCouponsList = [];
+            let editingOrderId = null;
+
+            // Generate Order ID
+            function generateOrderId() {
+                const now = new Date();
+                const day = String(now.getDate()).padStart(2, '0');
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const year = String(now.getFullYear()).slice(-2);
+                const randomNum = Math.floor(1000 + Math.random() * 9000);
+                currentOrderId = `US${day}${month}${year}${randomNum}`;
+                orderIdDisplay.textContent = currentOrderId;
+            }
+
+            // Update customer datalists
+            function updateCustomerDatalists() {
+                customerMobiles.innerHTML = '';
+                customerInstas.innerHTML = '';
+                appData.customers.forEach(c => {
+                    if (c.mobile) {
+                        const opt = document.createElement('option');
+                        opt.value = c.mobile;
+                        customerMobiles.appendChild(opt);
+                    }
+                    if (c.insta) {
+                        const opt = document.createElement('option');
+                        opt.value = c.insta;
+                        customerInstas.appendChild(opt);
+                    }
+                });
+            }
+
+            // Auto-fill customer info
+            function autoFillCustomer() {
+                const mobile = customerMobile.value.trim();
+                const insta = customerInsta.value.trim();
+                let foundCustomer = null;
+                
+                if (mobile) {
+                    foundCustomer = appData.customers.find(c => c.mobile === mobile);
+                } else if (insta) {
+                    foundCustomer = appData.customers.find(c => c.insta && c.insta.toLowerCase() === insta.toLowerCase());
+                }
+                
+                if (foundCustomer) {
+                    currentCustomer = foundCustomer;
+                    customerName.value = foundCustomer.name || '';
+                    customerEmail.value = foundCustomer.email || '';
+                    customerAddressDropdown.innerHTML = '<option value="">Select saved address</option>';
+                    
+                    if (foundCustomer.addresses && foundCustomer.addresses.length > 0) {
+                        foundCustomer.addresses.forEach((addr, index) => {
+                            const option = document.createElement('option');
+                            option.value = index;
+                            option.textContent = addr;
+                            customerAddressDropdown.appendChild(option);
+                        });
+                        customerAddressDropdown.classList.remove('hidden');
+                    } else {
+                        customerAddressDropdown.classList.add('hidden');
+                    }
+                    
+                    customerWallet.value = foundCustomer.walletBalance || 0;
+                    
+                    if (foundCustomer.walletBalance > 0) {
+                        walletApplySection.classList.remove('hidden');
+                    } else {
+                        walletApplySection.classList.add('hidden');
+                    }
+                    
+                    availableCoupons.classList.remove('hidden');
+                    couponDropdown.innerHTML = '<option value="">Select a coupon</option>';
+                    
+                    if (foundCustomer.coupons && foundCustomer.coupons.length > 0) {
+                        foundCustomer.coupons.forEach(coupon => {
+                            const option = document.createElement('option');
+                            option.value = coupon.id;
+                            option.textContent = `${coupon.name || 'Coupon'} (${coupon.value}${coupon.type === 'percent' ? '%' : '₹'})`;
+                            couponDropdown.appendChild(option);
+                        });
+                    }
+                    
+                    customerDetails.classList.remove('hidden');
+                } else {
+                    currentCustomer = null;
+                    customerName.value = '';
+                    customerEmail.value = '';
+                    customerAddress.value = '';
+                    customerWallet.value = '0';
+                    walletApplySection.classList.add('hidden');
+                    availableCoupons.classList.add('hidden');
+                    customerAddressDropdown.classList.add('hidden');
+                    customerDetails.classList.remove('hidden');
+                }
+            }
+
+            // Event listeners
+            if (customerMobile) customerMobile.addEventListener('input', autoFillCustomer);
+            if (customerInsta) customerInsta.addEventListener('input', autoFillCustomer);
+            
+            if (customerAddressDropdown) {
+                customerAddressDropdown.addEventListener('change', function() {
+                    if (this.value && currentCustomer && currentCustomer.addresses) {
+                        customerAddress.value = currentCustomer.addresses[this.value];
+                    }
+                });
+            }
+
+            // Add product row
+            if (addProductBtn) {
+                addProductBtn.addEventListener('click', function() {
+                    addProductRow();
+                });
+            }
+
+            function addProductRow(productData = {}) {
+                const row = document.createElement('div');
+                row.className = 'product-row';
+                row.innerHTML = `
+                    <div class="product-line">
+                        <input type="text" class="product-id-input" value="${productData.id || ''}" placeholder="Product ID" list="productIds">
+                        <input type="number" class="product-price" min="0" step="0.01" value="${productData.price || ''}" placeholder="Price">
+                    </div>
+                    <div class="product-line">
+                        <input type="text" class="product-name" value="${productData.name || ''}" placeholder="Product Name">
+                        <input type="number" class="product-qty short-input" min="1" value="${productData.qty || 1}" placeholder="Qty">
+                    </div>
+                    <div class="product-line">
+                        <select class="delivery-type-select short-input">
+                            <option value="RK" ${productData.deliveryType === 'RK' ? 'selected' : ''}>RK</option>
+                            <option value="SP" ${productData.deliveryType === 'SP' ? 'selected' : ''}>SP</option>
+                            <option value="GK" ${productData.deliveryType === 'GK' ? 'selected' : ''}>GK</option>
+                        </select>
+                        <input type="number" class="delivery-price" min="0" step="0.01" value="${productData.deliveryPrice || 0}" placeholder="Delivery Price">
+                    </div>
+                    <div class="product-line">
+                        <input type="text" class="delivery-reason" value="${productData.deliveryReason || ''}" placeholder="Delivery price reason (optional)">
+                        <select class="product-extra-type short-input">
+                            <option value="+" ${productData.extra >= 0 ? 'selected' : ''}>+</option>
+                            <option value="-" ${productData.extra < 0 ? 'selected' : ''}>-</option>
+                        </select>
+                        <input type="number" class="product-extra" min="0" step="0.01" value="${productData.extra ? Math.abs(productData.extra) : 0}" placeholder="Extra Amount">
+                    </div>
+                    <div class="product-line">
+                        <input type="text" class="extra-reason" value="${productData.extraReason || ''}" placeholder="Extra amount reason (optional)">
+                        <div class="product-total" style="font-weight: bold; padding: 8px;">₹0.00</div>
+                        <button type="button" class="remove-product-btn">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="loss-indicator" style="display: none;"></div>
+                `;
+                productsContainer.appendChild(row);
+
+                // Update product IDs datalist
+                updateProductIdsDatalist();
+
+                // Get elements
+                const productIdInput = row.querySelector('.product-id-input');
+                const productNameInput = row.querySelector('.product-name');
+                const productPriceInput = row.querySelector('.product-price');
+                const productQtyInput = row.querySelector('.product-qty');
+                const deliveryTypeSelect = row.querySelector('.delivery-type-select');
+                const deliveryPriceInput = row.querySelector('.delivery-price');
+                const deliveryReasonInput = row.querySelector('.delivery-reason');
+                const productExtraInput = row.querySelector('.product-extra');
+                const productExtraType = row.querySelector('.product-extra-type');
+                const extraReasonInput = row.querySelector('.extra-reason');
+                const removeBtn = row.querySelector('.remove-product-btn');
+                const lossIndicator = row.querySelector('.loss-indicator');
+
+                // Set initial delivery price based on type
+                function updateDeliveryPrice() {
+                    const type = deliveryTypeSelect.value;
+                    if (type === 'SP' || type === 'GK') {
+                        deliveryPriceInput.value = 0;
+                        deliveryPriceInput.readOnly = true;
+                    } else {
+                        deliveryPriceInput.readOnly = false;
+                        if (!productData.deliveryPrice) {
+                            deliveryPriceInput.value = appData.settings.deliveryCharge || 70;
+                        }
+                    }
+                }
+
+                deliveryTypeSelect.addEventListener('change', function() {
+                    updateDeliveryPrice();
+                    calculateRowTotal(row);
+                    updateOrderSummary();
+                });
+
+                // Initialize delivery price
+                updateDeliveryPrice();
+
+                productIdInput.addEventListener('change', function() {
+                    const product = getProductById(this.value);
+                    if (product) {
+                        productNameInput.value = product.name;
+                        productPriceInput.value = product.sellingPrice;
+                        calculateRowTotal(row);
+                        updateOrderSummary();
+                    } else {
+                        productNameInput.value = '';
+                        productPriceInput.value = '';
+                    }
+                });
+
+                // Check for loss when price changes
+                productPriceInput.addEventListener('input', function() {
+                    const product = getProductById(productIdInput.value);
+                    if (product) {
+                        const currentPrice = parseFloat(this.value) || 0;
+                        const sellingPrice = parseFloat(product.sellingPrice) || 0;
+                        if (currentPrice < sellingPrice) {
+                            const loss = (sellingPrice - currentPrice) * (parseInt(productQtyInput.value) || 1);
+                            lossIndicator.textContent = `Loss: ₹${loss.toFixed(2)}`;
+                            lossIndicator.style.display = 'block';
+                        } else {
+                            lossIndicator.style.display = 'none';
+                        }
+                    }
+                    calculateRowTotal(row);
+                    updateOrderSummary();
+                });
+
+                [productQtyInput, deliveryPriceInput, productExtraInput, productExtraType, extraReasonInput, deliveryReasonInput].forEach(input => {
+                    input.addEventListener('input', function() {
+                        if (input === productQtyInput && productPriceInput.value) {
+                            productPriceInput.dispatchEvent(new Event('input'));
+                        } else {
+                            calculateRowTotal(row);
+                            updateOrderSummary();
+                        }
+                    });
+                });
+
+                removeBtn.addEventListener('click', function() {
+                    row.remove();
+                    updateOrderSummary();
+                });
+
+                if (productData.id) productIdInput.dispatchEvent(new Event('change'));
+                if (productData.extraReason) extraReasonInput.value = productData.extraReason;
+                
+                calculateRowTotal(row);
+                return row;
+            }
+
+            // Product datalist
+            function updateProductIdsDatalist() {
+                let datalist = document.getElementById('productIds');
+                if (!datalist) {
+                    datalist = document.createElement('datalist');
+                    datalist.id = 'productIds';
+                    document.body.appendChild(datalist);
+                }
+                datalist.innerHTML = '';
+                appData.products.forEach(product => {
+                    const option = document.createElement('option');
+                    option.value = product.code;
+                    option.textContent = `${product.name} (${product.code})`;
+                    datalist.appendChild(option);
+                });
+            }
+
+            // Product lookup
+            function getProductById(id) {
+                return appData.products.find(p => p.code === id);
+            }
+
+            // Calculate product row total
+            function calculateRowTotal(row) {
+                const price = parseFloat(row.querySelector('.product-price').value) || 0;
+                const qty = parseInt(row.querySelector('.product-qty').value) || 0;
+                const deliveryPrice = parseFloat(row.querySelector('.delivery-price').value) || 0;
+                const extra = parseFloat(row.querySelector('.product-extra').value) || 0;
+                const extraType = row.querySelector('.product-extra-type').value;
+                const extraApplied = extraType === '+' ? extra : -extra;
+                const total = (price * qty) + (deliveryPrice * qty) + extraApplied;
+                row.querySelector('.product-total').textContent = `₹${total.toFixed(2)}`;
+                return total;
+            }
+
+            // Add coupon
+            if (addCouponBtn) {
+                addCouponBtn.addEventListener('click', function() {
+                    const code = couponCode.value.trim();
+                    const value = parseFloat(couponValue.value) || 0;
+                    const type = couponType.value;
+                    const productId = couponProductId.value.trim();
+                    const nameVal = couponName.value.trim();
+                    
+                    if (value <= 0) {
+                        showNotification('Please enter a valid coupon value', false);
+                        return;
+                    }
+                    
+                    let couponUsed = false;
+                    if (currentCustomer) {
+                        const used = appData.orders.some(o => 
+                            o.customer.mobile === currentCustomer.mobile && 
+                            o.coupons && 
+                            o.coupons.some(c => c.id === code)
+                        );
+                        couponUsed = used;
+                    }
+                    
+                    couponUsedNotice.style.display = couponUsed ? "block" : "none";
+                    couponUsedNotice.textContent = couponUsed ? "This coupon has already been used by this customer!" : "";
+                    
+                    const coupon = {
+                        id: code || `CPN-${Math.random().toString(36).substr(2, 8)}`,
+                        name: nameVal || code || 'Manual Discount',
+                        value: value,
+                        type: type,
+                        productId: productId
+                    };
+                    
+                    appliedCouponsList.push(coupon);
+                    renderAppliedCoupons();
+                    updateOrderSummary();
+                    
+                    couponCode.value = '';
+                    couponValue.value = '';
+                    couponProductId.value = '';
+                    couponName.value = '';
+                    
+                    showNotification('Coupon added successfully!');
+                });
+            }
+
+            // Coupon dropdown change
+            if (couponDropdown) {
+                couponDropdown.addEventListener('change', function() {
+                    if (this.value && currentCustomer) {
+                        const coupon = currentCustomer.coupons.find(c => c.id === this.value);
+                        if (coupon) {
+                            couponCode.value = coupon.id;
+                            couponValue.value = coupon.value;
+                            couponType.value = coupon.type;
+                            couponProductId.value = '';
+                            couponName.value = coupon.name || coupon.id;
+                        }
+                    }
+                });
+            }
+
+            // Applied coupons
+            function renderAppliedCoupons() {
+                if (!appliedCoupons) return;
+                
+                appliedCoupons.innerHTML = '';
+                if (appliedCouponsList.length === 0) return;
+                
+                appliedCouponsList.forEach((coupon, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'coupon-item';
+                    item.innerHTML = `
+                        <div class="coupon-header">
+                            <span class="coupon-name">${coupon.name}</span>
+                            <span class="coupon-value">${coupon.value}${coupon.type === 'percent' ? '%' : '₹'}</span>
+                        </div>
+                        ${coupon.productId ? `<div>Applied to: ${coupon.productId}</div>` : ''}
+                        <button class="remove-coupon" data-index="${index}">
+                            <i class="fas fa-times"></i> Remove
+                        </button>
+                    `;
+                    appliedCoupons.appendChild(item);
+                });
+                
+                document.querySelectorAll('.remove-coupon').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const idx = parseInt(this.dataset.index);
+                        appliedCouponsList.splice(idx, 1);
+                        renderAppliedCoupons();
+                        updateOrderSummary();
+                    });
+                });
+            }
+
+            // Order summary
+            function updateOrderSummary() {
+                let subtotal = 0;
+                const rows = productsContainer.querySelectorAll('.product-row');
+                rows.forEach(row => {
+                    subtotal += calculateRowTotal(row);
+                });
+
+                let discount = 0;
+                let couponNameUsed = '';
+                appliedCouponsList.forEach(coupon => {
+                    if (coupon.productId) {
+                        const row = Array.from(rows).find(r => {
+                            const productId = r.querySelector('.product-id-input').value;
+                            return productId === coupon.productId;
+                        });
+                        if (row) {
+                            const price = parseFloat(row.querySelector('.product-price').value) || 0;
+                            const qty = parseInt(row.querySelector('.product-qty').value) || 0;
+                            let discountAmount = 0;
+                            if (coupon.type === 'percent') {
+                                discountAmount = (price * qty) * (coupon.value / 100);
+                            } else {
+                                discountAmount = coupon.value;
+                            }
+                            discount += discountAmount;
+                        }
+                    } else {
+                        if (coupon.type === 'percent') {
+                            discount += subtotal * (coupon.value / 100);
+                        } else {
+                            discount += coupon.value;
+                        }
+                    }
+                    couponNameUsed = coupon.name || coupon.id;
+                });
+
+                let walletUsed = 0;
+                if (applyWallet && applyWallet.checked) {
+                    walletUsed = subtotal * 0.1;
+                    const walletBalance = parseFloat(customerWallet.value) || 0;
+                    if (walletUsed > walletBalance) walletUsed = walletBalance;
+                }
+
+                let orderExtra = parseFloat(orderExtraAmount.value) || 0;
+                let orderExtraApplied = orderExtraType.value === '+' ? orderExtra : -orderExtra;
+
+                let deliveryCharge = parseFloat(deliveryAmountInput.value) || 0;
+
+                if (subtotalAmount) subtotalAmount.textContent = `₹${subtotal.toFixed(2)}`;
+                if (deliveryAmount) deliveryAmount.textContent = `₹${deliveryCharge.toFixed(2)}`;
+
+                if (discount > 0) {
+                    if (discountRow) discountRow.style.display = 'flex';
+                    if (discountAmount) discountAmount.textContent = `-₹${discount.toFixed(2)}`;
+                } else {
+                    if (discountRow) discountRow.style.display = 'none';
+                }
+                
+                if (appliedCouponsList.length > 0 && couponNameUsed) {
+                    if (couponNameRow) couponNameRow.style.display = 'flex';
+                    if (couponNameDisplay) couponNameDisplay.textContent = couponNameUsed;
+                } else {
+                    if (couponNameRow) couponNameRow.style.display = 'none';
+                }
+                
+                if (walletUsed > 0) {
+                    if (walletRow) walletRow.style.display = 'flex';
+                    if (walletAmount) walletAmount.textContent = `-₹${walletUsed.toFixed(2)}`;
+                } else {
+                    if (walletRow) walletRow.style.display = 'none';
+                }
+                
+                const total = subtotal + deliveryCharge + orderExtraApplied - discount - walletUsed;
+                if (totalAmount) totalAmount.textContent = `₹${total.toFixed(2)}`;
+            }
+
+            // Event listeners for order summary updates
+            if (applyWallet) applyWallet.addEventListener('change', updateOrderSummary);
+            if (deliveryAmountInput) deliveryAmountInput.addEventListener('input', updateOrderSummary);
+            if (orderExtraAmount) orderExtraAmount.addEventListener('input', updateOrderSummary);
+            if (orderExtraType) orderExtraType.addEventListener('change', updateOrderSummary);
+
+            // Rebuild product codes from orders
+            window.rebuildProductCodes = function() {
+                const pcodes = appData.pcodes || {};
+
+                // Reset all order-related data before recalculating
+                Object.keys(pcodes).forEach(code => {
+                    if (pcodes[code]) {
+                        pcodes[code].orderSales = 0;
+                        pcodes[code].totalRevenue = 0;
+                        pcodes[code].totalLoss = 0;
+                        pcodes[code].orders = [];
+                        pcodes[code].coupons = [];
+                        pcodes[code].extraAmounts = [];
+                    }
+                });
+
+                // First pass: calculate order-based quantities
+                appData.orders.forEach(order => {
+                    order.products.forEach(product => {
+                        if (!pcodes[product.id]) {
+                            pcodes[product.id] = {
+                                name: product.name,
+                                orderSales: 0,
+                                manualSales: 0,
+                                totalRevenue: 0,
+                                totalLoss: 0,
+                                orders: [],
+                                coupons: [],
+                                extraAmounts: []
+                            };
+                        }
+
+                        // Track order-based sales (only add once)
+                        pcodes[product.id].orderSales += product.qty;
+                        
+                        // Calculate loss if needed
+                        const originalProduct = appData.products.find(p => p.code === product.id);
+                        let loss = 0;
+                        if (originalProduct) {
+                            const sellingPrice = parseFloat(originalProduct.sellingPrice) || 0;
+                            const actualPrice = parseFloat(product.price) || 0;
+                            if (actualPrice < sellingPrice) {
+                                loss = (sellingPrice - actualPrice) * product.qty;
+                            }
+                        }
+
+                        // Update other order data
+                        pcodes[product.id].totalRevenue += product.total;
+                        pcodes[product.id].totalLoss += loss;
+
+                        // Add order details
+                        pcodes[product.id].orders.push({
+                            orderId: order.id,
+                            date: order.date,
+                            qty: product.qty,
+                            price: product.price,
+                            total: product.total,
+                            extra: product.extra || 0,
+                            extraReason: product.extraReason || '',
+                            loss: loss,
+                            customer: order.customer.name,
+                            mobile: order.customer.mobile
+                        });
+
+                        // Add order-based extra amount if present
+                        if (product.extra && product.extra !== 0) {
+                            pcodes[product.id].extraAmounts.push({
+                                type: 'order',
+                                orderId: order.id,
+                                date: order.date,
+                                amount: product.extra,
+                                reason: product.extraReason || 'Order extra',
+                                customer: order.customer.name,
+                                mobile: order.customer.mobile
+                            });
+                        }
+                    });
+
+                    // Handle coupons
+                    if (order.coupons) {
+                        order.coupons.forEach(coupon => {
+                            if (coupon.productId && pcodes[coupon.productId]) {
+                                pcodes[coupon.productId].coupons.push({
+                                    orderId: order.id,
+                                    date: order.date,
+                                    couponName: coupon.name,
+                                    couponValue: coupon.value,
+                                    couponType: coupon.type,
+                                    customer: order.customer.name,
+                                    mobile: order.customer.mobile
+                                });
+                            }
+                        });
+                    }
+                });
+
+                // Second pass: update products with combined totals
+                const updatedProducts = appData.products.map(product => {
+                    const pcodeData = pcodes[product.code] || {};
+                    
+                    // Get manual sales from product data (preserve existing value)
+                    const manualSales = product._manualSales || 0;
+                    // Get order sales from pcodes (recalculated above)
+                    const orderSales = pcodeData.orderSales || 0;
+                    
+                    // Calculate total sales
+                    const totalSales = manualSales + orderSales;
+                    
+                    // Calculate profits
+                    const totalProfits = (product.marginAmount * totalSales) + 
+                                       (product.extraAmounts ? product.extraAmounts.reduce((total, item) => {
+                                           return item.type === 'credit' ? total + item.amount : total - item.amount;
+                                       }, 0) : 0);
+
+                    return {
+                        ...product,
+                        totalSales: totalSales,
+                        totalProfits: totalProfits,
+                        // Preserve manual sales value for editing
+                        _manualSales: manualSales,
+                        _orderSales: orderSales
+                    };
+                });
+
+                appData.products = updatedProducts;
+                appData.pcodes = pcodes;
+                return pcodes;
+            };
+
+            // Save order
+            if (orderForm) {
+                orderForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    if (!customerName.value.trim()) {
+                        showNotification('Please enter customer name', false);
+                        return;
+                    }
+                    
+                    if (!customerAddress.value.trim()) {
+                        showNotification('Please enter customer address', false);
+                        return;
+                    }
+                    
+                    const productRows = productsContainer.querySelectorAll('.product-row');
+                    if (productRows.length === 0) {
+                        showNotification('Please add at least one product', false);
+                        return;
+                    }
+                    
+                    const order = {
+                        id: editingOrderId || currentOrderId,
+                        date: new Date().toISOString(),
+                        customer: {
+                            mobile: customerMobile.value.trim(),
+                            insta: customerInsta.value.trim(),
+                            name: customerName.value.trim(),
+                            email: customerEmail.value.trim(),
+                            address: customerAddress.value.trim()
+                        },
+                        products: [],
+                        subtotal: parseFloat(subtotalAmount.textContent.replace('₹', '')),
+                        delivery: parseFloat(deliveryAmount.textContent.replace('₹', '')),
+                        discount: discountRow.style.display === 'none' ? 0 : parseFloat(discountAmount.textContent.replace('-₹', '')),
+                        couponName: couponNameDisplay.textContent,
+                        walletUsed: walletRow.style.display === 'none' ? 0 : parseFloat(walletAmount.textContent.replace('-₹', '')),
+                        orderExtra: parseFloat(orderExtraAmount.value) || 0,
+                        orderExtraType: orderExtraType.value,
+                        total: parseFloat(totalAmount.textContent.replace('₹', '')),
+                        status: 'Making',
+                        coupons: [...appliedCouponsList]
+                    };
+                    
+                    productRows.forEach(row => {
+                        const productId = row.querySelector('.product-id-input').value;
+                        const productName = row.querySelector('.product-name').value;
+                        const productPrice = parseFloat(row.querySelector('.product-price').value) || 0;
+                        const qty = parseInt(row.querySelector('.product-qty').value) || 0;
+                        const deliveryType = row.querySelector('.delivery-type-select').value;
+                        const deliveryPrice = parseFloat(row.querySelector('.delivery-price').value) || 0;
+                        const deliveryReason = row.querySelector('.delivery-reason').value.trim();
+                        const extra = parseFloat(row.querySelector('.product-extra').value) || 0;
+                        const extraType = row.querySelector('.product-extra-type').value;
+                        const extraReason = row.querySelector('.extra-reason').value.trim();
+                        const extraApplied = extraType === '+' ? extra : -extra;
+                        
+                        if (productId && qty > 0) {
+                            order.products.push({
+                                id: productId,
+                                name: productName,
+                                price: productPrice,
+                                qty: qty,
+                                deliveryType: deliveryType,
+                                deliveryPrice: deliveryPrice,
+                                deliveryReason: deliveryReason,
+                                extra: extraApplied,
+                                extraReason: extraReason,
+                                total: (productPrice * qty) + (deliveryPrice * qty) + extraApplied
+                            });
+                        }
+                    });
+                    
+                    if (editingOrderId) {
+                        appData.orders = appData.orders.map(o => (o.id === editingOrderId ? order : o));
+                    } else {
+                        appData.orders.push(order);
+                    }
+                    
+                    updateCustomerData(order);
+                    rebuildProductCodes();
+                    saveData();
+                    
+                    showNotification(editingOrderId ? 'Order updated successfully!' : 'Order created successfully!');
+                    resetOrderForm();
+                    document.getElementById('ordersSidebar').classList.remove('show');
+                    loadOrders();
+                    loadProducts(); // Update product sales
+                    loadCustomers(); // Update customer data
+                });
+            }
+
+            // Update customer data
+            function updateCustomerData(order) {
+                const mobile = order.customer.mobile;
+                const insta = order.customer.insta;
+                let customerIndex = appData.customers.findIndex(c =>
+                    (mobile && c.mobile === mobile) ||
+                    (insta && c.insta && c.insta.toLowerCase() === insta.toLowerCase())
+                );
+                
+                if (customerIndex === -1) {
+                    appData.customers.push({
+                        mobile: mobile,
+                        insta: insta,
+                        name: order.customer.name,
+                        email: order.customer.email,
+                        addresses: [order.customer.address],
+                        walletBalance: 0,
+                        orders: [order.id]
+                    });
+                } else {
+                    if (!appData.customers[customerIndex].orders) {
+                        appData.customers[customerIndex].orders = [];
+                    }
+                    if (!appData.customers[customerIndex].orders.includes(order.id)) {
+                        appData.customers[customerIndex].orders.push(order.id);
+                    }
+                    if (!appData.customers[customerIndex].addresses.includes(order.customer.address)) {
+                        appData.customers[customerIndex].addresses.push(order.customer.address);
+                    }
+                    if (order.walletUsed > 0) {
+                        appData.customers[customerIndex].walletBalance =
+                            (appData.customers[customerIndex].walletBalance || 0) - order.walletUsed;
+                    }
+                }
+            }
+
+            // Reset order form
+            function resetOrderForm() {
+                if (orderForm) orderForm.reset();
+                if (customerDetails) customerDetails.classList.add('hidden');
+                if (productsContainer) productsContainer.innerHTML = '';
+                if (appliedCoupons) appliedCoupons.innerHTML = '';
+                if (deliveryAmountInput) deliveryAmountInput.value = appData.settings.deliveryCharge || 70;
+                
+                appliedCouponsList = [];
+                editingOrderId = null;
+                currentCustomer = null;
+                generateOrderId();
+                updateOrderSummary();
+                
+                if (couponUsedNotice) couponUsedNotice.style.display = "none";
+                updateCustomerDatalists();
+            }
+
+            // Load orders
+            window.loadOrders = function() {
+                const ordersTableBody = document.getElementById('ordersTableBody');
+                const noOrdersMessage = document.getElementById('noOrdersMessage');
+                
+                if (!ordersTableBody) return;
+                
+                ordersTableBody.innerHTML = '';
+                
+                if (appData.orders.length === 0) {
+                    noOrdersMessage.style.display = 'block';
+                    return;
+                }
+                
+                noOrdersMessage.style.display = 'none';
+                
+                appData.orders.sort((a, b) => new Date(b.date) - new Date(a.date));
+                
+                appData.orders.forEach(order => {
+                    const row = document.createElement('tr');
+                    const date = new Date(order.date);
+                    const formattedDate = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+                    
+                    let productsDisplay = '';
+                    order.products.forEach(p => {
+                        productsDisplay += `<div>${p.name} (${p.qty} x ₹${p.price.toFixed(2)}`;
+                        if (p.deliveryType) productsDisplay += `, ${p.deliveryType}`;
+                        if (p.extra) productsDisplay += `, Extra: ${p.extra >= 0 ? '+' : ''}${p.extra}`;
+                        if (p.extraReason) productsDisplay += ` - ${p.extraReason}`;
+                        productsDisplay += `)</div>`;
+                    });
+                    
+                    row.innerHTML = `
+                        <td>${order.id}</td>
+                        <td>${formattedDate}</td>
+                        <td>${order.customer.name}</td>
+                        <td>${order.customer.mobile || ''}</td>
+                        <td>${productsDisplay}</td>
+                        <td>₹${order.subtotal.toFixed(2)}</td>
+                        <td>₹${order.delivery.toFixed(2)}</td>
+                        <td>₹${order.discount.toFixed(2)}</td>
+                        <td>${order.couponName || '-'}</td>
+                        <td>₹${order.walletUsed.toFixed(2)}</td>
+                        <td>₹${order.total.toFixed(2)}</td>
+                        <td>
+                            <select onchange="updateOrderStatus('${order.id}', this.value)">
+                                <option value="Making" ${order.status === 'Making' ? 'selected' : ''}>Making</option>
+                                <option value="Dispatched" ${order.status === 'Dispatched' ? 'selected' : ''}>Dispatched</option>
+                                <option value="Delivered" ${order.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
+                            </select>
+                        </td>
+                        <td>
+                            <i class="fas fa-edit edit-icon action-icon" title="Edit Order" onclick="editOrder('${order.id}')"></i>
+                            <i class="fas fa-trash delete-icon action-icon" title="Delete Order" onclick="deleteOrder('${order.id}')"></i>
+                        </td>
+                    `;
+                    ordersTableBody.appendChild(row);
+                });
+            };
+
+            // Global functions for orders
+            window.editOrder = function(orderId) {
+                const order = appData.orders.find(o => o.id === orderId);
+                if (!order) return;
+                
+                editingOrderId = orderId;
+                
+                // Show sidebar
+                document.getElementById('ordersSidebar').classList.add('show');
+                
+                // Switch to orders tab
+                document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+                document.querySelector('[data-tab="orders"]').classList.add('active');
+                document.querySelectorAll('.content-area').forEach(area => area.classList.remove('active'));
+                document.getElementById('ordersContent').classList.add('active');
+                
+                // Set form values
+                orderIdDisplay.textContent = order.id;
+                customerMobile.value = order.customer.mobile || '';
+                customerInsta.value = order.customer.insta || '';
+                autoFillCustomer();
+                customerName.value = order.customer.name;
+                customerEmail.value = order.customer.email;
+                customerAddress.value = order.customer.address;
+                customerWallet.value = (currentCustomer && currentCustomer.walletBalance) || 0;
+                
+                // Clear and add products
+                productsContainer.innerHTML = '';
+                order.products.forEach(p => addProductRow({
+                    id: p.id,
+                    name: p.name,
+                    price: p.price,
+                    qty: p.qty,
+                    deliveryType: p.deliveryType,
+                    deliveryPrice: p.deliveryPrice,
+                    deliveryReason: p.deliveryReason,
+                    extra: p.extra,
+                    extraReason: p.extraReason
+                }));
+                
+                // Set coupons
+                appliedCouponsList = order.coupons || [];
+                renderAppliedCoupons();
+                couponNameDisplay.textContent = order.couponName || '';
+                
+                // Set other values
+                orderExtraAmount.value = order.orderExtra || 0;
+                orderExtraType.value = order.orderExtraType || '+';
+                deliveryAmountInput.value = order.delivery || appData.settings.deliveryCharge || 70;
+                
+                updateOrderSummary();
+            };
+
+            window.deleteOrder = function(orderId) {
+                if (confirm('Are you sure you want to delete this order?')) {
+                    appData.orders = appData.orders.filter(o => o.id !== orderId);
+                    
+                    // Also remove from customer's orders
+                    appData.customers.forEach(customer => {
+                        if (customer.orders) {
+                            customer.orders = customer.orders.filter(id => id !== orderId);
+                        }
+                    });
+                    
+                    rebuildProductCodes();
+                    saveData();
+                    loadOrders();
+                    loadProducts();
+                    loadCustomers();
+                    showNotification('Order deleted successfully!');
+                }
+            };
+
+            window.updateOrderStatus = function(orderId, status) {
+                appData.orders = appData.orders.map(o => o.id === orderId ? { ...o, status } : o);
+                saveData();
+                rebuildProductCodes();
+                loadOrders();
+                showNotification('Order status updated!');
+            };
+
+            // Search functionality
+            if (ordersSearchInput) {
+                ordersSearchInput.addEventListener('input', function() {
+                    const searchTerm = this.value.toLowerCase();
+                    const ordersTableBody = document.getElementById('ordersTableBody');
+                    const noOrdersMessage = document.getElementById('noOrdersMessage');
+                    
+                    if (!ordersTableBody) return;
+                    
+                    const rows = ordersTableBody.querySelectorAll('tr');
+                    let hasResults = false;
+                    
+                    rows.forEach(row => {
+                        const text = row.textContent.toLowerCase();
+                        if (text.includes(searchTerm)) {
+                            row.style.display = '';
+                            hasResults = true;
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
+                    
+                    if (ordersSearchXBtn) {
+                        ordersSearchXBtn.style.display = searchTerm.length ? 'block' : 'none';
+                    }
+                    
+                    noOrdersMessage.style.display = hasResults || searchTerm === '' ? 'none' : 'block';
+                    noOrdersMessage.textContent = 'No orders found matching your search.';
+                });
+            }
+
+            if (ordersSearchXBtn) {
+                ordersSearchXBtn.addEventListener('click', function() {
+                    ordersSearchInput.value = '';
+                    ordersSearchInput.dispatchEvent(new Event('input'));
+                    ordersSearchInput.focus();
+                });
+            }
+
+            // Initialize
+            generateOrderId();
+            updateCustomerDatalists();
+            updateProductIdsDatalist();
+            updateOrderSummary();
+            rebuildProductCodes();
+        }
+
+        // ======================
+        // Customers System
+        // ======================
+        function initializeCustomersSystem() {
+            // DOM Elements
+            const customerForm = document.getElementById('customerForm');
+            const customersSearchInput = document.getElementById('customersSearchInput');
+            const customersSearchXBtn = document.getElementById('customersSearchXBtn');
+            const customerMobile = document.getElementById('customerMobile');
+            const customerInsta = document.getElementById('customerInsta');
+            const customerName = document.getElementById('customerName');
+            const customerEmail = document.getElementById('customerEmail');
+            const newAddress = document.getElementById('newAddress');
+            const addAddressBtn = document.getElementById('addAddressBtn');
+            const addressesList = document.getElementById('addressesList');
+            const referralCodeDisplay = document.getElementById('referralCodeDisplay');
+            const referredBy = document.getElementById('referredBy');
+            const walletBalance = document.getElementById('walletBalance');
+            const walletAmount = document.getElementById('walletAmount');
+            const walletAction = document.getElementById('walletAction');
+            const walletReason = document.getElementById('walletReason');
+            const applyWalletAction = document.getElementById('applyWalletAction');
+            const walletTransactions = document.getElementById('walletTransactions');
+            const manualCouponIdCheckbox = document.getElementById('manualCouponId');
+            const couponIdInput = document.getElementById('couponId');
+            const couponName = document.getElementById('couponName');
+            const couponValue = document.getElementById('couponValue');
+            const couponType = document.getElementById('couponType');
+            const addCouponBtn = document.getElementById('addCouponBtn');
+            const couponsList = document.getElementById('couponsList');
+            const orderId = document.getElementById('orderId');
+            const addOrderBtn = document.getElementById('addOrderBtn');
+            const ordersList = document.getElementById('ordersList');
+
+            // State
+            let currentCustomerData = null;
+            let addresses = [];
+            let walletTransactionsData = [];
+            let coupons = [];
+            let orders = [];
+
+            // Load customers
+            window.loadCustomers = function() {
+                const customersTableBody = document.getElementById('customersTableBody');
+                const noCustomersMessage = document.getElementById('noCustomersMessage');
+                
+                if (!customersTableBody) return;
+                
+                customersTableBody.innerHTML = '';
+                
+                if (appData.customers.length === 0) {
+                    noCustomersMessage.style.display = 'block';
+                    return;
+                }
+                
+                noCustomersMessage.style.display = 'none';
+                
+                appData.customers.forEach(customer => {
+                    const row = document.createElement('tr');
+                    
+                    // Addresses
+                    let addressesDisplay = customer.addresses ? customer.addresses.join(', ') : '';
+                    if (addressesDisplay.length > 50) {
+                        addressesDisplay = addressesDisplay.substring(0, 47) + '...';
+                    }
+                    
+                    // Wallet: balance, then up to 2 transactions
+                    let walletAmountReason = '';
+                    if (customer.walletTransactions && customer.walletTransactions.length > 0) {
+                        walletAmountReason = customer.walletTransactions.slice(0, 2).map(txn => {
+                            return `<div>
+                                <span>${txn.type === 'credit' ? '+' : '-'}₹${txn.amount.toFixed(2)}</span>
+                                <br><span style="color:var(--muted);font-size:0.95em">${txn.description}</span>
+                            </div>`;
+                        }).join('');
+                        if (customer.walletTransactions.length > 2) {
+                            walletAmountReason += `<div style="color:var(--muted);font-size:0.9em;">...${customer.walletTransactions.length-2} more</div>`;
+                        }
+                    } else {
+                        walletAmountReason = '<span style="color:var(--muted);">No transactions</span>';
+                    }
+                    
+                    // Orders - each on a new line
+                    let ordersDisplay = '';
+                    if (customer.orders && customer.orders.length > 0) {
+                        // Filter out orders that don't exist anymore
+                        const validOrders = customer.orders.filter(id => 
+                            appData.orders.some(o => o.id === id)
+                        );
+                        
+                        // Update customer's orders if some were invalid
+                        if (validOrders.length !== customer.orders.length) {
+                            customer.orders = validOrders;
+                            const customerIndex = appData.customers.findIndex(c => 
+                                (customer.mobile && c.mobile === customer.mobile) ||
+                                (customer.insta && c.insta && c.insta.toLowerCase() === customer.insta.toLowerCase())
+                            );
+                            if (customerIndex !== -1) {
+                                appData.customers[customerIndex] = customer;
+                                saveData();
+                            }
+                        }
+                        
+                        ordersDisplay = validOrders.map(id => {
+                            const order = appData.orders.find(o => o.id === id);
+                            if (order) {
+                                const date = new Date(order.date);
+                                const formattedDate = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+                                return `<div class="order-id-cell">
+                                    <span>${id}</span>
+                                    <div style="font-size:0.9em;color:var(--muted);">${formattedDate} - ₹${order.total.toFixed(2)}</div>
+                                </div>`;
+                            }
+                            return `<div class="order-id-cell">${id}</div>`;
+                        }).join('');
+                    } else {
+                        ordersDisplay = '<span style="color:var(--muted);">None</span>';
+                    }
+                    
+                    // Coupons: each on a new line
+                    let couponsDisplay = '';
+                    if (customer.coupons && customer.coupons.length > 0) {
+                        couponsDisplay = customer.coupons.map(c => 
+                            `<div>${c.name || 'Coupon'} (${c.value}${c.type === 'percent' ? '%' : '₹'})<br><span style='font-size:0.9em;color:var(--muted)'>ID:${c.id}</span></div>`
+                        ).join('');
+                    } else {
+                        couponsDisplay = '<span style="color:var(--muted);">None</span>';
+                    }
+                    
+                    row.innerHTML = `
+                        <td>${customer.name}</td>
+                        <td>${customer.mobile || '-'}</td>
+                        <td>${customer.insta || '-'}</td>
+                        <td>${addressesDisplay || '-'}</td>
+                        <td>
+                            <div style="font-weight:bold;">₹${(customer.walletBalance || 0).toFixed(2)}</div>
+                            ${walletAmountReason}
+                        </td>
+                        <td>${ordersDisplay}</td>
+                        <td>${customer.referralCode || '-'}</td>
+                        <td>${couponsDisplay}</td>
+                        <td>
+                            <i class="fas fa-edit edit-icon action-icon" onclick="editCustomer('${customer.mobile ? customer.mobile.replace(/'/g, "\\'") : ''}')"></i>
+                            <i class="fas fa-trash delete-icon action-icon" onclick="deleteCustomer('${customer.mobile ? customer.mobile.replace(/'/g, "\\'") : ''}')"></i>
+                        </td>
+                    `;
+                    customersTableBody.appendChild(row);
+                });
+            };
+
+            // Customer CRUD
+            window.editCustomer = function(mobile) {
+                const customer = appData.customers.find(c => c.mobile === mobile);
+                if (customer) {
+                    currentCustomerData = customer;
+                    
+                    // Set form values
+                    customerMobile.value = customer.mobile || '';
+                    customerInsta.value = customer.insta || '';
+                    customerName.value = customer.name;
+                    customerEmail.value = customer.email || '';
+                    
+                    addresses = customer.addresses ? [...customer.addresses] : [];
+                    renderAddresses();
+                    
+                    referralCodeDisplay.textContent = customer.referralCode || 'Will be generated on save';
+                    referredBy.value = customer.referredBy || '';
+                    
+                    walletBalance.textContent = `₹${(customer.walletBalance || 0).toFixed(2)}`;
+                    walletTransactionsData = customer.walletTransactions || [];
+                    renderWalletTransactions();
+                    
+                    coupons = customer.coupons ? [...customer.coupons] : [];
+                    renderCoupons();
+                    
+                    orders = customer.orders ? [...customer.orders] : [];
+                    renderOrders();
+                    
+                    // Show sidebar
+                    document.getElementById('customersSidebar').classList.add('show');
+                    
+                    // Switch to customers tab
+                    document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+                    document.querySelector('[data-tab="customers"]').classList.add('active');
+                    document.querySelectorAll('.content-area').forEach(area => area.classList.remove('active'));
+                    document.getElementById('customersContent').classList.add('active');
+                }
+            };
+
+            window.deleteCustomer = function(mobile) {
+                if (confirm('Are you sure you want to delete this customer?')) {
+                    appData.customers = appData.customers.filter(c => c.mobile !== mobile);
+                    saveData();
+                    loadCustomers();
+                    showNotification('Customer deleted successfully!');
+                }
+            };
+
+            // Addresses
+            function renderAddresses() {
+                if (!addressesList) return;
+                addressesList.innerHTML = '';
+                
+                if (addresses.length === 0) return;
+                
+                addresses.forEach((address, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'address-item';
+                    item.innerHTML = `
+                        <div class="address-text">${address}</div>
+                        <button class="remove-address" data-index="${index}">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    `;
+                    addressesList.appendChild(item);
+                });
+                
+                document.querySelectorAll('.remove-address').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const index = parseInt(this.dataset.index);
+                        addresses.splice(index, 1);
+                        renderAddresses();
+                    });
+                });
+            }
+
+            if (addAddressBtn) {
+                addAddressBtn.addEventListener('click', function() {
+                    const address = newAddress.value.trim();
+                    if (!address) {
+                        showNotification('Please enter an address', false);
+                        return;
+                    }
+                    addresses.push(address);
+                    renderAddresses();
+                    newAddress.value = '';
+                    showNotification('Address added successfully!');
+                });
+            }
+
+            // Wallet transactions
+            function renderWalletTransactions() {
+                if (!walletTransactions) return;
+                walletTransactions.innerHTML = '';
+                
+                if (walletTransactionsData.length === 0) {
+                    walletTransactions.innerHTML = '<div style="color: var(--muted);">No transactions yet</div>';
+                    return;
+                }
+                
+                walletTransactionsData
+                    .sort((a, b) => new Date(b.date) - new Date(a.date))
+                    .forEach(txn => {
+                        const item = document.createElement('div');
+                        item.className = 'wallet-transaction';
+                        item.style.marginBottom = '14px';
+                        item.innerHTML = `
+                            <div style="font-weight:bold;">₹${txn.amount.toFixed(2)}</div>
+                            <div style="color:${txn.type === 'credit' ? 'var(--credit)' : 'var(--debit)'};font-weight:bold;">
+                                ${txn.type === 'credit' ? 'Add' : 'Deduct'}
+                            </div>
+                            <div style="color:var(--muted);font-size:0.98em;">${txn.description}</div>
+                            <div style="font-size:0.8em;color:var(--muted);">${new Date(txn.date).toLocaleString()}</div>
+                        `;
+                        walletTransactions.appendChild(item);
+                    });
+            }
+
+            if (applyWalletAction) {
+                applyWalletAction.addEventListener('click', function() {
+                    const amount = parseFloat(walletAmount.value) || 0;
+                    const action = walletAction.value;
+                    const reason = walletReason.value.trim() || 'Manual adjustment';
+                    
+                    if (amount <= 0) {
+                        showNotification('Please enter a valid amount', false);
+                        return;
+                    }
+                    
+                    if (!reason) {
+                        showNotification('Please enter a reason', false);
+                        return;
+                    }
+                    
+                    const transaction = {
+                        date: new Date().toISOString(),
+                        amount: amount,
+                        type: action,
+                        description: reason
+                    };
+                    
+                    walletTransactionsData.push(transaction);
+                    renderWalletTransactions();
+                    
+                    // Update balance
+                    const currentBalance = parseFloat(walletBalance.textContent.replace('₹', '')) || 0;
+                    const newBalance = action === 'credit' ? currentBalance + amount : currentBalance - amount;
+                    walletBalance.textContent = `₹${newBalance.toFixed(2)}`;
+                    
+                    walletAmount.value = '';
+                    walletReason.value = '';
+                    
+                    showNotification('Wallet updated successfully!');
+                });
+            }
+
+            // Coupons
+            if (manualCouponIdCheckbox) {
+                manualCouponIdCheckbox.addEventListener('change', function() {
+                    if (couponIdInput) {
+                        couponIdInput.classList.toggle('hidden', !this.checked);
+                    }
+                });
+            }
+
+            if (addCouponBtn) {
+                addCouponBtn.addEventListener('click', function() {
+                    const name = couponName.value.trim();
+                    const value = parseFloat(couponValue.value) || 0;
+                    const type = couponType.value;
+                    const id = manualCouponIdCheckbox.checked ? couponIdInput.value.trim() : `CPN-${Math.random().toString(36).substr(2, 8)}`;
+                    
+                    if (value <= 0) {
+                        showNotification('Please enter a valid coupon value', false);
+                        return;
+                    }
+                    
+                    if (manualCouponIdCheckbox.checked && !id) {
+                        showNotification('Please enter a coupon ID', false);
+                        return;
+                    }
+                    
+                    const coupon = {
+                        id: id,
+                        name: name || 'Discount Coupon',
+                        value: value,
+                        type: type
+                    };
+                    
+                    coupons.push(coupon);
+                    renderCoupons();
+                    
+                    couponName.value = '';
+                    couponValue.value = '';
+                    if (couponIdInput) couponIdInput.value = '';
+                    manualCouponIdCheckbox.checked = false;
+                    if (couponIdInput) couponIdInput.classList.add('hidden');
+                    
+                    showNotification('Coupon added successfully!');
+                });
+            }
+
+            function renderCoupons() {
+                if (!couponsList) return;
+                couponsList.innerHTML = '';
+                
+                if (coupons.length === 0) {
+                    couponsList.innerHTML = '<div style="color: var(--muted);">No coupons yet</div>';
+                    return;
+                }
+                
+                coupons.forEach((coupon, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'coupon-item';
+                    item.innerHTML = `
+                        <div class="coupon-header">
+                            <span class="coupon-name">${coupon.name}</span>
+                            <span class="coupon-value">${coupon.value}${coupon.type === 'percent' ? '%' : '₹'}</span>
+                        </div>
+                        <div style="font-size: 0.9em; color: var(--muted);">ID: ${coupon.id}</div>
+                        <button class="remove-coupon" data-index="${index}">
+                            <i class="fas fa-times"></i> Remove
+                        </button>
+                    `;
+                    couponsList.appendChild(item);
+                });
+                
+                document.querySelectorAll('.remove-coupon').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const index = parseInt(this.dataset.index);
+                        coupons.splice(index, 1);
+                        renderCoupons();
+                    });
+                });
+            }
+
+            // Orders
+            if (addOrderBtn) {
+                addOrderBtn.addEventListener('click', function() {
+                    const id = orderId.value.trim();
+                    
+                    if (!id) {
+                        showNotification('Please enter an order ID', false);
+                        return;
+                    }
+                    
+                    const orderExists = appData.orders.some(o => o.id === id);
+                    if (!orderExists) {
+                        if (!confirm('This order ID doesn\'t exist in orders. Add anyway?')) {
+                            return;
+                        }
+                    }
+                    
+                    if (!orders.includes(id)) {
+                        orders.push(id);
+                        renderOrders();
+                        orderId.value = '';
+                        showNotification('Order added successfully!');
+                    } else {
+                        showNotification('This order is already linked', false);
+                    }
+                });
+            }
+
+            function renderOrders() {
+                if (!ordersList) return;
+                ordersList.innerHTML = '';
+                
+                if (orders.length === 0) {
+                    ordersList.innerHTML = '<div style="color: var(--muted);">No orders yet</div>';
+                    return;
+                }
+                
+                orders.forEach((orderId, index) => {
+                    const order = appData.orders.find(o => o.id === orderId);
+                    const item = document.createElement('div');
+                    item.className = 'order-item';
+                    
+                    if (order) {
+                        const date = new Date(order.date);
+                        const formattedDate = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+                        item.innerHTML = `
+                            <div class="order-header">
+                                <span class="order-id">${order.id}</span>
+                                <span class="order-amount">₹${order.total.toFixed(2)}</span>
+                            </div>
+                            <div class="order-date">${formattedDate}</div>
+                            <button class="remove-order" data-index="${index}">
+                                <i class="fas fa-times"></i> Remove
+                            </button>
+                        `;
+                    } else {
+                        item.innerHTML = `
+                            <div class="order-header">
+                                <span class="order-id">${orderId}</span>
+                                <span style="color: var(--muted);">(Order not found)</span>
+                            </div>
+                            <button class="remove-order" data-index="${index}">
+                                <i class="fas fa-times"></i> Remove
+                            </button>
+                        `;
+                    }
+                    ordersList.appendChild(item);
+                });
+                
+                document.querySelectorAll('.remove-order').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const index = parseInt(this.dataset.index);
+                        orders.splice(index, 1);
+                        renderOrders();
+                    });
+                });
+            }
+
+            // Save customer
+            if (customerForm) {
+                customerForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    if (!customerMobile.value.trim() && !customerInsta.value.trim()) {
+                        showNotification('Please enter either mobile or Instagram ID', false);
+                        return;
+                    }
+                    
+                    if (!customerName.value.trim()) {
+                        showNotification('Please enter customer name', false);
+                        return;
+                    }
+                    
+                    if (addresses.length === 0) {
+                        showNotification('Please add at least one address', false);
+                        return;
+                    }
+                    
+                    let referralCode = referralCodeDisplay.textContent;
+                    if (referralCode === 'Will be generated on save' || !referralCode) {
+                        referralCode = `SA${Math.random().toString(36).substr(2, 8).toUpperCase()}`;
+                    }
+                    
+                    const customer = {
+                        mobile: customerMobile.value.trim(),
+                        insta: customerInsta.value.trim(),
+                        name: customerName.value.trim(),
+                        email: customerEmail.value.trim(),
+                        addresses: [...addresses],
+                        referralCode: referralCode,
+                        referredBy: referredBy.value.trim(),
+                        walletBalance: parseFloat(walletBalance.textContent.replace('₹', '')) || 0,
+                        walletTransactions: [...walletTransactionsData],
+                        coupons: [...coupons],
+                        orders: [...orders]
+                    };
+                    
+                    if (currentCustomerData) {
+                        const customerIndex = appData.customers.findIndex(c => 
+                            (currentCustomerData.mobile && c.mobile === currentCustomerData.mobile) ||
+                            (currentCustomerData.insta && c.insta && c.insta.toLowerCase() === currentCustomerData.insta.toLowerCase())
+                        );
+                        if (customerIndex !== -1) {
+                            appData.customers[customerIndex] = customer;
+                        }
+                    } else {
+                        appData.customers.push(customer);
+                    }
+                    
+                    saveData();
+                    showNotification('Customer saved successfully!');
+                    resetCustomerForm();
+                    document.getElementById('customersSidebar').classList.remove('show');
+                    loadCustomers();
+                });
+            }
+
+            // Reset customer form
+            function resetCustomerForm() {
+                if (customerForm) customerForm.reset();
+                
+                addresses = [];
+                renderAddresses();
+                
+                walletTransactionsData = [];
+                renderWalletTransactions();
+                
+                coupons = [];
+                renderCoupons();
+                
+                orders = [];
+                renderOrders();
+                
+                if (referralCodeDisplay) referralCodeDisplay.textContent = 'Will be generated on save';
+                if (walletBalance) walletBalance.textContent = '₹0.00';
+                
+                currentCustomerData = null;
+            }
+
+            // Search functionality
+            if (customersSearchInput) {
+                customersSearchInput.addEventListener('input', function() {
+                    const searchTerm = this.value.toLowerCase();
+                    const customersTableBody = document.getElementById('customersTableBody');
+                    const noCustomersMessage = document.getElementById('noCustomersMessage');
+                    
+                    if (!customersTableBody) return;
+                    
+                    const rows = customersTableBody.querySelectorAll('tr');
+                    let hasResults = false;
+                    
+                    rows.forEach(row => {
+                        const text = row.textContent.toLowerCase();
+                        if (text.includes(searchTerm)) {
+                            row.style.display = '';
+                            hasResults = true;
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
+                    
+                    if (customersSearchXBtn) {
+                        customersSearchXBtn.style.display = searchTerm.length ? 'block' : 'none';
+                    }
+                    
+                    noCustomersMessage.style.display = hasResults || searchTerm === '' ? 'none' : 'block';
+                    noCustomersMessage.textContent = 'No customers found matching your search.';
+                });
+            }
+
+            if (customersSearchXBtn) {
+                customersSearchXBtn.addEventListener('click', function() {
+                    customersSearchInput.value = '';
+                    customersSearchInput.dispatchEvent(new Event('input'));
+                    customersSearchInput.focus();
+                });
+            }
+        }
+
+        // ======================
+        // Sync System
+        // ======================
+        function initializeSyncSystem() {
+            const syncButton = document.getElementById('syncButton');
+            const exportImportButton = document.getElementById('exportImportButton');
+            const authModal = document.getElementById('authModal');
+            const exportImportModal = document.getElementById('exportImportModal');
+            const closeAuthModal = document.getElementById('closeAuthModal');
+            const closeExportImportModal = document.getElementById('closeExportImportModal');
+            const exportDataBtn = document.getElementById('exportDataBtn');
+            const importDataBtn = document.getElementById('importDataBtn');
+            const importFile = document.getElementById('importFile');
+            const clearAllData = document.getElementById('clearAllData');
+            const copyExportData = document.getElementById('copyExportData');
+            const downloadExportData = document.getElementById('downloadExportData');
+            const performImport = document.getElementById('performImport');
+            const syncModeDisplay = document.getElementById('syncModeDisplay');
+            const closeInstaModal = document.getElementById('closeInstaModal');
+            const instaCopyBtn = document.getElementById('instaCopyBtn');
+            const instaModal = document.getElementById('instaModal');
+            const imageModal = document.getElementById('imageModal');
+            const closeModal = document.querySelector('.close');
+
+            // Sync button
+            if (syncButton) {
+                syncButton.addEventListener('click', async function() {
+                    await loadData();
+                    loadProducts();
+                    loadOrders();
+                    loadCustomers();
+                    showNotification('Data synchronized!');
+                });
+            }
+
+            // Export/Import button
+            if (exportImportButton) {
+                exportImportButton.addEventListener('click', function() {
+                    exportAllData();
+                });
+            }
+
+            // Close modals
+            if (closeAuthModal) {
+                closeAuthModal.addEventListener('click', function() {
+                    authModal.style.display = 'none';
+                });
+            }
+
+            if (closeExportImportModal) {
+                closeExportImportModal.addEventListener('click', function() {
+                    exportImportModal.style.display = 'none';
+                });
+            }
+
+            // Export data button
+            if (exportDataBtn) {
+                exportDataBtn.addEventListener('click', exportAllData);
+            }
+
+            // Import data button
+            if (importDataBtn) {
+                importDataBtn.addEventListener('click', function() {
+                    importFile.click();
+                });
+            }
+
+            // Import file
+            if (importFile) {
+                importFile.addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        try {
+                            const importedData = JSON.parse(event.target.result);
+                            appData = importedData;
+                            saveData();
+                            loadProducts();
+                            loadOrders();
+                            loadCustomers();
+                            showNotification('Data imported successfully!');
+                            authModal.style.display = 'none';
+                        } catch (error) {
+                            showNotification('Invalid file format. Import failed.', false);
+                        }
+                    };
+                    reader.readAsText(file);
+                });
+            }
+
+            // Clear all data
+            if (clearAllData) {
+                clearAllData.addEventListener('click', clearAllData);
+            }
+
+            // Copy export data
+            if (copyExportData) {
+                copyExportData.addEventListener('click', function() {
+                    const exportData = document.getElementById('exportData');
+                    exportData.select();
+                    document.execCommand('copy');
+                    showNotification('Data copied to clipboard!');
+                });
+            }
+
+            // Download export data
+            if (downloadExportData) {
+                downloadExportData.addEventListener('click', downloadData);
+            }
+
+            // Perform import from textarea
+            if (performImport) {
+                performImport.addEventListener('click', importAllData);
+            }
+
+            // Update sync mode display
+            if (syncModeDisplay) {
+                syncModeDisplay.textContent = appData.settings.syncMode === 'local' ? 'Local Storage' : 'Cloud';
+            }
+
+            // Instagram modal
+            if (closeInstaModal) {
+                closeInstaModal.addEventListener('click', function() {
+                    instaModal.style.display = 'none';
+                });
+            }
+
+            if (instaCopyBtn) {
+                instaCopyBtn.addEventListener('click', function() {
+                    const instaTextarea = document.getElementById('instaTextarea');
+                    const instaSuccess = document.getElementById('instaSuccess');
+                    
+                    instaTextarea.select();
+                    document.execCommand('copy');
+                    instaSuccess.style.display = 'block';
+                    
+                    setTimeout(() => {
+                        instaSuccess.style.display = 'none';
+                    }, 1200);
+                });
+            }
+
+            // Image modal
+            if (closeModal) {
+                closeModal.addEventListener('click', function() {
+                    imageModal.style.display = 'none';
+                });
+            }
+
+            // Close modals when clicking outside
+            window.addEventListener('click', function(event) {
+                if (event.target === authModal) {
+                    authModal.style.display = 'none';
+                }
+                if (event.target === exportImportModal) {
+                    exportImportModal.style.display = 'none';
+                }
+                if (event.target === instaModal) {
+                    instaModal.style.display = 'none';
+                }
+                if (event.target === imageModal) {
+                    imageModal.style.display = 'none';
+                }
+            });
+        }
+
+        // ======================
+        // Global Functions
+        // ======================
+        window.showImageModal = function(imageSrc) {
+            document.getElementById('modalImage').src = imageSrc;
+            document.getElementById('imageModal').style.display = 'block';
+        };
+
+        window.showInstaModal = function(index) {
+            const product = appData.products[index];
+            let desc = product.description || "";
+            desc = desc.replace(/SAUSc/gi, product.code);
+            const instaText = `${product.name}\n${desc}`;
+            document.getElementById('instaTextarea').value = instaText;
+            document.getElementById('instaSuccess').style.display = 'none';
+            document.getElementById('instaModal').style.display = 'block';
+        };
+    </script>
+</body>
+</html>
