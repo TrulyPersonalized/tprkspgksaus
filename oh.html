@@ -1816,49 +1816,50 @@ async function downloadBill(orderId) {
     document.body.appendChild(wrap);
 // Generate QR
 const qrContainer = wrap.querySelector("#qrBox");
+let qrRendered = false;
+
 if (qrContainer) {
-
     const qrAmount = order.total;
-
     const upiUrl = `upi://pay?pa=trulypersonalized@axl&pn=TRY&am=${qrAmount}.00&cu=INR`;
 
     const qr = new QRCodeStyling({
         width: 150,
         height: 150,
         data: upiUrl,
-        dotsOptions: {
-            color: "#000",
-            type: "rounded"
-        },
-        cornersSquareOptions: {
-            type: "extra-rounded",
-            color: "#000"
-        },
-        cornersDotOptions: {
-            type: "dot",
-            color: "#000"
-        },
-        backgroundOptions: {
-            color: "#fff5eb"
-        }
+        dotsOptions: { color: "#000", type: "rounded" },
+        cornersSquareOptions: { type: "extra-rounded", color: "#000" },
+        cornersDotOptions: { type: "dot", color: "#000" },
+        backgroundOptions: { color: "#fff5eb" }
+    });
+
+    // When QR finishes drawing
+    qrContainer.addEventListener("qrCodeComplete", function () {
+        qrRendered = true;
     });
 
     qr.append(qrContainer);
 }
 
 
-   // Convert to canvas
+
+// wait for QR
+while (!qrRendered) {
+    await new Promise(resolve => setTimeout(resolve, 50));
+}
+
+// now capture PNG safely
 const element = wrap.querySelector("#bill-export");
 const canvas = await html2canvas(element, { scale: 2 });
 const imgData = canvas.toDataURL("image/png");
 
-// DOWNLOAD PNG
+// download png
 const link = document.createElement("a");
 link.download = `${order.id}_bill.png`;
 link.href = imgData;
 link.click();
 
 wrap.remove();
+
 
 }
 
