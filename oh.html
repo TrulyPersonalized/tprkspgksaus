@@ -1042,7 +1042,6 @@ text-align: left;}
                 let couponUsed = false;
                 if (currentCustomer) {
                     const orders = JSON.parse(localStorage.getItem('orders')) || [];
-
                     const used = orders.some(o => o.customer.mobile === currentCustomer.mobile && o.coupons && o.coupons.some(c => c.id === code));
                     couponUsed = used;
                 }
@@ -1364,7 +1363,6 @@ text-align: left;}
                     orders.push(order);
                 }
                 localStorage.setItem('orders', JSON.stringify(orders));
-
                 updateCustomerData(order);
                 rebuildProductCodes();
                 showNotification(editingOrderId ? 'Order updated successfully!' : 'Order created successfully!');
@@ -1376,7 +1374,6 @@ text-align: left;}
             // Update customer data
             function updateCustomerData(order) {
                 const customers = JSON.parse(localStorage.getItem('customers')) || [];
-
                 const mobile = order.customer.mobile;
                 const insta = order.customer.insta;
                 let customerIndex = customers.findIndex(c =>
@@ -1578,21 +1575,17 @@ text-align: left;}
         });
 // -------------------- FINAL PERFECT BILL DOWNLOAD --------------------
 
-
 async function downloadBill(orderId) {
-
 
     const orders = JSON.parse(localStorage.getItem("orders")) || [];
     const order = orders.find(o => o.id === orderId);
 
-
-
     if (!order) {
         alert("Order not found!");
-
         return;
+    }
 
-    }    const billHTML = `
+    const billHTML = `
 <div id="bill-export" style="
     width:1587px !important;
     min-width:1587px !important;
@@ -1825,6 +1818,7 @@ async function downloadBill(orderId) {
 const qrContainer = wrap.querySelector("#qrBox");
 if (qrContainer) {
 
+
     const qrAmount = order.total;
 
     const upiUrl = `upi://pay?pa=trulypersonalized@axl&pn=TRY&am=${qrAmount}.00&cu=INR`;
@@ -1851,11 +1845,16 @@ if (qrContainer) {
     });
 
     qr.append(qrContainer);
-
 }
 
 
    // Convert to canvas
+
+
+
+
+
+
 const element = wrap.querySelector("#bill-export");
 const canvas = await html2canvas(element, { scale: 2 });
 const imgData = canvas.toDataURL("image/png");
@@ -1873,6 +1872,5 @@ wrap.remove();
 
 
     </script>
-
 </body>
 </html>
