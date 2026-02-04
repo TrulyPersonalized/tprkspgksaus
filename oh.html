@@ -1859,6 +1859,107 @@ link.href = imgData;
 link.click();
 
 wrap.remove();
+async function downloadBill(orderId) {
+
+    const orders = JSON.parse(localStorage.getItem("orders")) || [];
+    const order = orders.find(o => o.id === orderId);
+
+    if (!order) {
+        alert("Order not found!");
+        return;
+    }
+
+    // ─────────────────────────────
+    // BILL HTML (your existing bill)
+    // ─────────────────────────────
+    const billHTML = `
+
+    <!-- YOUR BILL HTML IS SAME AS BEFORE -->
+    <!-- DO NOT CHANGE THIS PART -->
+    ${/* I am not rewriting the entire bill here, keep your billHTML EXACTLY the same */""}
+
+    `;
+
+    // WRAPPER
+    const wrap = document.createElement("div");
+    wrap.style.position = "fixed";
+    wrap.style.top = "0";
+    wrap.style.left = "0";
+    wrap.style.width = "1587px";
+    wrap.style.zIndex = "999999";
+    wrap.style.background = "#fff5eb";
+    wrap.innerHTML = billHTML;
+    document.body.appendChild(wrap);
+
+    // ─────────────────────────────
+    // FIX: Wait for images to load
+    // ─────────────────────────────
+    function waitForImages() {
+        const imgs = wrap.querySelectorAll("img");
+        return Promise.all(Array.from(imgs).map(img => {
+            return new Promise(resolve => {
+                if (img.complete) resolve();
+                else img.onload = img.onerror = resolve;
+            });
+        }));
+    }
+
+    await waitForImages();
+
+    // ─────────────────────────────
+    // FIX: Generate QR & WAIT until QR canvas is ready
+    // ─────────────────────────────
+    const qrContainer = wrap.querySelector("#qrBox");
+    if (!qrContainer) {
+        console.error("QR container not found");
+    } else {
+        const qrAmount = order.total;
+        const upiUrl = `upi://pay?pa=trulypersonalized@axl&pn=TRY&am=${qrAmount}.00&cu=INR`;
+
+        const qr = new QRCodeStyling({
+            width: 150,
+            height: 150,
+            data: upiUrl,
+            dotsOptions: { color: "#000", type: "rounded" },
+            cornersSquareOptions: { type: "extra-rounded", color: "#000" },
+            cornersDotOptions: { type: "dot", color: "#000" },
+            backgroundOptions: { color: "#fff5eb" }
+        });
+
+        qr.append(qrContainer);
+
+        // REAL FIX → Wait until QR <canvas> appears
+        await new Promise(resolve => {
+            const check = setInterval(() => {
+                if (qrContainer.querySelector("canvas")) {
+                    clearInterval(check);
+                    resolve();
+                }
+            }, 50);
+        });
+    }
+
+    // ─────────────────────────────
+    // FINALLY: Capture PNG
+    // ─────────────────────────────
+    const element = wrap.querySelector("#bill-export");
+    const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true
+    });
+
+    const imgData = canvas.toDataURL("image/png");
+
+    // ─────────────────────────────
+    // PNG Download
+    // ─────────────────────────────
+    const link = document.createElement("a");
+    link.download = `${order.id}_bill.png`;
+    link.href = imgData;
+    link.click();
+
+    wrap.remove();
+}
 
 
 }
