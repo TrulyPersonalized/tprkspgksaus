@@ -334,13 +334,13 @@ text-align: left;}
             color: var(--text);
         }
         .delivery-type input[type="radio"] { margin: 0; width: auto; }
-        
+
         /* Add this new style for delivery reason */
         .delivery-reason {
             width: 100%;
             margin-top: 10px;
         }
-        
+
         .remove-product-btn {
             background: var(--primary);
             color: white;
@@ -547,7 +547,7 @@ text-align: left;}
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="products-section">
                     <h4>Products</h4>
                     <div id="productsContainer">
@@ -568,12 +568,12 @@ text-align: left;}
                         <input type="number" id="orderExtraAmount" name="orderExtraAmount" value="0">
                     </div>
                 </div>
-                
+
                 <div class="form-group">
                     <label for="deliveryAmountInput">Delivery Charges (editable)</label>
                     <input type="number" id="deliveryAmountInput" name="deliveryAmountInput" value="60">
                 </div>
-                
+
                 <div class="coupon-section">
                     <h4>Coupons & Discounts</h4>
                     <div id="availableCoupons" class="hidden">
@@ -612,7 +612,7 @@ text-align: left;}
                         <!-- Applied coupons will be shown here -->
                     </div>
                 </div>
-                
+
                 <div class="summary-section">
                     <h4>Order Summary</h4>
                     <div class="summary-row">
@@ -640,7 +640,7 @@ text-align: left;}
                         <span id="totalAmount">₹0.00</span>
                     </div>
                 </div>
-                
+
                 <div class="form-actions">
                     <button type="submit" class="save-btn">Create Order</button>
                 </div>
@@ -986,7 +986,7 @@ text-align: left;}
 
                 if (productData.id) productIdInput.dispatchEvent(new Event('change'));
                 if (productData.extraReason) extraReasonInput.value = productData.extraReason;
-                
+
                 calculateRowTotal(row);
                 return row;
             }
@@ -1042,6 +1042,7 @@ text-align: left;}
                 let couponUsed = false;
                 if (currentCustomer) {
                     const orders = JSON.parse(localStorage.getItem('orders')) || [];
+
                     const used = orders.some(o => o.customer.mobile === currentCustomer.mobile && o.coupons && o.coupons.some(c => c.id === code));
                     couponUsed = used;
                 }
@@ -1363,6 +1364,7 @@ text-align: left;}
                     orders.push(order);
                 }
                 localStorage.setItem('orders', JSON.stringify(orders));
+
                 updateCustomerData(order);
                 rebuildProductCodes();
                 showNotification(editingOrderId ? 'Order updated successfully!' : 'Order created successfully!');
@@ -1374,6 +1376,7 @@ text-align: left;}
             // Update customer data
             function updateCustomerData(order) {
                 const customers = JSON.parse(localStorage.getItem('customers')) || [];
+
                 const mobile = order.customer.mobile;
                 const insta = order.customer.insta;
                 let customerIndex = customers.findIndex(c =>
@@ -1575,17 +1578,21 @@ text-align: left;}
         });
 // -------------------- FINAL PERFECT BILL DOWNLOAD --------------------
 
+
 async function downloadBill(orderId) {
+
 
     const orders = JSON.parse(localStorage.getItem("orders")) || [];
     const order = orders.find(o => o.id === orderId);
 
+
+
     if (!order) {
         alert("Order not found!");
-        return;
-    }
 
-    const billHTML = `
+        return;
+
+    }    const billHTML = `
 <div id="bill-export" style="
     width:1587px !important;
     min-width:1587px !important;
@@ -1816,155 +1823,56 @@ async function downloadBill(orderId) {
     document.body.appendChild(wrap);
 // Generate QR
 const qrContainer = wrap.querySelector("#qrBox");
-let qrRendered = false;
-
 if (qrContainer) {
+
     const qrAmount = order.total;
+
     const upiUrl = `upi://pay?pa=trulypersonalized@axl&pn=TRY&am=${qrAmount}.00&cu=INR`;
 
     const qr = new QRCodeStyling({
         width: 150,
         height: 150,
         data: upiUrl,
-        dotsOptions: { color: "#000", type: "rounded" },
-        cornersSquareOptions: { type: "extra-rounded", color: "#000" },
-        cornersDotOptions: { type: "dot", color: "#000" },
-        backgroundOptions: { color: "#fff5eb" }
-    });
-
-    // When QR finishes drawing
-    qrContainer.addEventListener("qrCodeComplete", function () {
-        qrRendered = true;
+        dotsOptions: {
+            color: "#000",
+            type: "rounded"
+        },
+        cornersSquareOptions: {
+            type: "extra-rounded",
+            color: "#000"
+        },
+        cornersDotOptions: {
+            type: "dot",
+            color: "#000"
+        },
+        backgroundOptions: {
+            color: "#fff5eb"
+        }
     });
 
     qr.append(qrContainer);
+
 }
 
 
-
-// wait for QR
-while (!qrRendered) {
-    await new Promise(resolve => setTimeout(resolve, 50));
-}
-
-// now capture PNG safely
+   // Convert to canvas
 const element = wrap.querySelector("#bill-export");
 const canvas = await html2canvas(element, { scale: 2 });
 const imgData = canvas.toDataURL("image/png");
 
-// download png
+// DOWNLOAD PNG
 const link = document.createElement("a");
 link.download = `${order.id}_bill.png`;
 link.href = imgData;
 link.click();
 
 wrap.remove();
-async function downloadBill(orderId) {
-
-    const orders = JSON.parse(localStorage.getItem("orders")) || [];
-    const order = orders.find(o => o.id === orderId);
-
-    if (!order) {
-        alert("Order not found!");
-        return;
-    }
-
-    // ─────────────────────────────
-    // BILL HTML (your existing bill)
-    // ─────────────────────────────
-    const billHTML = `
-
-    <!-- YOUR BILL HTML IS SAME AS BEFORE -->
-    <!-- DO NOT CHANGE THIS PART -->
-    ${/* I am not rewriting the entire bill here, keep your billHTML EXACTLY the same */""}
-
-    `;
-
-    // WRAPPER
-    const wrap = document.createElement("div");
-    wrap.style.position = "fixed";
-    wrap.style.top = "0";
-    wrap.style.left = "0";
-    wrap.style.width = "1587px";
-    wrap.style.zIndex = "999999";
-    wrap.style.background = "#fff5eb";
-    wrap.innerHTML = billHTML;
-    document.body.appendChild(wrap);
-
-    // ─────────────────────────────
-    // FIX: Wait for images to load
-    // ─────────────────────────────
-    function waitForImages() {
-        const imgs = wrap.querySelectorAll("img");
-        return Promise.all(Array.from(imgs).map(img => {
-            return new Promise(resolve => {
-                if (img.complete) resolve();
-                else img.onload = img.onerror = resolve;
-            });
-        }));
-    }
-
-    await waitForImages();
-
-    // ─────────────────────────────
-    // FIX: Generate QR & WAIT until QR canvas is ready
-    // ─────────────────────────────
-    const qrContainer = wrap.querySelector("#qrBox");
-    if (!qrContainer) {
-        console.error("QR container not found");
-    } else {
-        const qrAmount = order.total;
-        const upiUrl = `upi://pay?pa=trulypersonalized@axl&pn=TRY&am=${qrAmount}.00&cu=INR`;
-
-        const qr = new QRCodeStyling({
-            width: 150,
-            height: 150,
-            data: upiUrl,
-            dotsOptions: { color: "#000", type: "rounded" },
-            cornersSquareOptions: { type: "extra-rounded", color: "#000" },
-            cornersDotOptions: { type: "dot", color: "#000" },
-            backgroundOptions: { color: "#fff5eb" }
-        });
-
-        qr.append(qrContainer);
-
-        // REAL FIX → Wait until QR <canvas> appears
-        await new Promise(resolve => {
-            const check = setInterval(() => {
-                if (qrContainer.querySelector("canvas")) {
-                    clearInterval(check);
-                    resolve();
-                }
-            }, 50);
-        });
-    }
-
-    // ─────────────────────────────
-    // FINALLY: Capture PNG
-    // ─────────────────────────────
-    const element = wrap.querySelector("#bill-export");
-    const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true
-    });
-
-    const imgData = canvas.toDataURL("image/png");
-
-    // ─────────────────────────────
-    // PNG Download
-    // ─────────────────────────────
-    const link = document.createElement("a");
-    link.download = `${order.id}_bill.png`;
-    link.href = imgData;
-    link.click();
-
-    wrap.remove();
-}
 
 
 }
 
 
     </script>
+
 </body>
 </html>
