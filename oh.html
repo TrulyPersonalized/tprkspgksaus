@@ -1784,30 +1784,30 @@ async function downloadBill(orderId) {
 ">
 
     <tr>
-        <td>Damage Reduced:</td>
+        <td style="text-align:right; ">Damage Reduced:</td>
         <td style="text-align:right; padding-right: 37px;">₹${order.subtotal}</td>
     </tr>
 
     ${order.delivery != 0 ? `
     <tr>
-        <td>Delivery:</td>
+        <td style="text-align:right; ">Delivery:</td>
         <td style="text-align:right; padding-right: 37px;">₹${order.delivery}</td>
     </tr>` : ``}
 
     ${order.discount != 0 ? `
     <tr>
-        <td>Discount:</td>
+        <td style="text-align:right; ">Discount:</td>
         <td style="text-align:right; padding-right: 37px;">₹${order.discount}</td>
     </tr>` : ``}
 
     ${order.walletUsed != 0 ? `
     <tr>
-        <td>Wallet Used:</td>
+        <td style="text-align:right; ">Wallet Used:</td>
         <td style="text-align:right;  padding-right: 37px;">₹${order.walletUsed}</td>
     </tr>` : ``}
 
     <tr>
-        <td><b>Total Amount:</b></td>
+        <td style="text-align:right; "><b>Total Amount:</b></td>
         <td style="text-align:right; padding-right: 37px;"><b>₹${order.total}</b></td>
     </tr>
 
